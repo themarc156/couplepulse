@@ -1059,16 +1059,7 @@
       boostPulse(15); 
       closeCravingModal();
       
-      // 1. Per PeerJS versuchen (falls App offen ist)
       LiveStream.sendData({ type: 'new_craving', craving: newCraving });
-
-      // 2. NEU: Per Server den diskreten Telegram-Push auslösen (auch wenn App zu ist!)
-      fetch('/api/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sender: state.currentUser })
-      }).catch(err => console.log('Push-Hinweis im Hintergrund:', err));
-
       alert("✓ Signal an Partner gesendet!");
       saveState();
     }

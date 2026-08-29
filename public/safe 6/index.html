@@ -67,7 +67,7 @@
           <span class="font-bold tracking-wider text-xs uppercase text-slate-400">CouplePulse</span>
         </div>
         <div class="flex items-center gap-2">
-          <!-- HEADER ICON FÜR AUSSTEHENDE BEWERTUNGEN & ARCHIV -->
+          <!-- HEADER ICON FÜR AUSSTEHENDE BEWERTUNGEN -->
           <button onclick="openPendingReviewsModal()" id="header-review-btn" class="relative p-1.5 bg-slate-900 border border-slate-800 rounded-full text-slate-300 hover:text-white text-xs hidden flex items-center justify-center">
             💌 <span id="header-review-count" class="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
           </button>
@@ -115,7 +115,7 @@
       <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK -->
       <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950 to-purple-950 border border-rose-500/70 rounded-2xl p-4 glow-rose space-y-2 animate-pulse">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
-          <span>💖 Rückmeldung vom Partner</span>
+          <span>💖 Feedback zum Treffen</span>
           <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Schließen</button>
         </div>
         <div id="incoming-feedback-text" class="text-sm font-bold text-slate-100 bg-slate-950/70 p-3 rounded-xl border border-rose-800/40"></div>
@@ -195,17 +195,18 @@
     </main>
 
     <!-- ================================================================= -->
-    <!-- MODAL: AUSSTEHENDE BEWERTUNGEN & HIGHLIGHT-ARCHIV -->
+    <!-- MODAL: AUSSTEHENDE BEWERTUNGEN & ERFÜLLUNGS-CHECK -->
     <!-- ================================================================= -->
     <div id="pending-reviews-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl">
         <div class="flex justify-between items-center border-b border-slate-800 pb-3">
           <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
-            <span>💌</span> Deine Erlebnisse & Bewertungen
+            <span>💌</span> Ausstehende Erlebnisse
           </h3>
           <button onclick="closePendingReviewsModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">×</button>
         </div>
-        <div id="pending-reviews-container" class="space-y-3 max-h-[60vh] overflow-y-auto text-xs">
+        <p class="text-[11px] text-slate-400 leading-snug">Hier kannst du angeben, ob stattgefundene Treffen erfolgreich waren:</p>
+        <div id="pending-reviews-container" class="space-y-3 max-h-[50vh] overflow-y-auto text-xs">
           <!-- Dynamisch befüllt -->
         </div>
       </div>
@@ -217,9 +218,9 @@
     <div id="feedback-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl text-center">
         <h3 class="font-bold text-base text-slate-100 flex items-center justify-center gap-2">
-          <span>💖</span> Wie war der Moment für dich?
+          <span>💖</span> Wie war das Treffen?
         </h3>
-        <p class="text-xs text-slate-400">Gib deinem Partner eine Rückmeldung!</p>
+        <p class="text-xs text-slate-400">Gib deinem Partner eine heiße Rückmeldung!</p>
         
         <div class="grid grid-cols-3 gap-2 pt-2">
           <button onclick="submitFeedback('🌋 Unfassbar gut! (10/10)')" class="p-3 bg-slate-950 border border-slate-800 hover:border-rose-500 rounded-2xl text-xs font-semibold text-rose-300 transition-all flex flex-col items-center gap-1">
@@ -321,7 +322,7 @@
       </div>
     </div>
 
-    <!-- MODAL: SPONTAN-WUNSCH (SPIELARTEN OPTIONAL) -->
+    <!-- MODAL: SPONTAN-WUNSCH -->
     <div id="craving-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end justify-center p-0">
       <div class="bg-slate-900 border-t border-slate-800 w-full rounded-t-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
         <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -356,8 +357,8 @@
 
         <div class="space-y-1.5 pt-1">
           <div class="flex justify-between items-center">
-            <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">3. Spielart (Optional)</label>
-            <span class="text-[10px] text-slate-500 italic">Kann auch leer bleiben</span>
+            <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">3. Wähle die Spielart</label>
+            <span id="role-hint" class="text-[10px] text-rose-400 italic">Passend für dich</span>
           </div>
           <div id="kink-chip-container" class="flex flex-wrap gap-1.5 text-xs"></div>
 
@@ -407,10 +408,10 @@
         { id: 1, from: 'Er', mode: 'quick', kinks: ['Oral (Blowjob) 💋'], role: 'passiv', fulfilled: true },
         { id: 2, from: 'Sie', mode: 'quick', kinks: ['Oral (Blowjob) 💋'], role: 'aktiv', fulfilled: true },
         { id: 3, from: 'Er', mode: 'quick', kinks: ['Prostatamassage 🎯'], role: 'passiv', fulfilled: false },
-        { id: 4, from: 'Sie', mode: 'quick', kinks: ['Vibrator / Toy 🔌'], role: 'passiv', fulfilled: false }
+        { id: 4, from: 'Sie', mode: 'quick', kinks: ['Vibrator / Toy 🔌'], role: 'passiv', fulfilled: false },
+        { id: 5, from: 'Sie', mode: 'quick', kinks: ['Oral (Lecken) 💋'], role: 'passiv', fulfilled: false }
       ],
-      pendingReviews: [],
-      completedReviews: [],
+      pendingReviews: [], // Speichert angenommene Treffen, die auf Rückmeldung warten
       activeCraving: null,
       eveningReservation: null,
       cravingMode: 'quick',
@@ -421,7 +422,7 @@
     };
 
     let currentUnfulfilledIndex = 0;
-    let activeReviewItem = null;
+    let activeReviewId = null;
 
     const catalog = {
       sein_koerper: {
@@ -460,15 +461,9 @@
           debug: 1
         });
 
-        this.peer.on('open', (id) => {
-          console.log('Peer verbunden:', id);
-          this.connectData();
-        });
-
         this.peer.on('connection', (conn) => {
           this.dataConn = conn;
           conn.on('data', (data) => this.handleIncomingData(data));
-          conn.on('close', () => { this.dataConn = null; });
         });
 
         this.peer.on('call', (call) => {
@@ -501,42 +496,6 @@
         });
       },
 
-      connectData() {
-        if (this.dataConn && this.dataConn.open) return;
-        const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
-        const partnerId = `cp_pulse_${targetUser}_live`;
-        
-        try {
-          const conn = this.peer.connect(partnerId);
-          if (conn) {
-            conn.on('open', () => {
-              this.dataConn = conn;
-              console.log('Hintergrund-Datenverbindung zu Partner aktiv.');
-            });
-            conn.on('data', (data) => this.handleIncomingData(data));
-            conn.on('close', () => {
-              this.dataConn = null;
-              setTimeout(() => this.connectData(), 4000);
-            });
-          }
-        } catch(e) {}
-      },
-
-      sendData(payload) {
-        if (this.dataConn && this.dataConn.open) {
-          this.dataConn.send(payload);
-        } else {
-          this.connectData();
-          setTimeout(() => {
-            if (this.dataConn && this.dataConn.open) {
-              this.dataConn.send(payload);
-            } else {
-              console.warn('Daten konnten nicht gesendet werden, Partner offline?');
-            }
-          }, 800);
-        }
-      },
-
       async startAsSender() {
         try {
           this.localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.currentFacingMode }, audio: true });
@@ -549,16 +508,14 @@
           const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
           const partnerId = `cp_pulse_${targetUser}_live`;
 
-          this.connectData();
+          this.dataConn = this.peer.connect(partnerId);
           this.primaryCall = this.peer.call(partnerId, this.localStream);
-          if (this.primaryCall) {
-            this.primaryCall.on('stream', (s) => {
-              document.getElementById('pip-container').classList.remove('hidden');
-              document.getElementById('pip-video').srcObject = s;
-              document.getElementById('pip-video').play().catch(e => {});
-            });
-            document.getElementById('stream-status-overlay').classList.add('hidden');
-          }
+          this.primaryCall.on('stream', (s) => {
+            document.getElementById('pip-container').classList.remove('hidden');
+            document.getElementById('pip-video').srcObject = s;
+            document.getElementById('pip-video').play().catch(e => {});
+          });
+          document.getElementById('stream-status-overlay').classList.add('hidden');
         } catch (e) {
           alert('Kamera-Fehler: ' + e.message);
           this.closeOverlay();
@@ -581,20 +538,14 @@
           this.closeOverlay();
         } else if (data.type === 'new_craving') {
           state.activeCraving = data.craving;
-          state.requestHistory.unshift(data.craving);
           saveState();
           playSensualSound('chime');
-        } else if (data.type === 'craving_accepted') {
-          // Der Partner hat meinen Wunsch angenommen -> für den Absender in pendingReviews legen + direktes Banner anzeigen
-          if (data.craving && data.craving.from === state.currentUser) {
-            state.pendingReviews.push({ id: data.craving.id, kinks: data.craving.kinks, from: state.currentUser });
-            saveState();
-            playSensualSound('chime');
-            showFeedbackBanner(`🎉 Dein Partner hat deinen Wunsch ("${data.craving.kinks.join(' + ')}") angenommen!`);
-          }
         } else if (data.type === 'craving_response') {
           state.activeCraving = null;
-          if (data.action === 'later') {
+          if (data.action === 'accepted') {
+            boostPulse(35);
+            alert("🎉 Dein Partner hat deinen Wunsch angenommen und ist auf dem Weg! ❤️");
+          } else if (data.action === 'later') {
             alert("⏳ Dein Partner hat auf in 10 Minuten verschoben!");
           } else if (data.action === 'evening') {
             alert("🌙 Dein Partner hat deinen Wunsch für heute Abend reserviert!");
@@ -648,15 +599,15 @@
 
       sendReaction(emoji, type) {
         this.showFloatingReaction(emoji);
-        this.sendData({ type: 'reaction', emoji, hapticType: type });
+        if (this.dataConn?.open) this.dataConn.send({ type: 'reaction', emoji, hapticType: type });
       },
       sendRegie(text) {
         this.showFloatingWhisper(`🎬 ${text}`);
-        this.sendData({ type: 'regie', text });
+        if (this.dataConn?.open) this.dataConn.send({ type: 'regie', text });
       },
       sendWhisper(text) {
         this.showFloatingWhisper(`💬 "${text}"`);
-        this.sendData({ type: 'whisper', text });
+        if (this.dataConn?.open) this.dataConn.send({ type: 'whisper', text });
       },
       sendCustomWhisper() {
         const inp = document.getElementById('stream-whisper-input');
@@ -699,7 +650,7 @@
       endStream() {
         if (this.localStream) this.localStream.getTracks().forEach(t => t.stop());
         if (this.viewerStream) this.viewerStream.getTracks().forEach(t => t.stop());
-        this.sendData({ type: 'stream_ended' });
+        if (this.dataConn?.open) this.dataConn.send({ type: 'stream_ended' });
         this.primaryCall?.close(); this.secondaryCall?.close();
         this.closeOverlay();
       }
@@ -735,12 +686,12 @@
     }
 
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v51', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v47', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v51');
+      const saved = localStorage.getItem('couple_pulse_state_v47');
       if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch (e) {} }
       updateUI();
     }
@@ -752,9 +703,10 @@
       const partner = state.currentUser === 'Er' ? 'Sie' : 'Er';
       document.getElementById('partner-needs-title').innerHTML = `<span>🔥</span> Nachholbedarf von ${partner}`;
 
+      // Badge im Header für ausstehende Bewertungen aktualisieren
       const reviewBtn = document.getElementById('header-review-btn');
       const reviewCount = document.getElementById('header-review-count');
-      const pendingCount = (state.pendingReviews || []).filter(r => r.from === state.currentUser).length;
+      const pendingCount = (state.pendingReviews || []).length;
       if (pendingCount > 0) {
         reviewBtn.classList.remove('hidden');
         reviewCount.innerText = pendingCount;
@@ -831,82 +783,52 @@
           </div>
           <div class="font-bold text-slate-100 text-sm">🔥 ${item.kinks.join(' + ')}</div>
           <div class="text-[11px] text-slate-300">Dynamik: ${item.role} | ${item.mode === 'quick' ? 'Blitz (< 10 Min)' : 'Ausführlich'}</div>
-          <button onclick="triggerFulfillCraving(${item.id})" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs rounded-xl transition-all shadow">
-            ❤️ Als erfüllt markieren
+          <button onclick="triggerAcceptCraving(${item.id})" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs rounded-xl transition-all shadow">
+            ❤️ Loslegen & später bewerten
           </button>
         </div>
       `;
     }
 
-    function triggerFulfillCraving(id) {
+    function triggerAcceptCraving(id) {
       const req = state.requestHistory.find(r => r.id === id);
       if (req) {
-        req.fulfilled = true;
-        boostPulse(35);
-        playSensualSound('chime');
+        // In ausstehende Bewertungen schieben
+        state.pendingReviews.push({ id: req.id, from: req.from, kinks: req.kinks });
         saveState();
-        alert(`❤️ Wunsch als erfüllt markiert!`);
+        alert(`❤️ Viel Spaß! Der Wunsch ist nun im Header unter 💌 für spätere Rückmeldung hinterlegt.`);
       }
     }
 
+    // Modal für ausstehende Bewertungen öffnen
     function openPendingReviewsModal() {
       const modal = document.getElementById('pending-reviews-modal');
       const container = document.getElementById('pending-reviews-container');
       container.innerHTML = '';
 
-      const pending = (state.pendingReviews || []).filter(r => r.from === state.currentUser);
-      const history = state.completedReviews || [];
-
-      if (pending.length === 0 && history.length === 0) {
-        container.innerHTML = `<div class="text-slate-500 italic text-center py-4">Keine Erlebnisse oder Bewertungen vorhanden ✨</div>`;
+      if (!state.pendingReviews || state.pendingReviews.length === 0) {
+        container.innerHTML = `<div class="text-slate-500 italic text-center py-4">Keine ausstehenden Erlebnisse ✨</div>`;
         modal.classList.remove('hidden');
         return;
       }
 
-      if (pending.length > 0) {
-        const pendingHeader = document.createElement('div');
-        pendingHeader.className = 'text-[10px] font-bold text-rose-400 uppercase tracking-wider pb-1';
-        pendingHeader.innerText = 'Warte auf deine Bewertung (Deine Wünsche):';
-        container.appendChild(pendingHeader);
-
-        pending.forEach((review) => {
-          const div = document.createElement('div');
-          div.className = 'bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-2 mb-2';
-          div.innerHTML = `
-            <div class="font-bold text-slate-100 text-xs">🔥 ${review.kinks.join(' + ')}</div>
-            <div class="text-[10px] text-slate-400">Hat dein Partner diesen Wunsch erfüllt?</div>
-            <div class="grid grid-cols-3 gap-1 pt-1">
-              <button onclick="resolveReview(${review.id}, 'cancel')" class="py-1.5 px-1 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded-lg text-[10px] font-medium text-center">
-                ❌ Ausgefallen
-              </button>
-              <button onclick="resolveReview(${review.id}, 'skip')" class="py-1.5 px-1 bg-slate-900 hover:bg-slate-800 text-amber-300 rounded-lg text-[10px] font-medium text-center">
-                ⚠️ Anderer Fokus
-              </button>
-              <button onclick="resolveReview(${review.id}, 'success')" class="py-1.5 px-1 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[10px] font-bold text-center">
-                ✨ Erfüllt!
-              </button>
-            </div>
-          `;
-          container.appendChild(div);
-        });
-      }
-
-      if (history.length > 0) {
-        const histHeader = document.createElement('div');
-        histHeader.className = 'text-[10px] font-bold text-slate-400 uppercase tracking-wider pt-3 pb-1';
-        histHeader.innerText = 'Letzte Highlights (Archiv):';
-        container.appendChild(histHeader);
-
-        history.slice(0, 5).forEach((item) => {
-          const div = document.createElement('div');
-          div.className = 'bg-slate-950/60 border border-slate-850 p-2.5 rounded-xl text-xs space-y-0.5 mb-1';
-          div.innerHTML = `
-            <div class="font-semibold text-slate-200">🔥 ${item.kinks}</div>
-            <div class="text-[10px] text-rose-400">Bewertung: ${item.feedback}</div>
-          `;
-          container.appendChild(div);
-        });
-      }
+      state.pendingReviews.forEach((review) => {
+        const div = document.createElement('div');
+        div.className = 'bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-2';
+        div.innerHTML = `
+          <div class="font-bold text-slate-100 text-xs">🔥 ${review.kinks.join(' + ')} (von ${review.from})</div>
+          <div class="text-[10px] text-slate-400">Hat dieses Treffen tatsächlich stattgefunden?</div>
+          <div class="flex gap-2 pt-1">
+            <button onclick="resolveReview(${review.id}, false)" class="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[11px] font-semibold">
+              ❌ Leider nicht
+            </button>
+            <button onclick="resolveReview(${review.id}, true)" class="flex-1 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[11px] font-semibold">
+              ✨ Ja, geklappt!
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
 
       modal.classList.remove('hidden');
     }
@@ -915,29 +837,30 @@
       document.getElementById('pending-reviews-modal').classList.add('hidden');
     }
 
-    function resolveReview(id, status) {
+    function resolveReview(id, success) {
+      // Aus Pending entfernen
       state.pendingReviews = state.pendingReviews.filter(r => r.id !== id);
-      const req = state.requestHistory.find(r => r.id === id);
 
-      if (status === 'success') {
+      const req = state.requestHistory.find(r => r.id === id);
+      if (success) {
         if (req) req.fulfilled = true;
+        boostPulse(35);
+        playSensualSound('chime');
         closePendingReviewsModal();
         saveState();
-        activeReviewItem = req;
+        // Feedback-Modal für dieses Item öffnen
+        activeReviewId = id;
         openFeedbackModal();
-      } else if (status === 'skip') {
-        if (req) req.fulfilled = true;
-        saveState();
-        closePendingReviewsModal();
-        alert("✓ Als stattgefunden vermerkt (anderer Fokus).");
       } else {
+        // Nicht geklappt -> bleibt unfulfilled im Nachholbedarf
         if (req) req.fulfilled = false;
         saveState();
         closePendingReviewsModal();
-        alert("🔄 Wunsch bleibt im Nachholbedarf für das nächste Mal erhalten.");
+        alert("🔄 Wunsch bleibt im Nachholbedarf erhalten.");
       }
     }
 
+    // Feedback-Logik
     function openFeedbackModal() {
       document.getElementById('feedback-modal').classList.remove('hidden');
     }
@@ -959,16 +882,10 @@
     function sendFeedbackAndClose(feedbackText) {
       closeFeedbackModal();
       document.getElementById('feedback-custom-text').value = '';
-      
-      const kinkName = activeReviewItem && activeReviewItem.kinks ? activeReviewItem.kinks.join(' + ') : 'Gemeinsamer Moment';
-      const finalMsg = `${feedbackText} (${kinkName})`;
-
-      if (!state.completedReviews) state.completedReviews = [];
-      state.completedReviews.unshift({ kinks: kinkName, feedback: feedbackText, timestamp: Date.now() });
-
-      LiveStream.sendData({ type: 'craving_feedback', feedback: finalMsg });
-      saveState();
-      alert("💖 Feedback an den Partner gesendet & im Archiv gespeichert!");
+      if (LiveStream.dataConn && LiveStream.dataConn.open) {
+        LiveStream.dataConn.send({ type: 'craving_feedback', feedback: feedbackText });
+      }
+      alert("💖 Feedback an den Partner gesendet!");
     }
 
     function showFeedbackBanner(text) {
@@ -1042,63 +959,43 @@
     }
 
     function sendCraving() {
-      const kinksToSend = state.selectedKinks.length > 0 ? [...state.selectedKinks] : ['Spontane Nähe & Intimität ✨'];
-      
-      const newCraving = {
-        id: Date.now(),
+      if (state.selectedKinks.length === 0) { alert("Bitte Wunsch wählen!"); return; }
+      state.activeCraving = {
         from: state.currentUser,
         mode: state.cravingMode,
-        kinks: kinksToSend,
-        role: state.selectedRole,
+        kinks: state.selectedKinks,
         roleDescription: `${state.currentUser} (${state.selectedRole})`,
-        goal: state.selectedGoalIndex === 0 ? "Dringend kommen 🎯" : "Nur Kribbeln & Genießen 🌊",
-        fulfilled: false
+        goal: state.selectedGoalIndex === 0 ? "Dringend kommen 🎯" : "Nur Kribbeln & Genießen 🌊"
       };
-
-      state.requestHistory.unshift(newCraving);
-      boostPulse(15); 
-      closeCravingModal();
-      
-      // 1. Per PeerJS versuchen (falls App offen ist)
-      LiveStream.sendData({ type: 'new_craving', craving: newCraving });
-
-      // 2. NEU: Per Server den diskreten Telegram-Push auslösen (auch wenn App zu ist!)
-      fetch('/api/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sender: state.currentUser })
-      }).catch(err => console.log('Push-Hinweis im Hintergrund:', err));
-
+      state.requestHistory.unshift({ id: Date.now(), from: state.currentUser, mode: state.cravingMode, kinks: [...state.selectedKinks], role: state.selectedRole, fulfilled: false });
+      boostPulse(15); closeCravingModal();
+      if (LiveStream.dataConn?.open) LiveStream.dataConn.send({ type: 'new_craving', craving: state.activeCraving });
       alert("✓ Signal an Partner gesendet!");
-      saveState();
     }
 
     function respondCraving(action) {
       if (action === 'accepted') {
-        const cravingObj = state.activeCraving;
-        state.activeCraving = null;
-        boostPulse(35); 
-        playSensualSound('chime');
-        alert("❤️ Angenommen! Viel Spaß.");
-        
-        if (cravingObj) {
-          LiveStream.sendData({ type: 'craving_accepted', craving: cravingObj });
+        const req = state.requestHistory.find(r => r.from === state.activeCraving.from && !r.fulfilled);
+        if (req) {
+          // Direkt in die ausstehenden Reviews packen statt sofort als erledigt zu haken
+          state.pendingReviews.push({ id: req.id, from: req.from, kinks: req.kinks });
         }
+        boostPulse(35); playSensualSound('chime');
+        state.activeCraving = null;
+        alert("❤️ Angenommen! Viel Spaß. Du kannst das Erlebnis später über das 💌 Icon im Header bewerten.");
       } else if (action === 'later') {
         alert("⏳ In 10 Minuten geht es los!");
         state.activeCraving = null;
-        LiveStream.sendData({ type: 'craving_response', action: 'later' });
       } else if (action === 'evening') {
         state.eveningReservation = { from: state.activeCraving.from, kinks: state.activeCraving.kinks, roleDescription: state.activeCraving.roleDescription, goal: state.activeCraving.goal };
-        boostPulse(15); 
-        state.activeCraving = null;
-        LiveStream.sendData({ type: 'craving_response', action: 'evening' });
+        boostPulse(15); state.activeCraving = null;
       }
+      if (LiveStream.dataConn?.open) LiveStream.dataConn.send({ type: 'craving_response', action: action });
       saveState();
     }
 
     function clearEveningReservation() { state.eveningReservation = null; saveState(); }
-    function resetDay() { state.heat = 65; state.pendingReviews = []; state.completedReviews = []; state.activeCraving = null; state.eveningReservation = null; saveState(); }
+    function resetDay() { state.heat = 65; state.pendingReviews = []; state.activeCraving = null; state.eveningReservation = null; saveState(); }
 
     loadState();
     LiveStream.initPeer();

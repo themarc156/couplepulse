@@ -115,7 +115,7 @@
       <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK -->
       <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950 to-purple-950 border border-rose-500/70 rounded-2xl p-4 glow-rose space-y-2 animate-pulse">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
-          <span>💖 Rückmeldung vom Partner</span>
+          <span>💖 Feedback vom Partner</span>
           <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Schließen</button>
         </div>
         <div id="incoming-feedback-text" class="text-sm font-bold text-slate-100 bg-slate-950/70 p-3 rounded-xl border border-rose-800/40"></div>
@@ -409,8 +409,8 @@
         { id: 3, from: 'Er', mode: 'quick', kinks: ['Prostatamassage 🎯'], role: 'passiv', fulfilled: false },
         { id: 4, from: 'Sie', mode: 'quick', kinks: ['Vibrator / Toy 🔌'], role: 'passiv', fulfilled: false }
       ],
-      pendingReviews: [],
-      completedReviews: [],
+      pendingReviews: [], // Wünsche, die der Absender nach erfolgreicher Annahme durch Partner bewerten kann
+      completedReviews: [], // Archiv der letzten Bewertungen
       activeCraving: null,
       eveningReservation: null,
       cravingMode: 'quick',
@@ -460,15 +460,9 @@
           debug: 1
         });
 
-        this.peer.on('open', (id) => {
-          console.log('Peer verbunden:', id);
-          this.connectData();
-        });
-
         this.peer.on('connection', (conn) => {
           this.dataConn = conn;
           conn.on('data', (data) => this.handleIncomingData(data));
-          conn.on('close', () => { this.dataConn = null; });
         });
 
         this.peer.on('call', (call) => {
@@ -501,42 +495,6 @@
         });
       },
 
-      connectData() {
-        if (this.dataConn && this.dataConn.open) return;
-        const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
-        const partnerId = `cp_pulse_${targetUser}_live`;
-        
-        try {
-          const conn = this.peer.connect(partnerId);
-          if (conn) {
-            conn.on('open', () => {
-              this.dataConn = conn;
-              console.log('Hintergrund-Datenverbindung zu Partner aktiv.');
-            });
-            conn.on('data', (data) => this.handleIncomingData(data));
-            conn.on('close', () => {
-              this.dataConn = null;
-              setTimeout(() => this.connectData(), 4000);
-            });
-          }
-        } catch(e) {}
-      },
-
-      sendData(payload) {
-        if (this.dataConn && this.dataConn.open) {
-          this.dataConn.send(payload);
-        } else {
-          this.connectData();
-          setTimeout(() => {
-            if (this.dataConn && this.dataConn.open) {
-              this.dataConn.send(payload);
-            } else {
-              console.warn('Daten konnten nicht gesendet werden, Partner offline?');
-            }
-          }, 800);
-        }
-      },
-
       async startAsSender() {
         try {
           this.localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.currentFacingMode }, audio: true });
@@ -549,16 +507,14 @@
           const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
           const partnerId = `cp_pulse_${targetUser}_live`;
 
-          this.connectData();
+          this.dataConn = this.peer.connect(partnerId);
           this.primaryCall = this.peer.call(partnerId, this.localStream);
-          if (this.primaryCall) {
-            this.primaryCall.on('stream', (s) => {
-              document.getElementById('pip-container').classList.remove('hidden');
-              document.getElementById('pip-video').srcObject = s;
-              document.getElementById('pip-video').play().catch(e => {});
-            });
-            document.getElementById('stream-status-overlay').classList.add('hidden');
-          }
+          this.primaryCall.on('stream', (s) => {
+            document.getElementById('pip-container').classList.remove('hidden');
+            document.getElementById('pip-video').srcObject = s;
+            document.getElementById('pip-video').play().catch(e => {});
+          });
+          document.getElementById('stream-status-overlay').classList.add('hidden');
         } catch (e) {
           alert('Kamera-Fehler: ' + e.message);
           this.closeOverlay();
@@ -581,16 +537,17 @@
           this.closeOverlay();
         } else if (data.type === 'new_craving') {
           state.activeCraving = data.craving;
+          // Füge es direkt in requestHistory ein beim Empfänger
           state.requestHistory.unshift(data.craving);
           saveState();
           playSensualSound('chime');
         } else if (data.type === 'craving_accepted') {
-          // Der Partner hat meinen Wunsch angenommen -> für den Absender in pendingReviews legen + direktes Banner anzeigen
+          // Der Partner hat einen von UNS gesendeten Wunsch angenommen!
+          // Jetzt wandert er beim ABSENDER in die pendingReviews
           if (data.craving && data.craving.from === state.currentUser) {
-            state.pendingReviews.push({ id: data.craving.id, kinks: data.craving.kinks, from: state.currentUser });
+            state.pendingReviews.push({ id: data.craving.id, kinks: data.craving.kinks });
             saveState();
             playSensualSound('chime');
-            showFeedbackBanner(`🎉 Dein Partner hat deinen Wunsch ("${data.craving.kinks.join(' + ')}") angenommen!`);
           }
         } else if (data.type === 'craving_response') {
           state.activeCraving = null;
@@ -648,15 +605,15 @@
 
       sendReaction(emoji, type) {
         this.showFloatingReaction(emoji);
-        this.sendData({ type: 'reaction', emoji, hapticType: type });
+        if (this.dataConn?.open) this.dataConn.send({ type: 'reaction', emoji, hapticType: type });
       },
       sendRegie(text) {
         this.showFloatingWhisper(`🎬 ${text}`);
-        this.sendData({ type: 'regie', text });
+        if (this.dataConn?.open) this.dataConn.send({ type: 'regie', text });
       },
       sendWhisper(text) {
         this.showFloatingWhisper(`💬 "${text}"`);
-        this.sendData({ type: 'whisper', text });
+        if (this.dataConn?.open) this.dataConn.send({ type: 'whisper', text });
       },
       sendCustomWhisper() {
         const inp = document.getElementById('stream-whisper-input');
@@ -699,7 +656,7 @@
       endStream() {
         if (this.localStream) this.localStream.getTracks().forEach(t => t.stop());
         if (this.viewerStream) this.viewerStream.getTracks().forEach(t => t.stop());
-        this.sendData({ type: 'stream_ended' });
+        if (this.dataConn?.open) this.dataConn.send({ type: 'stream_ended' });
         this.primaryCall?.close(); this.secondaryCall?.close();
         this.closeOverlay();
       }
@@ -735,12 +692,12 @@
     }
 
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v51', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v49', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v51');
+      const saved = localStorage.getItem('couple_pulse_state_v49');
       if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch (e) {} }
       updateUI();
     }
@@ -752,9 +709,10 @@
       const partner = state.currentUser === 'Er' ? 'Sie' : 'Er';
       document.getElementById('partner-needs-title').innerHTML = `<span>🔥</span> Nachholbedarf von ${partner}`;
 
+      // Badge im Header für ausstehende Bewertungen (nur für den Absender relevant)
       const reviewBtn = document.getElementById('header-review-btn');
       const reviewCount = document.getElementById('header-review-count');
-      const pendingCount = (state.pendingReviews || []).filter(r => r.from === state.currentUser).length;
+      const pendingCount = (state.pendingReviews || []).length;
       if (pendingCount > 0) {
         reviewBtn.classList.remove('hidden');
         reviewCount.innerText = pendingCount;
@@ -849,6 +807,7 @@
       }
     }
 
+    // Modal für ausstehende Bewertungen & Archiv
     function openPendingReviewsModal() {
       const modal = document.getElementById('pending-reviews-modal');
       const container = document.getElementById('pending-reviews-container');
@@ -931,6 +890,7 @@
         closePendingReviewsModal();
         alert("✓ Als stattgefunden vermerkt (anderer Fokus).");
       } else {
+        // Ausgefallen -> bleibt unfulfilled im Nachholbedarf
         if (req) req.fulfilled = false;
         saveState();
         closePendingReviewsModal();
@@ -966,7 +926,9 @@
       if (!state.completedReviews) state.completedReviews = [];
       state.completedReviews.unshift({ kinks: kinkName, feedback: feedbackText, timestamp: Date.now() });
 
-      LiveStream.sendData({ type: 'craving_feedback', feedback: finalMsg });
+      if (LiveStream.dataConn && LiveStream.dataConn.open) {
+        LiveStream.dataConn.send({ type: 'craving_feedback', feedback: finalMsg });
+      }
       saveState();
       alert("💖 Feedback an den Partner gesendet & im Archiv gespeichert!");
     }
@@ -1042,6 +1004,7 @@
     }
 
     function sendCraving() {
+      // Spielarten sind optional: Falls keine gewählt, wird ein allgemeiner Intimitäts-Wunsch gesendet
       const kinksToSend = state.selectedKinks.length > 0 ? [...state.selectedKinks] : ['Spontane Nähe & Intimität ✨'];
       
       const newCraving = {
@@ -1059,16 +1022,9 @@
       boostPulse(15); 
       closeCravingModal();
       
-      // 1. Per PeerJS versuchen (falls App offen ist)
-      LiveStream.sendData({ type: 'new_craving', craving: newCraving });
-
-      // 2. NEU: Per Server den diskreten Telegram-Push auslösen (auch wenn App zu ist!)
-      fetch('/api/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sender: state.currentUser })
-      }).catch(err => console.log('Push-Hinweis im Hintergrund:', err));
-
+      if (LiveStream.dataConn?.open) {
+        LiveStream.dataConn.send({ type: 'new_craving', craving: newCraving });
+      }
       alert("✓ Signal an Partner gesendet!");
       saveState();
     }
@@ -1081,18 +1037,19 @@
         playSensualSound('chime');
         alert("❤️ Angenommen! Viel Spaß.");
         
-        if (cravingObj) {
-          LiveStream.sendData({ type: 'craving_accepted', craving: cravingObj });
+        if (LiveStream.dataConn?.open && cravingObj) {
+          // Teilt dem Absender mit, dass angenommen wurde, damit er es bewerten kann
+          LiveStream.dataConn.send({ type: 'craving_accepted', craving: cravingObj });
         }
       } else if (action === 'later') {
         alert("⏳ In 10 Minuten geht es los!");
         state.activeCraving = null;
-        LiveStream.sendData({ type: 'craving_response', action: 'later' });
+        if (LiveStream.dataConn?.open) LiveStream.dataConn.send({ type: 'craving_response', action: 'later' });
       } else if (action === 'evening') {
         state.eveningReservation = { from: state.activeCraving.from, kinks: state.activeCraving.kinks, roleDescription: state.activeCraving.roleDescription, goal: state.activeCraving.goal };
         boostPulse(15); 
         state.activeCraving = null;
-        LiveStream.sendData({ type: 'craving_response', action: 'evening' });
+        if (LiveStream.dataConn?.open) LiveStream.dataConn.send({ type: 'craving_response', action: 'evening' });
       }
       saveState();
     }
