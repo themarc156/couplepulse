@@ -57,16 +57,16 @@
   <!-- ================================================================= -->
   <!-- SMARTPHONE APP CONTAINER -->
   <!-- ================================================================= -->
-  <div class="w-full max-w-md min-h-screen bg-slate-950 md:border-x md:border-slate-800/80 md:shadow-[0_0_60px_-15px_rgba(0,0,0,0.9)] flex flex-col justify-between relative overflow-hidden pb-8">
+  <div class="w-full max-w-md min-h-screen bg-slate-950 md:border-x md:border-slate-800/80 md:shadow-[0_0_60px_-15px_rgba(0,0,0,0.9)] flex flex-col justify-between relative overflow-hidden pb-10">
 
     <!-- TOP BAR -->
     <header class="border-b border-slate-850 sticky top-0 bg-slate-950/95 backdrop-blur z-30">
-      <div class="p-3.5 flex items-center justify-between">
+      <div class="p-4 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="text-xl animate-pulse">✨</span>
           <span class="font-bold tracking-wider text-xs uppercase text-slate-400">CouplePulse</span>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2.5">
           <!-- HEADER ICON FÜR AUSSTEHENDE BEWERTUNGEN & ARCHIV -->
           <button onclick="openPendingReviewsModal()" id="header-review-btn" class="relative p-1.5 bg-slate-900 border border-slate-800 rounded-full text-slate-300 hover:text-white text-xs hidden flex items-center justify-center">
             💌 <span id="header-review-count" class="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
@@ -82,21 +82,21 @@
     </header>
 
     <!-- ================================================================= -->
-    <!-- HAUPTSEITE: HEUTE & JETZT (Optimierter, natürlicher Abstand) -->
+    <!-- HAUPTSEITE: HEUTE & JETZT -->
     <!-- ================================================================= -->
-    <main class="w-full p-4 space-y-4 flex-1 flex flex-col justify-start">
+    <main class="w-full p-4 space-y-4 flex-1 flex flex-col justify-center">
 
       <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK -->
-      <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950 to-purple-950 border border-rose-500/70 rounded-2xl p-3.5 glow-rose space-y-2 animate-pulse">
+      <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950 to-purple-950 border border-rose-500/70 rounded-2xl p-4 glow-rose space-y-2 animate-pulse">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
           <span>💖 Feedback vom Partner</span>
           <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Schließen</button>
         </div>
-        <div id="incoming-feedback-text" class="text-sm font-bold text-slate-100 bg-slate-950/70 p-2.5 rounded-xl border border-rose-800/40"></div>
+        <div id="incoming-feedback-text" class="text-sm font-bold text-slate-100 bg-slate-950/70 p-3 rounded-xl border border-rose-800/40"></div>
       </section>
 
       <!-- LIVE-BANNER: EINGEHENDER LIVE-STREAM VOM PARTNER -->
-      <section id="incoming-stream-banner" class="hidden bg-gradient-to-r from-purple-950 to-pink-950 border border-purple-500/70 rounded-2xl p-4 glow-purple space-y-2 animate-pulse">
+      <section id="incoming-stream-banner" class="hidden bg-gradient-to-r from-purple-950 to-pink-950 border border-purple-500/70 rounded-2xl p-4 glow-purple space-y-2.5 animate-pulse">
         <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
           <span>👁️ Live-Tease gestartet!</span>
           <span class="bg-purple-900/80 px-2 py-0.5 rounded-full text-[10px] border border-purple-500/40">LIVE 🔴</span>
@@ -104,18 +104,18 @@
         <div class="text-xs text-slate-200 bg-slate-950/60 p-2.5 rounded-xl border border-purple-800/40">
           <span id="incoming-stream-sender" class="font-bold text-pink-300">Partner</span> überträgt gerade eine private Peepshow für dich...
         </div>
-        <div class="flex gap-2 pt-1">
-          <button onclick="LiveStream.joinAsViewer()" class="flex-1 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg shadow-purple-950">
+        <div class="flex gap-2">
+          <button onclick="LiveStream.joinAsViewer()" class="flex-1 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg shadow-purple-950">
             👁️ Peepshow öffnen
           </button>
-          <button onclick="LiveStream.declineStream()" class="py-2 px-3 bg-slate-800 text-xs text-slate-400 rounded-xl">
+          <button onclick="LiveStream.declineStream()" class="py-2.5 px-3 bg-slate-800 text-xs text-slate-400 rounded-xl">
             ✕ Später
           </button>
         </div>
       </section>
 
       <!-- LIVE-BANNER: EINGEHENDES GELÜST (MIT FREIRUBBELN-EFFEKT) -->
-      <section id="incoming-craving-banner" class="hidden bg-gradient-to-r from-rose-950 to-pink-950 border border-rose-600/70 rounded-2xl p-4 glow-rose space-y-3 relative overflow-hidden">
+      <section id="incoming-craving-banner" class="hidden bg-gradient-to-r from-rose-950 to-pink-950 border border-rose-600/70 rounded-2xl p-4 glow-rose space-y-2.5 relative overflow-hidden">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
           <span>⚡ Spontanes Signal von Partner</span>
           <span id="incoming-time-badge" class="bg-rose-900/80 px-2 py-0.5 rounded-full text-[10px] border border-rose-500/40">BLITZ ⚡</span>
@@ -123,14 +123,14 @@
         
         <!-- Wrapper mit Rubbel-Canvas darüber -->
         <div id="scratch-wrapper" class="relative rounded-xl overflow-hidden border border-rose-800/40">
-          <!-- Inhalt (versteckt unter dem Rubbel-Los) -->
+          <!-- Inhalt (versteckt unter dem Rubbel-Loss) -->
           <div id="incoming-craving-text" class="text-sm font-semibold text-slate-100 bg-slate-950/90 p-3 leading-relaxed"></div>
           
           <!-- Canvas Overlay zum Rubbeln -->
           <canvas id="scratch-canvas" class="absolute inset-0 w-full h-full cursor-pointer touch-none"></canvas>
         </div>
         
-        <div class="space-y-2 pt-1">
+        <div class="space-y-1.5 pt-1">
           <div class="flex gap-2">
             <button onclick="respondCraving('accepted')" class="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-xs font-bold uppercase rounded-xl transition-all shadow-lg shadow-rose-900/50">
               ❤️ Bin sofort da!
@@ -146,10 +146,10 @@
       </section>
 
       <!-- BANNER: ABEND-RESERVIERUNG -->
-      <section id="evening-reservation-banner" class="hidden bg-gradient-to-r from-slate-900 to-indigo-950 border border-indigo-500/60 rounded-2xl p-3.5 glow-indigo space-y-1.5">
+      <section id="evening-reservation-banner" class="hidden bg-gradient-to-r from-slate-900 to-indigo-950 border border-indigo-500/60 rounded-2xl p-3.5 glow-indigo space-y-2">
         <div class="flex justify-between items-center text-xs font-bold text-indigo-300 uppercase tracking-wider">
           <span class="flex items-center gap-1.5"><span>🌙</span> Für heute Abend reserviert</span>
-          <button onclick="clearEveningReservation()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Erledigt</button>
+          <button onclick="clearEveningReservation()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Erledigt / Löschen</button>
         </div>
         <div id="evening-reservation-text" class="text-xs text-slate-200 bg-slate-950/60 p-2.5 rounded-xl border border-indigo-900/40"></div>
       </section>
@@ -160,11 +160,11 @@
           <span id="partner-needs-title" class="flex items-center gap-1.5"><span>🔥</span> Nachholbedarf von Partner</span>
           <span class="text-[9px] bg-amber-950 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-800/50">Offen</span>
         </div>
-        <div id="stats-unfulfilled-list" class="space-y-2 text-xs pt-0.5"></div>
+        <div id="stats-unfulfilled-list" class="space-y-2 text-xs pt-1"></div>
       </section>
 
       <!-- HAUPT-AKTIONEN -->
-      <div class="space-y-2.5 pt-2 mt-auto">
+      <div class="space-y-2.5 pt-2">
         <button onclick="openCravingModal()" class="w-full py-4 bg-gradient-to-r from-amber-600 via-rose-600 to-pink-600 text-xs uppercase font-bold tracking-wider rounded-xl shadow-lg shadow-rose-900/30 active:scale-98 transition-all flex items-center justify-center gap-2 glow-rose">
           <span>🔥</span> <span>Spontanen Wunsch senden</span>
         </button>
@@ -180,14 +180,14 @@
     <!-- MODAL: AUSSTEHENDE BEWERTUNGEN & HIGHLIGHT-ARCHIV -->
     <!-- ================================================================= -->
     <div id="pending-reviews-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
           <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
             <span>💌</span> Deine Erlebnisse & Bewertungen
           </h3>
           <button onclick="closePendingReviewsModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">×</button>
         </div>
-        <div id="pending-reviews-container" class="space-y-2.5 max-h-[60vh] overflow-y-auto text-xs">
+        <div id="pending-reviews-container" class="space-y-3 max-h-[60vh] overflow-y-auto text-xs">
           <!-- Dynamisch befüllt -->
         </div>
       </div>
@@ -197,32 +197,32 @@
     <!-- MODAL: NACHBEREITUNGS-FEEDBACK & BEWERTUNG -->
     <!-- ================================================================= -->
     <div id="feedback-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl text-center">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl text-center">
         <h3 class="font-bold text-base text-slate-100 flex items-center justify-center gap-2">
           <span>💖</span> Wie war der Moment für dich?
         </h3>
         <p class="text-xs text-slate-400">Gib deinem Partner eine Rückmeldung!</p>
         
-        <div class="grid grid-cols-3 gap-2 pt-1">
-          <button onclick="submitFeedback('🌋 Unfassbar gut! (10/10)')" class="p-2.5 bg-slate-950 border border-slate-800 hover:border-rose-500 rounded-2xl text-xs font-semibold text-rose-300 transition-all flex flex-col items-center gap-1">
-            <span class="text-lg">🌋</span>
+        <div class="grid grid-cols-3 gap-2 pt-2">
+          <button onclick="submitFeedback('🌋 Unfassbar gut! (10/10)')" class="p-3 bg-slate-950 border border-slate-800 hover:border-rose-500 rounded-2xl text-xs font-semibold text-rose-300 transition-all flex flex-col items-center gap-1">
+            <span class="text-xl">🌋</span>
             <span>10/10</span>
           </button>
-          <button onclick="submitFeedback('🔥 Richtig heiß!')" class="p-2.5 bg-slate-950 border border-slate-800 hover:border-amber-500 rounded-2xl text-xs font-semibold text-amber-300 transition-all flex flex-col items-center gap-1">
-            <span class="text-lg">🔥</span>
+          <button onclick="submitFeedback('🔥 Richtig heiß!')" class="p-3 bg-slate-950 border border-slate-800 hover:border-amber-500 rounded-2xl text-xs font-semibold text-amber-300 transition-all flex flex-col items-center gap-1">
+            <span class="text-xl">🔥</span>
             <span>Heiß</span>
           </button>
-          <button onclick="submitFeedback('✨ Schön & intensiv')" class="p-2.5 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-2xl text-xs font-semibold text-indigo-300 transition-all flex flex-col items-center gap-1">
-            <span class="text-lg">✨</span>
+          <button onclick="submitFeedback('✨ Schön & intensiv')" class="p-3 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-2xl text-xs font-semibold text-indigo-300 transition-all flex flex-col items-center gap-1">
+            <span class="text-xl">✨</span>
             <span>Schön</span>
           </button>
         </div>
 
-        <div class="pt-1">
+        <div class="pt-2">
           <input id="feedback-custom-text" type="text" placeholder="Kurzes Kompliment (optional)..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
         </div>
 
-        <button onclick="submitCustomFeedback()" class="w-full py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-rose-900/40">
+        <button onclick="submitCustomFeedback()" class="w-full py-3 bg-gradient-to-r from-rose-600 to-pink-600 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-rose-900/40">
           Abschicken ✨
         </button>
       </div>
@@ -303,10 +303,10 @@
       </div>
     </div>
 
-    <!-- MODAL: SPONTAN-WUNSCH (KOMPAKT & OPTIMIERT) -->
+    <!-- MODAL: SPONTAN-WUNSCH (SPIELARTEN OPTIONAL) -->
     <div id="craving-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end justify-center p-0">
-      <div class="bg-slate-900 border-t border-slate-800 w-full rounded-t-3xl p-4 space-y-3 max-h-[85vh] overflow-y-auto shadow-2xl">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+      <div class="bg-slate-900 border-t border-slate-800 w-full rounded-t-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
           <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
             <span>🔥</span> Worauf hast du gerade Lust?
           </h3>
@@ -316,57 +316,62 @@
         <div class="space-y-1">
           <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">1. Zeitfenster</label>
           <div class="grid grid-cols-2 gap-2 text-xs">
-            <button id="mode-btn-quick" onclick="setCravingMode('quick')" class="py-2 px-2.5 rounded-xl border border-rose-600 bg-rose-950/50 text-rose-300 font-bold">
+            <button id="mode-btn-quick" onclick="setCravingMode('quick')">
               ⚡ Kurzer Blitz (&lt; 10 Min)
+              <div class="text-[10px] font-normal text-slate-400">Kinder kurz beschäftigt</div>
             </button>
-            <button id="mode-btn-session" onclick="setCravingMode('session')" class="py-2 px-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-bold">
+            <button id="mode-btn-session" onclick="setCravingMode('session')">
               🕯️ Ausführlich / Ruhe
+              <div class="text-[10px] font-normal text-slate-400">Kinder schlafen / weg</div>
             </button>
           </div>
         </div>
 
-        <div class="space-y-1 text-xs">
+        <div class="space-y-1.5 pt-1 text-xs">
           <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">2. Deine Rolle</label>
           <div class="grid grid-cols-3 gap-1.5">
-            <button id="role-btn-passiv" onclick="setRole('passiv')" class="py-2 px-1 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-medium text-[11px]">🧘 Verwöhne mich</button>
-            <button id="role-btn-aktiv" onclick="setRole('aktiv')" class="py-2 px-1 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-medium text-[11px]">👑 Ich verwöhne</button>
-            <button id="role-btn-beide" onclick="setRole('beide')" class="py-2 px-1 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-medium text-[11px]">💋 Beide</button>
+            <button id="role-btn-passiv" onclick="setRole('passiv')">🧘 Verwöhne mich</button>
+            <button id="role-btn-aktiv" onclick="setRole('aktiv')">👑 Ich verwöhne</button>
+            <button id="role-btn-beide" onclick="setRole('beide')"></button>
           </div>
         </div>
 
-        <div class="space-y-1">
+        <div class="space-y-1.5 pt-1">
           <div class="flex justify-between items-center">
             <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">3. Spielart (Optional)</label>
+            <span class="text-[10px] text-slate-500 italic">Kann auch leer bleiben</span>
           </div>
-          <div id="kink-chip-container" class="flex flex-wrap gap-1 text-xs max-h-28 overflow-y-auto pr-1"></div>
+          <div id="kink-chip-container" class="flex flex-wrap gap-1.5 text-xs"></div>
 
-          <div>
+          <div class="pt-2">
             <div id="add-chip-btn-box">
-              <button onclick="showAddChipInput()" class="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold pt-1">
+              <button onclick="showAddChipInput()" class="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold">
                 <span>➕</span> <span>Eigener Wunsch-Chip</span>
               </button>
             </div>
             <div id="add-chip-input-box" class="hidden flex gap-1.5 pt-1">
-              <input id="new-chip-text" type="text" placeholder="z. B. Massage ✨" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+              <input id="new-chip-text" type="text" placeholder="z. B. Massage mit Mandelöl ✨" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
               <button onclick="saveCustomChip()" class="px-3 py-1.5 bg-amber-600 text-slate-950 font-bold text-xs rounded-xl">Speichern</button>
               <button onclick="hideAddChipInput()" class="px-2 py-1.5 text-slate-500 text-xs">✕</button>
             </div>
           </div>
         </div>
 
-        <div id="goal-container" class="space-y-1 text-xs">
+        <div id="goal-container" class="space-y-1.5 pt-1 text-xs">
           <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">4. Ziel des Moments</label>
           <div class="grid grid-cols-2 gap-2">
-            <button id="goal-btn-1" onclick="selectGoalIndex(0)" class="p-2 rounded-xl border border-rose-600 bg-rose-950/40 text-left">
-              <div id="goal-title-1" class="font-bold text-[11px] text-rose-200">🎯 Dringend kommen!</div>
+            <button id="goal-btn-1" onclick="selectGoalIndex(0)">
+              <div id="goal-title-1" class="font-bold text-[11px]">🎯 Dringend kommen!</div>
+              <div id="goal-sub-1" class="text-[9px] font-normal opacity-80">Fokus: Schneller Orgasmus</div>
             </button>
-            <button id="goal-btn-2" onclick="selectGoalIndex(1)" class="p-2 rounded-xl border border-slate-800 bg-slate-950 text-left">
-              <div id="goal-title-2" class="font-bold text-[11px] text-slate-300">🌊 Nur Kribbeln & Nähe</div>
+            <button id="goal-btn-2" onclick="selectGoalIndex(1)">
+              <div id="goal-title-2" class="font-bold text-[11px]">🌊 Nur Kribbeln & Nähe</div>
+              <div id="goal-sub-2" class="text-[9px] font-normal opacity-80">Ohne Druck & Open-End</div>
             </button>
           </div>
         </div>
 
-        <button onclick="sendCraving()" class="w-full py-3 bg-gradient-to-r from-rose-600 to-pink-600 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-rose-900/40 active:scale-98 transition-all mt-1">
+        <button onclick="sendCraving()" class="w-full py-3.5 bg-gradient-to-r from-rose-600 to-pink-600 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-rose-900/40 active:scale-98 transition-all">
           🔥 Signal jetzt senden
         </button>
       </div>
@@ -486,6 +491,7 @@
           if (conn) {
             conn.on('open', () => {
               this.dataConn = conn;
+              console.log('Hintergrund-Datenverbindung zu Partner aktiv.');
             });
             conn.on('data', (data) => this.handleIncomingData(data));
             conn.on('close', () => {
@@ -504,6 +510,8 @@
           setTimeout(() => {
             if (this.dataConn && this.dataConn.open) {
               this.dataConn.send(payload);
+            } else {
+              console.warn('Daten konnten nicht gesendet werden, Partner offline?');
             }
           }, 800);
         }
@@ -733,6 +741,7 @@
           <div class="text-slate-300 text-xs mt-1">Dynamik: ${state.activeCraving.roleDescription}</div>
           <div class="text-amber-300 font-bold text-xs mt-1 bg-amber-950/40 p-1.5 rounded-lg border border-amber-800/40">🎯 ZIEL: ${state.activeCraving.goal}</div>
         `;
+        // Rubbel-Canvas initialisieren
         setTimeout(() => initScratchCanvas('scratch-wrapper', 'scratch-canvas'), 100);
       } else { banner.classList.add('hidden'); }
 
@@ -748,6 +757,7 @@
       renderPartnerUnfulfilledCard();
     }
 
+    // Rubbel-Canvas Effekt für eingehende Wünsche
     function initScratchCanvas(wrapperId, canvasId) {
       const wrapper = document.getElementById(wrapperId);
       const canvas = document.getElementById(canvasId);
@@ -757,7 +767,8 @@
       canvas.width = wrapper.offsetWidth || 320;
       canvas.height = wrapper.offsetHeight || 100;
 
-      ctx.fillStyle = '#881337';
+      // Rubbel-Deckschicht zeichnen
+      ctx.fillStyle = '#881337'; // brand-900 / rose tone
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       ctx.fillStyle = '#fda4af';
@@ -792,7 +803,7 @@
         for (let i = 3; i < pixels.length; i += 32) {
           if (pixels[i] === 0) cleared++;
         }
-        if (cleared > (pixels.length / 32) * 0.35) {
+        if (cleared > (pixels.length / 32) * 0.35) { // ab 35% freier Fläche komplett aufdecken
           canvas.style.transition = 'opacity 0.4s ease';
           canvas.style.opacity = '0';
           setTimeout(() => canvas.classList.add('hidden'), 400);
@@ -822,6 +833,7 @@
       renderPartnerUnfulfilledCard();
     }
 
+    // Bündelung & Dringlichkeits-Skala für den Nachholbedarf
     function renderPartnerUnfulfilledCard() {
       const container = document.getElementById('stats-unfulfilled-list');
       if (!container) return;
@@ -835,6 +847,7 @@
         return;
       }
 
+      // Wünsche bündeln (Deduplizierung) und Zählen
       const kinkCounts = {};
       partnerUnfulfilled.forEach(item => {
         (item.kinks || []).forEach(kink => {
@@ -862,6 +875,7 @@
         zapBtnHtml = `<button onclick="nextUnfulfilled()" class="text-[10px] bg-amber-900/60 hover:bg-amber-800 text-amber-200 px-2.5 py-1 rounded-lg border border-amber-700/50 flex items-center gap-1 font-bold">⚡ Zap (${currentUnfulfilledIndex + 1}/${uniqueKinks.length})</button>`;
       }
 
+      // Dringlichkeits-Badge basierend auf der Häufigkeit
       let urgencyBadge = `<span class="text-[10px] bg-amber-950 text-amber-300 px-2 py-0.5 rounded-full border border-amber-800/60 font-bold">${currentEntry.count}x offen 🔥</span>`;
 
       container.innerHTML = `
@@ -1050,7 +1064,7 @@
         const isSelected = state.selectedKinks.includes(kink);
         const btn = document.createElement('button');
         btn.innerText = kink;
-        btn.className = isSelected ? 'px-2.5 py-1.5 rounded-lg bg-rose-600 text-white font-semibold border border-rose-400' : 'px-2.5 py-1.5 rounded-lg bg-slate-950 text-slate-300 border border-slate-800';
+        btn.className = isSelected ? 'px-3 py-1.5 rounded-lg bg-rose-600 text-white font-semibold border border-rose-400' : 'px-3 py-1.5 rounded-lg bg-slate-950 text-slate-300 border border-slate-800';
         btn.onclick = () => {
           if (isSelected) state.selectedKinks = state.selectedKinks.filter(k => k !== kink);
           else { if (state.selectedKinks.length >= 2) state.selectedKinks.shift(); state.selectedKinks.push(kink); }
@@ -1062,17 +1076,16 @@
 
     function updateModalUI() {
       const isQuick = state.cravingMode === 'quick';
-      document.getElementById('mode-btn-quick').className = isQuick ? 'py-2 px-2.5 rounded-xl border border-rose-600 bg-rose-950/50 text-rose-300 font-bold text-xs' : 'py-2 px-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-bold text-xs';
-      document.getElementById('mode-btn-session').className = !isQuick ? 'py-2 px-2.5 rounded-xl border border-rose-600 bg-rose-950/50 text-rose-300 font-bold text-xs' : 'py-2 px-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-bold text-xs';
+      document.getElementById('mode-btn-quick').className = isQuick ? 'py-2 px-3 rounded-xl border border-rose-600 bg-rose-950/50 text-rose-300 font-bold text-xs' : 'py-2 px-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-bold text-xs';
+      document.getElementById('mode-btn-session').className = !isQuick ? 'py-2 px-3 rounded-xl border border-rose-600 bg-rose-950/50 text-rose-300 font-bold text-xs' : 'py-2 px-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-bold text-xs';
+      document.getElementById('role-btn-beide').innerText = isQuick ? '💋 Knutschen' : '⚖️ Beide aktiv';
 
       ['passiv', 'aktiv', 'beide'].forEach(r => {
-        document.getElementById(`role-btn-${r}`).className = state.selectedRole === r ? 'py-2 px-1 rounded-xl border border-rose-600 bg-rose-950/60 text-rose-300 font-bold text-[11px]' : 'py-2 px-1 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-medium text-[11px]';
+        document.getElementById(`role-btn-${r}`).className = state.selectedRole === r ? 'py-2.5 px-2 rounded-xl border border-rose-600 bg-rose-950/60 text-rose-300 font-bold text-[11px]' : 'py-2.5 px-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-medium text-[11px]';
       });
 
-      document.getElementById('goal-btn-1').className = state.selectedGoalIndex === 0 ? 'p-2 rounded-xl border border-rose-600 bg-rose-950/40 text-left' : 'p-2 rounded-xl border border-slate-800 bg-slate-950 text-left';
-      document.getElementById('goal-btn-2').className = state.selectedGoalIndex === 1 ? 'p-2 rounded-xl border border-rose-600 bg-rose-950/40 text-left' : 'p-2 rounded-xl border border-slate-800 bg-slate-950 text-left';
-      document.getElementById('goal-title-1').className = state.selectedGoalIndex === 0 ? 'font-bold text-[11px] text-rose-200' : 'font-bold text-[11px] text-slate-300';
-      document.getElementById('goal-title-2').className = state.selectedGoalIndex === 1 ? 'font-bold text-[11px] text-rose-200' : 'font-bold text-[11px] text-slate-300';
+      document.getElementById('goal-btn-1').className = state.selectedGoalIndex === 0 ? 'p-2.5 rounded-xl border border-rose-600 bg-rose-950/40 text-left' : 'p-2.5 rounded-xl border border-slate-800 bg-slate-950 text-left';
+      document.getElementById('goal-btn-2').className = state.selectedGoalIndex === 1 ? 'p-2.5 rounded-xl border border-rose-600 bg-rose-950/40 text-left' : 'p-2.5 rounded-xl border border-slate-800 bg-slate-950 text-left';
 
       renderChips();
     }
@@ -1104,6 +1117,7 @@
       
       LiveStream.sendData({ type: 'new_craving', craving: newCraving });
 
+      // Telegram Push auslösen
       fetch('/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
