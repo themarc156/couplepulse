@@ -484,7 +484,7 @@
     };
 
     // =========================================================================
-    // UPGRADED LIVE-STREAM ENGINE (STABILISIERTER AUTOPLAY & ROLLENWECHSEL)
+    // UPGRADED LIVE-STREAM ENGINE (2-WEGE WEBRTC, VIBRATION & WHISPER)
     // =========================================================================
     const LiveStream = {
       peer: null,
@@ -499,11 +499,9 @@
       audioMuted: true,
 
       initPeer() {
-        // Vorherige Instanzen sauber zerstören, damit keine ID-Kollisionen entstehen
-        if (this.peer && !this.peer.destroyed) {
-          try { this.peer.destroy(); } catch (e) {}
-        }
+        if (this.peer && !this.peer.destroyed) this.peer.destroy();
         
+        // Dynamische PeerJS-ID anhand des gewählten Benutzers (er oder sie)
         const myId = `cp_pulse_${state.currentUser.toLowerCase()}_live`;
         
         this.peer = new Peer(myId, {
@@ -530,7 +528,7 @@
         });
 
         this.peer.on('open', (id) => {
-          console.log('PeerJS erfolgreich verbunden mit ID:', id);
+          console.log('Eigene PeerJS ID erfolgreich registriert:', id);
         });
 
         this.peer.on('connection', (conn) => {
@@ -561,17 +559,8 @@
             const rVideo = document.getElementById('remote-video');
             if (rVideo.srcObject !== remoteStream) {
               rVideo.srcObject = remoteStream;
-              rVideo.muted = this.audioMuted;
-              
-              // Robuster Autoplay-Fix gegen graues Bild / AbortError
-              const playPromise = rVideo.play();
-              if (playPromise !== undefined) {
-                playPromise.then(() => {
-                  console.log('Remote-Video erfolgreich gestartet.');
-                }).catch(error => {
-                  console.log('Autoplay blockiert, versuche erneut bei Nutzer-Interaktion...', error);
-                });
-              }
+              rVideo.muted = true;
+              rVideo.play().catch(e => console.log('Autoplay Error:', e));
             }
             document.getElementById('stream-status-overlay').classList.add('hidden');
             playSensualSound('chime');
@@ -583,7 +572,7 @@
         this.peer.on('error', (err) => {
           console.error('PeerJS Fehler:', err);
           if (err.type === 'unavailable-id') {
-            console.log('ID noch blockiert, neuer Versuch in 2s...');
+            console.log('ID ist bereits vergeben, reconnect in 2 Sek...');
             setTimeout(() => this.initPeer(), 2000);
           }
         });
@@ -601,7 +590,7 @@
 
           const lVideo = document.getElementById('local-video');
           lVideo.srcObject = this.localStream;
-          lVideo.play().catch(e => console.log('Local video play error:', e));
+          lVideo.play();
           document.getElementById('stream-status-text').innerText = 'Warte darauf, dass Partner reinschaut...';
 
           const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
