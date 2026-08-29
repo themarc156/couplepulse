@@ -115,7 +115,7 @@
       <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK -->
       <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950 to-purple-950 border border-rose-500/70 rounded-2xl p-4 glow-rose space-y-2 animate-pulse">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
-          <span>💖 Feedback vom Partner</span>
+          <span>💖 Rückmeldung vom Partner</span>
           <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Schließen</button>
         </div>
         <div id="incoming-feedback-text" class="text-sm font-bold text-slate-100 bg-slate-950/70 p-3 rounded-xl border border-rose-800/40"></div>
@@ -585,10 +585,12 @@
           saveState();
           playSensualSound('chime');
         } else if (data.type === 'craving_accepted') {
+          // Der Partner hat meinen Wunsch angenommen -> für den Absender in pendingReviews legen + direktes Banner anzeigen
           if (data.craving && data.craving.from === state.currentUser) {
-            state.pendingReviews.push({ id: data.craving.id, kinks: data.craving.kinks });
+            state.pendingReviews.push({ id: data.craving.id, kinks: data.craving.kinks, from: state.currentUser });
             saveState();
             playSensualSound('chime');
+            showFeedbackBanner(`🎉 Dein Partner hat deinen Wunsch ("${data.craving.kinks.join(' + ')}") angenommen!`);
           }
         } else if (data.type === 'craving_response') {
           state.activeCraving = null;
@@ -733,12 +735,12 @@
     }
 
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v50', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v51', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v50');
+      const saved = localStorage.getItem('couple_pulse_state_v51');
       if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch (e) {} }
       updateUI();
     }
