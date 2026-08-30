@@ -185,7 +185,7 @@
     </main>
 
     <!-- ================================================================= -->
-    <!-- MODAL: KOPFKINO (3-SÄULEN ARCHITEKTUR & SWIPE KARTEN) -->
+    <!-- MODAL: KOPFKINO (DECK-BUILDING & ZUFÄLLIGE KARTEN-RUNDE) -->
     <!-- ================================================================= -->
     <div id="kopfkino-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl glow-purple max-h-[85vh] overflow-y-auto">
@@ -197,33 +197,34 @@
         </div>
         
         <div id="kopfkino-content-area">
-          <!-- Dynamischer Inhalt (Deck-Setup oder Swipe-Karten) -->
+          <!-- Dynamischer Inhalt (Setup oder Swipe-Karten) -->
         </div>
       </div>
     </div>
 
-    <!-- MODAL: EIGENE PRAKTIK ODER TOY HINZUFÜGEN -->
+    <!-- MODAL: EIGENE KOPFKINO-KARTE ERSTELLEN (MIT EINZELNEN EINGABEFELDERN) -->
     <div id="kopfkino-create-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
-          <h3 class="font-bold text-sm text-purple-200">➕ Neue Kopfkino-Praktik</h3>
+          <h3 id="create-modal-title" class="font-bold text-sm text-purple-200">➕ Eigene Kopfkino-Karte</h3>
           <button onclick="closeKopfkinoCreateModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">×</button>
         </div>
         <div class="space-y-3 text-xs">
           <div>
-            <label class="font-bold text-slate-400 uppercase tracking-wider block pb-1">Titel der Praktik</label>
-            <input id="custom-practice-title" type="text" placeholder="z. B. Sinnesentzug & Massage ✨" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500">
+            <label class="font-bold text-slate-400 uppercase tracking-wider block pb-1">Thema / Titel</label>
+            <input id="custom-kink-title" type="text" placeholder="z. B. Massage im Wohnzimmer ✨" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500">
           </div>
           <div>
-            <label class="font-bold text-slate-400 uppercase tracking-wider block pb-1">Aktive Unter-Optionen (kommagetrennt)</label>
-            <input id="custom-practice-active" type="text" placeholder="z. B. Verwöhnen, Führen" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500">
+            <label class="font-bold text-slate-400 uppercase tracking-wider block pb-1">Antwortmöglichkeiten</label>
+            <div id="custom-options-list" class="space-y-2">
+              <input type="text" class="custom-option-input w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500" value="🔗 Aktiv">
+              <input type="text" class="custom-option-input w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500" value="⛓️ Passiv">
+              <input type="text" class="custom-option-input w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500" value="❌ Heute nicht">
+            </div>
+            <button onclick="addCustomOptionField()" class="text-[11px] text-purple-400 font-semibold pt-2 block">+ Weitere Antwortmöglichkeit</button>
           </div>
-          <div>
-            <label class="font-bold text-slate-400 uppercase tracking-wider block pb-1">Passive Unter-Optionen (kommagetrennt)</label>
-            <input id="custom-practice-passive" type="text" placeholder="z. B. Genießen, Fallenlassen" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500">
-          </div>
-          <button onclick="saveCustomPractice()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold uppercase tracking-wider rounded-xl shadow">
-            Praktik speichern 🚀
+          <button onclick="saveCustomKopfkinoCard()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold uppercase tracking-wider rounded-xl shadow">
+            Speichern 🚀
           </button>
         </div>
       </div>
@@ -435,61 +436,48 @@
       ],
       pendingReviews: [],
       completedReviews: [],
-      kopfkinoDeck: ['bondage', 'spanking', 'oral', 'toys', 'control'],
       kopfkinoAnswers: { Er: {}, Sie: {} },
-      customKopfkinoPractices: [],
+      kopfkinoDeck: ['bondage', 'spanking', 'oral', 'toys', 'control'],
       activeCraving: null,
       eveningReservation: null,
       cravingMode: 'quick',
       selectedRole: 'passiv',
       selectedKinks: [],
       selectedGoalIndex: 0,
+      customKopfkinoCards: [],
       customChips: []
     };
 
     let currentUnfulfilledIndex = 0;
     let activeReviewItem = null;
     let currentKopfkinoCardIndex = 0;
+    let editingCardId = null;
 
-    // DIE 3 SÄULEN DER KOPFKINO-KARTEN
     const defaultKopfkinoCards = [
       { 
         id: 'bondage', 
-        type: 'practice',
-        title: 'Fesseln & Fixieren', 
-        activeOptions: ['Hände / Handgelenke fixieren 🔗', 'Ganzkörper-Bondage ⛓️', 'Augenbinde anlegen 🕶️'],
-        passiveOptions: ['Lustvoll gefesselt werden 🧘', 'Mit Augenbinde ausgeliefert 🕶️', 'Vollkommen bewegungsunfähig 🛏️']
+        title: 'Fesseln & Fixieren (Bondage)', 
+        options: ['🔗 Aktiv (Fesseln)', '⛓️ Passiv (Gefesselt werden)', '🤝 Egal / Beides', '❌ Heute nicht'] 
       },
       { 
         id: 'spanking', 
-        type: 'practice',
-        title: 'Spanking & Klapse', 
-        activeOptions: ['Mit flacher Hand zuschlagen 👋', 'Mit Hilfsmittel (Paddle / Gürtel) 💥', 'Leichte, rhythmische Klapse ✨'],
-        passiveOptions: ['Über den Knien einstecken 🍑', 'Im Stehen an die Wand gedrückt 🧱', 'Roter Hintern / Intensiv 🔥']
+        title: 'Spanking & Klapse (Impact)', 
+        options: ['👋 Aktiv (Austeilen)', '🍑 Passiv (Einstecken)', '🤝 Egal / Beides', '❌ Heute nicht'] 
       },
       { 
         id: 'oral', 
-        type: 'practice',
         title: 'Oraler Sex', 
-        activeOptions: ['Ausgiebige Zungenarbeit 👅', 'Tiefes, intensives Saugen 💋', 'Vorbereiten & heiß machen ✨'],
-        passiveOptions: ['Nur hinlegen & verwöhnen lassen 🧘', 'Bis zum absoluten Orgasmus 🎯', 'Gegenseitig (69er) 🔥']
+        options: ['👅 Aktiv (Geben)', '💋 Passiv (Nehmen)', '🔥 Gegenseitig (69)', '❌ Heute nicht'] 
       },
       { 
         id: 'toys', 
-        type: 'toys',
-        title: 'Toy-Kiste & Hilfsmittel', 
-        toyList: ['Augenbinde 🕶️', 'Vibrator / Wand 🔌', 'Massage- & Mandelöl ✨', 'Handschellen ⛓️', 'Butt Plug 🍑', 'Feder / Kitzel-Tool 🪶', 'Peitsche / Paddle 👋']
+        title: 'Toys & Hilfsmittel', 
+        options: ['🔌 Mit Toy-Einsatz', '✨ Pure Haut-zu-Haut-Nähe', '🤝 Egal / Beides', '❌ Heute nicht'] 
       },
       { 
         id: 'control', 
-        type: 'control',
         title: 'Führung & Kontrolle', 
-        options: [
-          '👑 Ich übernehme heute die Führung / Kontrolle',
-          '🧘 Ich lasse mich fallen & kontrollieren',
-          '💫 Wechselnd / Spontan / Ausgeglichen',
-          '❌ Heute neutral / Egal'
-        ]
+        options: ['👑 Ich führe heute', '🧘 Ich lasse mich fallen', '🤝 Spontan / Wechseln', '❌ Heute nicht'] 
       }
     ];
 
@@ -672,7 +660,7 @@
           const partnerName = state.currentUser === 'Er' ? 'Sie' : 'Er';
           state.kopfkinoAnswers[partnerName] = data.answers;
           saveState();
-          showFeedbackBanner(`🧠 Dein Partner hat das Kopfkino-Deck aktualisiert!`);
+          showFeedbackBanner(`🧠 Dein Partner hat das Kopfkino-Deck aktualisiert! Öffne es, um eure Übereinstimmungen zu sehen.`);
           playSensualSound('chime');
         }
       },
@@ -799,12 +787,12 @@
     }
 
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v80', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v68', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v80');
+      const saved = localStorage.getItem('couple_pulse_state_v68');
       if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch (e) {} }
       updateUI();
     }
@@ -939,11 +927,11 @@
     }
 
     // =========================================================================
-    // KOPFKINO 3-SÄULEN ENGINE (PRAKTIKEN, TOYS, FÜHRUNG)
+    // KOPFKINO & DECK-BUILDING LOGIK
     // =========================================================================
-    function getAllKopfkinoCards() {
+    function getAllAvailableCards() {
       const defaults = defaultKopfkinoCards;
-      const custom = state.customKopfkinoPractices || [];
+      const custom = state.customKopfkinoCards || [];
       return [...defaults, ...custom];
     }
 
@@ -961,25 +949,27 @@
 
     function renderKopfkinoSetup() {
       const container = document.getElementById('kopfkino-content-area');
-      const allCards = getAllKopfkinoCards();
+      const allCards = getAllAvailableCards();
       const activeDeck = state.kopfkinoDeck || [];
 
       let cardsHtml = allCards.map(c => {
         const isInDeck = activeDeck.includes(c.id);
         const isCustom = c.id.startsWith('custom_');
-        let deleteBtn = isCustom ? `<button onclick="event.stopPropagation(); deleteCustomPractice('${c.id}')" class="p-1 bg-slate-900 text-rose-400 rounded text-[10px]">🗑️</button>` : '';
-
-        let badgeType = c.type === 'practice' ? '⚡ Praktik' : (c.type === 'toys' ? '🔌 Toy-Box' : '👑 Führung');
-
+        let actionButtons = '';
+        if (isCustom) {
+          actionButtons = `
+            <div class="flex items-center gap-1.5">
+              <button onclick="event.stopPropagation(); openKopfkinoCreateModal('${c.id}')" class="p-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded text-[10px]">✏️</button>
+              <button onclick="event.stopPropagation(); deleteCustomKopfkinoCard('${c.id}')" class="p-1 bg-slate-900 hover:bg-slate-800 text-rose-400 rounded text-[10px]">🗑️</button>
+            </div>
+          `;
+        }
         return `
           <div onclick="toggleCardInDeck('${c.id}')" class="p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${isInDeck ? 'bg-purple-950/60 border-purple-500 text-purple-200 font-semibold' : 'bg-slate-950 border-slate-850 text-slate-400'}">
-            <div class="truncate max-w-[190px]">
-              <span class="text-[9px] text-purple-400/80 uppercase block font-bold">${badgeType}</span>
-              <span class="text-xs font-bold text-slate-200">${c.title}</span>
-            </div>
+            <span class="text-xs truncate max-w-[170px]">🔥 ${c.title}</span>
             <div class="flex items-center gap-2">
-              <span class="text-[10px]">${isInDeck ? '✅ Im Spiel' : '➕ Auswählen'}</span>
-              ${deleteBtn}
+              <span class="text-[10px]">${isInDeck ? '✅ Aktiv' : '➕ Hinzufügen'}</span>
+              ${actionButtons}
             </div>
           </div>
         `;
@@ -991,8 +981,8 @@
           <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
             ${cardsHtml}
           </div>
-          <button onclick="openKopfkinoCreateModal()" class="w-full py-2 bg-slate-900 border border-slate-800 text-purple-300 text-xs font-semibold rounded-xl hover:bg-slate-850">
-            ➕ Eigene Praktik hinzufügen
+          <button onclick="openKopfkinoCreateModal()" class="w-full py-2 bg-slate-900 border border-slate-800 text-purple-300 text-xs font-semibold rounded-xl">
+            ➕ Eigene Kopfkino-Karte erstellen
           </button>
           <button onclick="startKopfkinoSwipeSession()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
             Karten-Runde starten 🚀
@@ -1016,7 +1006,27 @@
       renderKopfkinoSetup();
     }
 
-    function openKopfkinoCreateModal() {
+    function openKopfkinoCreateModal(cardId = null) {
+      editingCardId = cardId;
+      const titleInput = document.getElementById('custom-kink-title');
+      const listContainer = document.getElementById('custom-options-list');
+      const modalTitle = document.getElementById('create-modal-title');
+      listContainer.innerHTML = '';
+
+      if (cardId) {
+        const card = (state.customKopfkinoCards || []).find(c => c.id === cardId);
+        if (card) {
+          titleInput.value = card.title;
+          modalTitle.innerText = '✏️ Kopfkino-Karte bearbeiten';
+          (card.options || []).forEach(opt => addCustomOptionField(opt));
+        }
+      } else {
+        titleInput.value = '';
+        modalTitle.innerText = '➕ Eigene Kopfkino-Karte';
+        addCustomOptionField('🔗 Aktiv');
+        addCustomOptionField('⛓️ Passiv');
+        addCustomOptionField('❌ Heute nicht');
+      }
       document.getElementById('kopfkino-create-modal').classList.remove('hidden');
     }
 
@@ -1024,36 +1034,48 @@
       document.getElementById('kopfkino-create-modal').classList.add('hidden');
     }
 
-    function saveCustomPractice() {
-      const title = document.getElementById('custom-practice-title').value.trim();
-      const activeRaw = document.getElementById('custom-practice-active').value.trim();
-      const passiveRaw = document.getElementById('custom-practice-passive').value.trim();
+    function addCustomOptionField(value = '') {
+      const list = document.getElementById('custom-options-list');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'custom-option-input w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500';
+      input.value = value;
+      input.placeholder = 'Antwortmöglichkeit...';
+      list.appendChild(input);
+    }
 
-      if (!title) { alert("Bitte Titel der Praktik eingeben."); return; }
+    function saveCustomKopfkinoCard() {
+      const title = document.getElementById('custom-kink-title').value.trim();
+      const inputs = document.querySelectorAll('.custom-option-input');
+      const options = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
 
-      const activeOptions = activeRaw ? activeRaw.split(',').map(o => o.trim()).filter(Boolean) : ['Aktiv durchführen 🔗'];
-      const passiveOptions = passiveRaw ? passiveRaw.split(',').map(o => o.trim()).filter(Boolean) : ['Passiv genießen 🧘'];
+      if (!title) { alert("Bitte Titel eingeben."); return; }
+      if (options.length === 0) { alert("Bitte mindestens eine Antwortmöglichkeit angeben."); return; }
 
-      const id = 'custom_' + Date.now();
-      const newCard = { id, type: 'practice', title, activeOptions, passiveOptions };
-
-      if (!state.customKopfkinoPractices) state.customKopfkinoPractices = [];
-      state.customKopfkinoPractices.push(newCard);
-      state.kopfkinoDeck.push(id);
-
-      document.getElementById('custom-practice-title').value = '';
-      document.getElementById('custom-practice-active').value = '';
-      document.getElementById('custom-practice-passive').value = '';
+      if (editingCardId) {
+        const card = state.customKopfkinoCards.find(c => c.id === editingCardId);
+        if (card) {
+          card.title = title;
+          card.options = options;
+        }
+      } else {
+        const id = 'custom_' + Date.now();
+        const newCard = { id, title, type: 'kink', options };
+        if (!state.customKopfkinoCards) state.customKopfkinoCards = [];
+        state.customKopfkinoCards.push(newCard);
+        if (!state.kopfkinoDeck) state.kopfkinoDeck = defaultKopfkinoCards.map(c => c.id);
+        state.kopfkinoDeck.push(id);
+      }
 
       closeKopfkinoCreateModal();
       saveState();
       renderKopfkinoSetup();
-      alert("✓ Eigene Praktik erfolgreich erstellt!");
+      alert("✓ Karte erfolgreich gespeichert!");
     }
 
-    function deleteCustomPractice(cardId) {
-      if (confirm("Möchtest du diese Praktik löschen?")) {
-        state.customKopfkinoPractices = (state.customKopfkinoPractices || []).filter(c => c.id !== cardId);
+    function deleteCustomKopfkinoCard(cardId) {
+      if (confirm("Möchtest du diese eigene Karte wirklich löschen?")) {
+        state.customKopfkinoCards = (state.customKopfkinoCards || []).filter(c => c.id !== cardId);
         state.kopfkinoDeck = (state.kopfkinoDeck || []).filter(id => id !== cardId);
         saveState();
         renderKopfkinoSetup();
@@ -1068,7 +1090,7 @@
 
     function renderKopfkinoSwipeCard() {
       const container = document.getElementById('kopfkino-content-area');
-      const allCards = getAllKopfkinoCards();
+      const allCards = getAllAvailableCards();
       const activeDeckIds = state.kopfkinoDeck || allCards.map(c => c.id);
       const activeCards = allCards.filter(c => activeDeckIds.includes(c.id));
 
@@ -1079,123 +1101,39 @@
 
       const q = activeCards[currentKopfkinoCardIndex];
       const myAnswers = state.kopfkinoAnswers[state.currentUser] || {};
+      const selected = myAnswers[q.id];
+
       const partnerName = state.currentUser === 'Er' ? 'Sie' : 'Er';
       const partnerAnswers = state.kopfkinoAnswers[partnerName] || {};
+      const partnerChoice = partnerAnswers[q.id];
 
-      let contentHtml = '';
       let matchInfoHtml = '';
-
-      // 1. TYP: PRAKTIKEN (AKTIV VS PASSIV MIT UNTEROPTIONEN)
-      if (q.type === 'practice') {
-        const mySelection = myAnswers[q.id] || { active: [], passive: [], no: false };
-        const partnerSelection = partnerAnswers[q.id] || { active: [], passive: [], no: false };
-
-        // Match-Auswertung für Praktik
-        if (mySelection.no || partnerSelection.no) {
-          matchInfoHtml = `<div class="bg-rose-950/85 border border-rose-600/50 text-rose-300 p-2.5 rounded-xl text-center font-bold text-xs">⚠️ Grenze: Einer hat 'Heute nicht' gewählt.</div>`;
+      if (selected && partnerChoice) {
+        if (selected.includes('Heute nicht') || partnerChoice.includes('Heute nicht')) {
+          matchInfoHtml = `<div class="bg-rose-950/85 border border-rose-600/50 text-rose-300 p-2.5 rounded-xl text-center font-bold text-xs">⚠️ Grenze / Heute nicht dabei.</div>`;
+        } else if (selected === partnerChoice) {
+          matchInfoHtml = `<div class="bg-emerald-950/85 border border-emerald-600/50 text-emerald-300 p-2.5 rounded-xl text-center font-bold text-xs">✨ Vibe-Match! Ihr habt dasselbe gewählt.</div>`;
+        } else if ((selected.includes('Aktiv') && partnerChoice.includes('Passiv')) || (selected.includes('Passiv') && partnerChoice.includes('Aktiv')) || (selected.includes('austeilen') && partnerChoice.includes('einstecken')) || (selected.includes('einstecken') && partnerChoice.includes('austeilen'))) {
+          matchInfoHtml = `<div class="bg-purple-950/85 border border-purple-600/50 text-purple-300 p-2.5 rounded-xl text-center font-bold text-xs">⛓️ Perfekter Rollen-Match (Aktiv/Passiv)!</div>`;
         } else {
-          const isCrossMatch = (mySelection.active.length > 0 && partnerSelection.passive.length > 0) || 
-                               (mySelection.passive.length > 0 && partnerSelection.active.length > 0);
-          const isBothActive = mySelection.active.length > 0 && partnerSelection.active.length > 0 && mySelection.passive.length === 0 && partnerSelection.passive.length === 0;
-          const isBothPassive = mySelection.passive.length > 0 && partnerSelection.passive.length > 0 && mySelection.active.length === 0 && partnerSelection.active.length === 0;
-
-          if (isCrossMatch) {
-            matchInfoHtml = `<div class="bg-purple-950/85 border border-purple-600/50 text-purple-300 p-2.5 rounded-xl text-center font-bold text-xs">⛓️ Perfekter Rollen-Match (Aktiv ↔ Passiv)!</div>`;
-          } else if (isBothActive) {
-            matchInfoHtml = `<div class="bg-amber-950/85 border border-amber-600/50 text-amber-300 p-2.5 rounded-xl text-center font-bold text-xs">⚠️ Beide wollen aktiv sein – wer übernimmt die Führung?</div>`;
-          } else if (isBothPassive) {
-            matchInfoHtml = `<div class="bg-amber-950/85 border border-amber-600/50 text-amber-300 p-2.5 rounded-xl text-center font-bold text-xs">⚠️ Beide wollen empfangen – wer legt los?</div>`;
-          }
+          matchInfoHtml = `<div class="bg-slate-900 border border-slate-800 text-slate-300 p-2.5 rounded-xl text-center text-xs">Partner hat eine andere Richtung gewählt.</div>`;
         }
-
-        const activeBtns = (q.activeOptions || []).map(opt => {
-          const isSel = mySelection.active.includes(opt);
-          return `<button onclick="togglePracticeSubOption('${q.id}', 'active', '${opt}')" class="w-full py-2 px-2.5 rounded-xl border text-left text-[11px] font-medium transition-all ${isSel ? 'bg-rose-600 border-rose-400 text-white font-bold' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'}">
-            <span>${opt}</span> ${isSel ? '✓' : ''}
-          </button>`;
-        }).join('');
-
-        const passiveBtns = (q.passiveOptions || []).map(opt => {
-          const isSel = mySelection.passive.includes(opt);
-          return `<button onclick="togglePracticeSubOption('${q.id}', 'passive', '${opt}')" class="w-full py-2 px-2.5 rounded-xl border text-left text-[11px] font-medium transition-all ${isSel ? 'bg-purple-600 border-purple-400 text-white font-bold' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'}">
-            <span>${opt}</span> ${isSel ? '✓' : ''}
-          </button>`;
-        }).join('');
-
-        const isNoSel = mySelection.no === true;
-
-        contentHtml = `
-          <div class="space-y-3">
-            <div class="bg-slate-950 border border-slate-850 p-3 rounded-2xl space-y-2">
-              <span class="text-[10px] font-bold text-rose-400 uppercase tracking-wider block">👉 Ich möchte aktiv machen / geben:</span>
-              <div class="space-y-1.5">${activeBtns}</div>
-            </div>
-            <div class="bg-slate-950 border border-slate-850 p-3 rounded-2xl space-y-2">
-              <span class="text-[10px] font-bold text-purple-400 uppercase tracking-wider block">👉 Ich möchte passiv empfangen:</span>
-              <div class="space-y-1.5">${passiveBtns}</div>
-            </div>
-            <button onclick="togglePracticeNo('${q.id}')" class="w-full py-2 px-3 rounded-xl border text-xs font-semibold transition-all ${isNoSel ? 'bg-rose-950 border-rose-600 text-rose-200' : 'bg-slate-950 border-slate-850 text-slate-400 hover:border-slate-700'}">
-              ❌ Heute bei dieser Praktik nicht
-            </button>
-          </div>
-        `;
-      } 
-      // 2. TYP: TOY-BOX (MULTI-SELECT SCHNITTMENGE)
-      else if (q.type === 'toys') {
-        const myToys = myAnswers[q.id] || [];
-        const partnerToys = partnerAnswers[q.id] || [];
-
-        const shared = myToys.filter(t => partnerToys.includes(t));
-        if (shared.length > 0) {
-          matchInfoHtml = `<div class="bg-emerald-950/85 border border-emerald-600/50 text-emerald-300 p-2.5 rounded-xl text-center font-bold text-xs">✨ Gemeinsame Toys: ${shared.join(', ')}</div>`;
-        }
-
-        const toyBtns = (q.toyList || []).map(toy => {
-          const isSel = myToys.includes(toy);
-          return `<button onclick="toggleToySelection('${q.id}', '${toy}')" class="py-2.5 px-3 rounded-xl border text-left text-[11px] font-medium transition-all ${isSel ? 'bg-purple-600 border-purple-400 text-white font-bold' : 'bg-slate-950 border-slate-850 text-slate-300 hover:border-slate-700'}">
-            <span>${toy}</span> ${isSel ? '✓' : ''}
-          </button>`;
-        }).join('');
-
-        contentHtml = `
-          <div class="space-y-2.5">
-            <span class="text-xs text-slate-400 block">Tippe an, welche Tools heute mit ins Spiel dürfen:</span>
-            <div class="grid grid-cols-2 gap-1.5 max-h-56 overflow-y-auto pr-1">
-              ${toyBtns}
-            </div>
-          </div>
-        `;
       }
-      // 3. TYP: FÜHRUNG & KONTROLLE (DYNAMIK)
-      else if (q.type === 'control') {
-        const myChoice = myAnswers[q.id];
-        const partnerChoice = partnerAnswers[q.id];
 
-        if (myChoice && partnerChoice) {
-          if (myChoice.includes('Ich übernehme') && partnerChoice.includes('Ich lasse mich fallen')) {
-            matchInfoHtml = `<div class="bg-purple-950/85 border border-purple-600/50 text-purple-300 p-2.5 rounded-xl text-center font-bold text-xs">👑 Perfekter Dynamik-Match (Führen & Fallenlassen)!</div>`;
-          } else if (myChoice.includes('Ich lasse mich fallen') && partnerChoice.includes('Ich übernehme')) {
-            matchInfoHtml = `<div class="bg-purple-950/85 border border-purple-600/50 text-purple-300 p-2.5 rounded-xl text-center font-bold text-xs">👑 Perfekter Dynamik-Match (Fallenlassen & Führen)!</div>`;
-          } else if (myChoice.includes('Ich übernehme') && partnerChoice.includes('Ich übernehme')) {
-            matchInfoHtml = `<div class="bg-amber-950/85 border border-amber-600/50 text-amber-300 p-2.5 rounded-xl text-center font-bold text-xs">⚠️ Beide wollen heute führen – spontan abwechseln?</div>`;
-          } else if (myChoice === partnerChoice) {
-            matchInfoHtml = `<div class="bg-emerald-950/85 border border-emerald-600/50 text-emerald-300 p-2.5 rounded-xl text-center font-bold text-xs">✨ Vibe-Match bei der Kontrolle!</div>`;
-          }
+      let optionsHtml = q.options.map((opt) => {
+        const isSelected = selected === opt;
+        const isNo = opt.includes('Heute nicht');
+        let btnClass = isSelected 
+          ? 'bg-gradient-to-r from-rose-600 to-pink-600 border-rose-400 text-white font-bold shadow-lg' 
+          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700';
+        if (isNo && !isSelected) {
+          btnClass = 'bg-slate-950 border-slate-800 text-rose-400 hover:border-rose-900';
         }
-
-        const controlBtns = (q.options || []).map(opt => {
-          const isSel = myChoice === opt;
-          return `<button onclick="setControlChoice('${q.id}', '${opt}')" class="w-full py-3 px-3.5 rounded-xl border text-left text-xs font-medium transition-all ${isSel ? 'bg-gradient-to-r from-purple-600 to-indigo-600 border-purple-400 text-white font-bold' : 'bg-slate-950 border-slate-850 text-slate-300 hover:border-slate-700'}">
-            <span>${opt}</span> ${isSel ? '✓' : ''}
-          </button>`;
-        }).join('');
-
-        contentHtml = `
-          <div class="space-y-2 pt-1">
-            ${controlBtns}
-          </div>
-        `;
-      }
+        return `<button onclick="selectKopfkinoOption('${q.id}', '${opt}')" class="w-full py-2.5 px-3.5 rounded-xl border text-left text-xs font-medium transition-all flex items-center justify-between ${btnClass}">
+          <span>${opt}</span>
+          ${isSelected ? '<span>✓</span>' : ''}
+        </button>`;
+      }).join('');
 
       container.innerHTML = `
         <div class="space-y-4">
@@ -1203,8 +1141,12 @@
             <span>Karte ${currentKopfkinoCardIndex + 1} von ${activeCards.length}</span>
             <button onclick="openKopfkinoModal()" class="text-slate-400 underline">← Deck bearbeiten</button>
           </div>
-          <h4 class="font-bold text-slate-100 text-sm">🔥 ${q.title}</h4>
-          ${contentHtml}
+          <div class="bg-slate-950 border border-slate-850 p-4 rounded-2xl space-y-3">
+            <h4 class="font-bold text-slate-100 text-sm">🔥 ${q.title}</h4>
+            <div class="space-y-2 pt-1">
+              ${optionsHtml}
+            </div>
+          </div>
           ${matchInfoHtml}
           
           <div class="flex gap-2 pt-2">
@@ -1218,60 +1160,8 @@
       `;
     }
 
-    // Toggle-Hilfen für Praktiken
-    function togglePracticeSubOption(cardId, side, opt) {
-      if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
-      if (!state.kopfkinoAnswers[state.currentUser][cardId]) {
-        state.kopfkinoAnswers[state.currentUser][cardId] = { active: [], passive: [], no: false };
-      }
-      const data = state.kopfkinoAnswers[state.currentUser][cardId];
-      data.no = false;
-
-      if (side === 'active') {
-        data.active = data.active.includes(opt) ? data.active.filter(o => o !== opt) : [...data.active, opt];
-      } else {
-        data.passive = data.passive.includes(opt) ? data.passive.filter(o => o !== opt) : [...data.passive, opt];
-      }
-
-      saveState();
-      renderKopfkinoSwipeCard();
-    }
-
-    function togglePracticeNo(cardId) {
-      if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
-      if (!state.kopfkinoAnswers[state.currentUser][cardId]) {
-        state.kopfkinoAnswers[state.currentUser][cardId] = { active: [], passive: [], no: false };
-      }
-      const data = state.kopfkinoAnswers[state.currentUser][cardId];
-      data.no = !data.no;
-      if (data.no) {
-        data.active = [];
-        data.passive = [];
-      }
-      saveState();
-      renderKopfkinoSwipeCard();
-    }
-
-    // Toggle für Toy-Box
-    function toggleToySelection(cardId, toy) {
-      if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
-      let list = state.kopfkinoAnswers[state.currentUser][cardId] || [];
-      list = list.includes(toy) ? list.filter(t => t !== toy) : [...list, toy];
-      state.kopfkinoAnswers[state.currentUser][cardId] = list;
-      saveState();
-      renderKopfkinoSwipeCard();
-    }
-
-    // Setzen für Führung
-    function setControlChoice(cardId, opt) {
-      if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
-      state.kopfkinoAnswers[state.currentUser][cardId] = opt;
-      saveState();
-      renderKopfkinoSwipeCard();
-    }
-
     function nextKopfkinoCard() {
-      const allCards = getAllKopfkinoCards();
+      const allCards = getAllAvailableCards();
       const activeDeckIds = state.kopfkinoDeck || allCards.map(c => c.id);
       const activeCards = allCards.filter(c => activeDeckIds.includes(c.id));
       if (currentKopfkinoCardIndex < activeCards.length - 1) {
@@ -1287,11 +1177,18 @@
       }
     }
 
+    function selectKopfkinoOption(qId, option) {
+      if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
+      state.kopfkinoAnswers[state.currentUser][qId] = option;
+      saveState();
+      renderKopfkinoSwipeCard();
+    }
+
     function submitKopfkinoAnswers() {
       closeKopfkinoModal();
       saveState();
       LiveStream.sendData({ type: 'kopfkino_sync', answers: state.kopfkinoAnswers[state.currentUser] });
-      alert("🧠 Kopfkino-Wahl mit Partner abgeglichen!");
+      alert("🧠 Kopfkino-Entscheidungen mit Partner abgeglichen!");
     }
 
     function openPendingReviewsModal() {
