@@ -89,7 +89,7 @@
       <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK -->
       <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950 to-purple-950 border border-rose-500/70 rounded-2xl p-3.5 glow-rose space-y-2 animate-pulse">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
-          <span>💖 Feedback vom Partner</span>
+          <span>💖 Rückmeldung vom Partner</span>
           <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Schließen</button>
         </div>
         <div id="incoming-feedback-text" class="text-sm font-bold text-slate-100 bg-slate-950/70 p-2.5 rounded-xl border border-rose-800/40"></div>
@@ -118,12 +118,15 @@
       <section id="incoming-craving-banner" class="hidden bg-gradient-to-r from-rose-950 to-pink-950 border border-rose-600/70 rounded-2xl p-4 glow-rose space-y-3 relative overflow-hidden">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
           <span>⚡ Spontanes Signal von Partner</span>
-          <span id="incoming-time-badge" class="bg-rose-900/80 px-2 py-0.5 rounded-full text-[10px] border border-rose-500/40">BLITZ ⚡</span>
+          <div class="flex items-center gap-2">
+            <button onclick="revealCravingDirectly()" class="text-[10px] bg-rose-900/80 hover:bg-rose-800 text-rose-200 px-2 py-0.5 rounded-full border border-rose-500/40">Aufdecken ✨</button>
+            <span id="incoming-time-badge" class="bg-rose-900/80 px-2 py-0.5 rounded-full text-[10px] border border-rose-500/40">BLITZ ⚡</span>
+          </div>
         </div>
         
         <!-- Interaktive Enthüllungs-Karte -->
         <div id="craving-reveal-card" onclick="toggleCravingReveal()" class="bg-gradient-to-r from-rose-900 via-pink-900 to-rose-950 p-3.5 rounded-xl border border-rose-500/60 cursor-pointer text-center select-none shadow-lg transition-all active:scale-98">
-          <div id="craving-cover-view" class="py-2 space-y-1">
+          <div id="craving-cover-view" class="py-3 space-y-1">
             <div class="text-2xl animate-bounce">🎁</div>
             <div class="text-xs font-bold text-rose-100 uppercase tracking-wider">Geheimes Signal erhalten!</div>
             <div class="text-[10px] text-rose-300 underline font-semibold">Tippen zum Entpacken ✨</div>
@@ -557,17 +560,13 @@
           saveState();
           playSensualSound('chime');
           updateUI();
-        } else if (data.type === 'craving_accepted') {
-          if (data.craving && data.craving.from === state.currentUser) {
-            state.pendingReviews.push({ id: data.craving.id, kinks: data.craving.kinks, from: state.currentUser });
-            saveState();
-            playSensualSound('chime');
-            showFeedbackBanner(`🎉 Dein Partner hat deinen Wunsch ("${data.craving.kinks.join(' + ')}") angenommen!`);
-          }
         } else if (data.type === 'craving_response') {
           state.activeCraving = null;
           showFeedbackBanner(`🎉 Partner-Rückmeldung: ${data.message}`);
           playSensualSound('chime');
+          if (data.action === 'accepted' && data.craving && data.craving.from === state.currentUser) {
+            state.pendingReviews.push({ id: data.craving.id, kinks: data.craving.kinks, from: state.currentUser });
+          }
           saveState();
         } else if (data.type === 'craving_feedback') {
           showFeedbackBanner(data.feedback);
@@ -697,12 +696,12 @@
     }
 
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v56', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v55', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v56');
+      const saved = localStorage.getItem('couple_pulse_state_v55');
       if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch (e) {} }
       updateUI();
     }
@@ -1116,23 +1115,28 @@
     }
 
     function respondCraving(action) {
+      let responseMsg = '';
       if (action === 'accepted') {
+        responseMsg = 'Kommt sofort! ❤️ (Sofort da)';
         const cravingObj = state.activeCraving;
         state.activeCraving = null;
         playSensualSound('chime');
         alert("❤️ Angenommen! Viel Spaß.");
         
         if (cravingObj) {
+          LiveStream.sendData({ type: 'craving_response', action: 'accepted', message: responseMsg, craving: cravingObj });
           LiveStream.sendData({ type: 'craving_accepted', craving: cravingObj });
         }
       } else if (action === 'later') {
+        responseMsg = 'Braucht noch 10 Minuten ⏳';
         alert("⏳ Dein Partner hat auf in 10 Minuten verschoben!");
         state.activeCraving = null;
-        LiveStream.sendData({ type: 'craving_response', action: 'later', message: 'Braucht noch 10 Minuten ⏳' });
+        LiveStream.sendData({ type: 'craving_response', action: 'later', message: responseMsg });
       } else if (action === 'evening') {
+        responseMsg = 'Für heute Abend reserviert 🌙';
         state.eveningReservation = { from: state.activeCraving.from, kinks: state.activeCraving.kinks, roleDescription: state.activeCraving.roleDescription, goal: state.activeCraving.goal };
         state.activeCraving = null;
-        LiveStream.sendData({ type: 'craving_response', action: 'evening', message: 'Für heute Abend reserviert 🌙' });
+        LiveStream.sendData({ type: 'craving_response', action: 'evening', message: responseMsg });
       }
       saveState();
     }
