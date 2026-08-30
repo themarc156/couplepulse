@@ -114,24 +114,23 @@
         </div>
       </section>
 
-      <!-- LIVE-BANNER: EINGEHENDES GELÜST (100% STABILER TIPPEN-ZUM-ÖFFNEN-EFFEKT) -->
+      <!-- LIVE-BANNER: EINGEHENDES GELÜST (MIT EINFACHEM, GARantiert funktionierendem ENTHÜLLUNGS-BUTTON) -->
       <section id="incoming-craving-banner" class="hidden bg-gradient-to-r from-rose-950 to-pink-950 border border-rose-600/70 rounded-2xl p-4 glow-rose space-y-3 relative overflow-hidden">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
           <span>⚡ Spontanes Signal von Partner</span>
-          <div class="flex items-center gap-2">
-            <button onclick="revealCravingDirectly()" class="text-[10px] bg-rose-900/80 hover:bg-rose-800 text-rose-200 px-2 py-0.5 rounded-full border border-rose-500/40">Aufdecken ✨</button>
-            <span id="incoming-time-badge" class="bg-rose-900/80 px-2 py-0.5 rounded-full text-[10px] border border-rose-500/40">BLITZ ⚡</span>
-          </div>
+          <span id="incoming-time-badge" class="bg-rose-900/80 px-2 py-0.5 rounded-full text-[10px] border border-rose-500/40">BLITZ ⚡</span>
         </div>
         
-        <!-- Interaktive Enthüllungs-Karte -->
-        <div id="craving-reveal-card" onclick="toggleCravingReveal()" class="bg-gradient-to-r from-rose-900 via-pink-900 to-rose-950 p-3.5 rounded-xl border border-rose-500/60 cursor-pointer text-center select-none shadow-lg transition-all active:scale-98">
-          <div id="craving-cover-view" class="py-3 space-y-1">
-            <div class="text-2xl animate-bounce">🎁</div>
-            <div class="text-xs font-bold text-rose-100 uppercase tracking-wider">Geheimes Signal erhalten!</div>
-            <div class="text-[10px] text-rose-300 underline font-semibold">Tippen zum Entpacken ✨</div>
+        <!-- Box mit Ein-Klick-Enthüllung -->
+        <div class="bg-slate-950/90 border border-rose-800/50 rounded-xl p-3.5 space-y-2">
+          <div id="craving-locked-view" class="text-center py-2 space-y-2">
+            <div class="text-xs text-rose-200 font-medium">Ein geheimer Wunsch wurde an dich gesendet! 🎁</div>
+            <button onclick="revealCravingDirectly()" class="w-full py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md active:scale-98 transition-all">
+              ✨ Wunsch aufdecken ✨
+            </button>
           </div>
-          <div id="craving-hidden-view" class="hidden text-left space-y-1.5 bg-slate-950/95 p-3 rounded-lg border border-rose-800/40">
+          
+          <div id="craving-unlocked-view" class="hidden space-y-2">
             <div id="incoming-craving-text" class="text-xs font-semibold text-slate-100 leading-relaxed"></div>
           </div>
         </div>
@@ -557,9 +556,17 @@
         } else if (data.type === 'new_craving') {
           state.activeCraving = data.craving;
           state.requestHistory.unshift(data.craving);
+          isCravingRevealed = false;
           saveState();
           playSensualSound('chime');
           updateUI();
+        } else if (data.type === 'craving_accepted') {
+          if (data.craving && data.craving.from === state.currentUser) {
+            state.pendingReviews.push({ id: data.craving.id, kinks: data.craving.kinks, from: state.currentUser });
+            saveState();
+            playSensualSound('chime');
+            showFeedbackBanner(`🎉 Dein Partner hat deinen Wunsch ("${data.craving.kinks.join(' + ')}") angenommen!`);
+          }
         } else if (data.type === 'craving_response') {
           state.activeCraving = null;
           showFeedbackBanner(`🎉 Partner-Rückmeldung: ${data.message}`);
@@ -696,12 +703,12 @@
     }
 
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v55', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v57', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v55');
+      const saved = localStorage.getItem('couple_pulse_state_v57');
       if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch (e) {} }
       updateUI();
     }
@@ -729,7 +736,13 @@
           <div class="text-slate-300 text-xs mt-1">Dynamik: ${state.activeCraving.roleDescription}</div>
           <div class="text-amber-300 font-bold text-xs mt-1 bg-amber-950/40 p-1.5 rounded-lg border border-amber-800/40">🎯 ZIEL: ${state.activeCraving.goal}</div>
         `;
-        setTimeout(() => initScratchCanvas('scratch-wrapper', 'scratch-canvas'), 100);
+        
+        const lockedView = document.getElementById('craving-locked-view');
+        const unlockedView = document.getElementById('craving-unlocked-view');
+        if (lockedView && unlockedView) {
+          lockedView.classList.toggle('hidden', isCravingRevealed);
+          unlockedView.classList.toggle('hidden', !isCravingRevealed);
+        }
       } else { banner.classList.add('hidden'); }
 
       const eveningBanner = document.getElementById('evening-reservation-banner');
@@ -745,67 +758,13 @@
     }
 
     function revealCravingDirectly() {
-      const canvas = document.getElementById('scratch-canvas');
-      if (canvas) {
-        canvas.style.transition = 'opacity 0.4s ease';
-        canvas.style.opacity = '0';
-        setTimeout(() => canvas.classList.add('hidden'), 400);
+      isCravingRevealed = true;
+      const lockedView = document.getElementById('craving-locked-view');
+      const unlockedView = document.getElementById('craving-unlocked-view');
+      if (lockedView && unlockedView) {
+        lockedView.classList.add('hidden');
+        unlockedView.classList.remove('hidden');
       }
-    }
-
-    function initScratchCanvas(wrapperId, canvasId) {
-      const wrapper = document.getElementById(wrapperId);
-      const canvas = document.getElementById(canvasId);
-      if (!wrapper || !canvas) return;
-      const ctx = canvas.getContext('2d');
-
-      const rect = wrapper.getBoundingClientRect();
-      canvas.width = rect.width || wrapper.offsetWidth || 320;
-      canvas.height = rect.height || wrapper.offsetHeight || 100;
-
-      ctx.fillStyle = '#881337';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = '#fda4af';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('✨ Hier wischen zum Freirubbeln ✨', canvas.width / 2, canvas.height / 2);
-
-      let isDrawing = false;
-
-      function scratch(e) {
-        if (!isDrawing) return;
-        const cRect = canvas.getBoundingClientRect();
-        let clientX, clientY;
-        if (e.clientX !== undefined) {
-          clientX = e.clientX;
-          clientY = e.clientY;
-        } else if (e.touches && e.touches.length > 0) {
-          clientX = e.touches[0].clientX;
-          clientY = e.touches[0].clientY;
-        } else if (e.changedTouches && e.changedTouches.length > 0) {
-          clientX = e.changedTouches[0].clientX;
-          clientY = e.changedTouches[0].clientY;
-        }
-        if (clientX === undefined || clientY === undefined) return;
-
-        const x = clientX - cRect.left;
-        const y = clientY - cRect.top;
-
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.beginPath();
-        ctx.arc(x, y, 25, 0, Math.PI * 2, false);
-        ctx.fill();
-      }
-
-      canvas.onmousedown = (e) => { isDrawing = true; scratch(e); };
-      window.onmouseup = () => isDrawing = false;
-      canvas.onmousemove = scratch;
-
-      canvas.ontouchstart = (e) => { isDrawing = true; scratch(e); };
-      window.ontouchend = () => isDrawing = false;
-      canvas.ontouchmove = (e) => { scratch(e); };
     }
 
     function switchUser(newUser) {
