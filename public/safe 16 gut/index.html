@@ -89,7 +89,7 @@
       <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK -->
       <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950 to-purple-950 border border-rose-500/70 rounded-2xl p-3.5 glow-rose space-y-2 animate-pulse">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
-          <span>💖 Rückmeldung vom Partner</span>
+          <span>💖 Feedback vom Partner</span>
           <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Schließen</button>
         </div>
         <div id="incoming-feedback-text" class="text-sm font-bold text-slate-100 bg-slate-950/70 p-2.5 rounded-xl border border-rose-800/40"></div>
@@ -114,20 +114,23 @@
         </div>
       </section>
 
-      <!-- LIVE-BANNER: EINGEHENDES GELÜST (MIT ROBUSTEM FREIRUBBELN-EFFEKT) -->
+      <!-- LIVE-BANNER: EINGEHENDES GELÜST (MIT TIPPEN-ZUM-ENTHÜLLEN-EFFEKT) -->
       <section id="incoming-craving-banner" class="hidden bg-gradient-to-r from-rose-950 to-pink-950 border border-rose-600/70 rounded-2xl p-4 glow-rose space-y-3 relative overflow-hidden">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
           <span>⚡ Spontanes Signal von Partner</span>
-          <div class="flex items-center gap-2">
-            <button onclick="revealCravingDirectly()" class="text-[10px] bg-rose-900/80 hover:bg-rose-800 text-rose-200 px-2 py-0.5 rounded-full border border-rose-500/40">Aufdecken ✨</button>
-            <span id="incoming-time-badge" class="bg-rose-900/80 px-2 py-0.5 rounded-full text-[10px] border border-rose-500/40">BLITZ ⚡</span>
-          </div>
+          <span id="incoming-time-badge" class="bg-rose-900/80 px-2 py-0.5 rounded-full text-[10px] border border-rose-500/40">BLITZ ⚡</span>
         </div>
         
-        <!-- Wrapper mit Rubbel-Canvas darüber -->
-        <div id="scratch-wrapper" class="relative rounded-xl overflow-hidden border border-rose-800/40">
-          <div id="incoming-craving-text" class="text-sm font-semibold text-slate-100 bg-slate-950/90 p-3 leading-relaxed"></div>
-          <canvas id="scratch-canvas" class="absolute inset-0 w-full h-full cursor-pointer touch-none"></canvas>
+        <!-- Enthüllungs-Box (Sicher & flüssig auf allen Tablets/Handys) -->
+        <div id="craving-reveal-box" onclick="toggleRevealCraving()" class="relative rounded-xl overflow-hidden border border-rose-800/60 bg-gradient-to-r from-rose-900 to-pink-900 p-4 cursor-pointer text-center transition-all select-none shadow-inner">
+          <div id="craving-cover-content" class="py-3 space-y-1">
+            <div class="text-2xl animate-bounce">🎁</div>
+            <div class="text-xs font-bold text-rose-100 uppercase tracking-wider">Geheimes Signal erhalten!</div>
+            <div class="text-[10px] text-rose-300">Tippen zum Entpacken ✨</div>
+          </div>
+          <div id="craving-hidden-content" class="hidden text-left space-y-2 bg-slate-950/95 p-3 rounded-lg">
+            <div id="incoming-craving-text" class="text-xs leading-relaxed text-slate-100"></div>
+          </div>
         </div>
         
         <div class="space-y-2 pt-1">
@@ -154,7 +157,7 @@
         <div id="evening-reservation-text" class="text-xs text-slate-200 bg-slate-950/60 p-2.5 rounded-xl border border-indigo-900/40"></div>
       </section>
 
-      <!-- NACHHOLBEDARF DES PARTNERS -->
+      <!-- NACHHOLBEDARF DES PARTNERS (BÜNDELUNG & DRINGLICHKEITS-SKALA) -->
       <section class="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 border border-amber-500/50 rounded-2xl p-4 glow-amber space-y-2.5">
         <div class="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-amber-400">
           <span id="partner-needs-title" class="flex items-center gap-1.5"><span>🔥</span> Nachholbedarf von Partner</span>
@@ -187,7 +190,9 @@
           </h3>
           <button onclick="closePendingReviewsModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">×</button>
         </div>
-        <div id="pending-reviews-container" class="space-y-2.5 max-h-[60vh] overflow-y-auto text-xs"></div>
+        <div id="pending-reviews-container" class="space-y-2.5 max-h-[60vh] overflow-y-auto text-xs">
+          <!-- Dynamisch befüllt -->
+        </div>
       </div>
     </div>
 
@@ -230,6 +235,7 @@
     <!-- UPGRADED LIVE-STUDIO -->
     <!-- ================================================================= -->
     <div id="stream-overlay" class="hidden absolute inset-0 bg-slate-950 z-50 flex flex-col justify-between p-3.5">
+      
       <div class="flex justify-between items-center z-20 bg-slate-950/80 backdrop-blur-md p-2.5 rounded-2xl border border-slate-800 shadow-xl">
         <div class="flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
@@ -245,12 +251,15 @@
       <div class="relative flex-1 my-2 rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 flex items-center justify-center shadow-inner">
         <video id="remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
         <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+
         <div id="pip-container" class="hidden absolute bottom-3 right-3 w-28 h-40 rounded-2xl overflow-hidden border-2 border-rose-500/80 shadow-2xl bg-black z-20 transition-all">
           <video id="pip-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
           <div class="absolute top-1 left-1.5 bg-black/60 px-1.5 py-0.5 rounded text-[8px] font-bold text-rose-300">DU</div>
         </div>
+
         <div id="floating-reactions-box" class="absolute inset-0 pointer-events-none flex flex-col justify-end p-6 space-y-2 items-center z-30"></div>
         <div id="floating-whisper-box" class="absolute inset-x-4 top-16 pointer-events-none flex flex-col items-center space-y-2 z-30"></div>
+        
         <div id="stream-status-overlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center space-y-2 z-20">
           <span class="text-3xl animate-pulse">👁️</span>
           <span id="stream-status-text" class="text-xs font-semibold text-slate-300">Verbindung wird aufgebaut...</span>
@@ -297,7 +306,7 @@
       </div>
     </div>
 
-    <!-- MODAL: SPONTAN-WUNSCH -->
+    <!-- MODAL: SPONTAN-WUNSCH (SPIELARTEN OPTIONAL) -->
     <div id="craving-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end justify-center p-0">
       <div class="bg-slate-900 border-t border-slate-800 w-full rounded-t-3xl p-4 space-y-3 max-h-[85vh] overflow-y-auto shadow-2xl">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -391,6 +400,7 @@
 
     let currentUnfulfilledIndex = 0;
     let activeReviewItem = null;
+    let isCravingRevealed = false;
 
     const catalog = {
       sein_koerper: {
@@ -548,15 +558,23 @@
         } else if (data.type === 'new_craving') {
           state.activeCraving = data.craving;
           state.requestHistory.unshift(data.craving);
+          isCravingRevealed = false; // Reset reveal state for new craving
           saveState();
           playSensualSound('chime');
           updateUI();
+        } else if (data.type === 'craving_accepted') {
+          if (data.craving && data.craving.from === state.currentUser) {
+            state.pendingReviews.push({ id: data.craving.id, kinks: data.craving.kinks, from: state.currentUser });
+            saveState();
+            playSensualSound('chime');
+            showFeedbackBanner(`🎉 Dein Partner hat deinen Wunsch ("${data.craving.kinks.join(' + ')}") angenommen!`);
+          }
         } else if (data.type === 'craving_response') {
           state.activeCraving = null;
-          showFeedbackBanner(`🎉 Partner-Rückmeldung: ${data.message}`);
-          playSensualSound('chime');
-          if (data.action === 'accepted' && data.craving && data.craving.from === state.currentUser) {
-            state.pendingReviews.push({ id: data.craving.id, kinks: data.craving.kinks, from: state.currentUser });
+          if (data.action === 'later') {
+            alert("⏳ Dein Partner hat auf in 10 Minuten verschoben!");
+          } else if (data.action === 'evening') {
+            alert("🌙 Dein Partner hat deinen Wunsch für heute Abend reserviert!");
           }
           saveState();
         } else if (data.type === 'craving_feedback') {
@@ -687,12 +705,12 @@
     }
 
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v54', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v53', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v54');
+      const saved = localStorage.getItem('couple_pulse_state_v53');
       if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch (e) {} }
       updateUI();
     }
@@ -720,7 +738,14 @@
           <div class="text-slate-300 text-xs mt-1">Dynamik: ${state.activeCraving.roleDescription}</div>
           <div class="text-amber-300 font-bold text-xs mt-1 bg-amber-950/40 p-1.5 rounded-lg border border-amber-800/40">🎯 ZIEL: ${state.activeCraving.goal}</div>
         `;
-        setTimeout(() => initScratchCanvas('scratch-wrapper', 'scratch-canvas'), 100);
+        
+        // Update reveal box state
+        const hiddenContent = document.getElementById('craving-hidden-content');
+        const coverContent = document.getElementById('craving-cover-content');
+        if (hiddenContent && coverContent) {
+          hiddenContent.classList.toggle('hidden', !isCravingRevealed);
+          coverContent.classList.toggle('hidden', isCravingRevealed);
+        }
       } else { banner.classList.add('hidden'); }
 
       const eveningBanner = document.getElementById('evening-reservation-banner');
@@ -735,85 +760,14 @@
       renderPartnerUnfulfilledCard();
     }
 
-    function revealCravingDirectly() {
-      const canvas = document.getElementById('scratch-canvas');
-      if (canvas) {
-        canvas.style.transition = 'opacity 0.4s ease';
-        canvas.style.opacity = '0';
-        setTimeout(() => canvas.classList.add('hidden'), 400);
+    function toggleRevealCraving() {
+      isCravingRevealed = !isCravingRevealed;
+      const hiddenContent = document.getElementById('craving-hidden-content');
+      const coverContent = document.getElementById('craving-cover-content');
+      if (hiddenContent && coverContent) {
+        hiddenContent.classList.toggle('hidden', !isCravingRevealed);
+        coverContent.classList.toggle('hidden', isCravingRevealed);
       }
-    }
-
-    function initScratchCanvas(wrapperId, canvasId) {
-      const wrapper = document.getElementById(wrapperId);
-      const canvas = document.getElementById(canvasId);
-      if (!wrapper || !canvas) return;
-      const ctx = canvas.getContext('2d');
-
-      const rect = wrapper.getBoundingClientRect();
-      canvas.width = rect.width || wrapper.offsetWidth || 320;
-      canvas.height = rect.height || wrapper.offsetHeight || 100;
-
-      ctx.fillStyle = '#881337';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = '#fda4af';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('✨ Hier wischen zum Freirubbeln ✨', canvas.width / 2, canvas.height / 2);
-
-      let isDrawing = false;
-
-      function scratch(e) {
-        if (!isDrawing) return;
-        const cRect = canvas.getBoundingClientRect();
-        let clientX, clientY;
-        if (e.clientX !== undefined) {
-          clientX = e.clientX;
-          clientY = e.clientY;
-        } else if (e.touches && e.touches.length > 0) {
-          clientX = e.touches[0].clientX;
-          clientY = e.touches[0].clientY;
-        } else if (e.changedTouches && e.changedTouches.length > 0) {
-          clientX = e.changedTouches[0].clientX;
-          clientY = e.changedTouches[0].clientY;
-        }
-        if (clientX === undefined || clientY === undefined) return;
-
-        const x = clientX - cRect.left;
-        const y = clientY - cRect.top;
-
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.beginPath();
-        ctx.arc(x, y, 25, 0, Math.PI * 2, false);
-        ctx.fill();
-
-        checkProgress();
-      }
-
-      function checkProgress() {
-        try {
-          const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-          let cleared = 0;
-          for (let i = 3; i < pixels.length; i += 32) {
-            if (pixels[i] === 0) cleared++;
-          }
-          if (cleared > (pixels.length / 32) * 0.35) {
-            canvas.style.transition = 'opacity 0.4s ease';
-            canvas.style.opacity = '0';
-            setTimeout(() => canvas.classList.add('hidden'), 400);
-          }
-        } catch(err) {}
-      }
-
-      canvas.onmousedown = (e) => { isDrawing = true; scratch(e); };
-      window.onmouseup = () => isDrawing = false;
-      canvas.onmousemove = scratch;
-
-      canvas.ontouchstart = (e) => { isDrawing = true; scratch(e); e.preventDefault(); };
-      window.ontouchend = () => isDrawing = false;
-      canvas.ontouchmove = (e) => { scratch(e); e.preventDefault(); };
     }
 
     function switchUser(newUser) {
@@ -1123,9 +1077,7 @@
     }
 
     function respondCraving(action) {
-      let responseMsg = '';
       if (action === 'accepted') {
-        responseMsg = 'Kommt sofort! ❤️';
         const cravingObj = state.activeCraving;
         state.activeCraving = null;
         playSensualSound('chime');
@@ -1135,15 +1087,13 @@
           LiveStream.sendData({ type: 'craving_accepted', craving: cravingObj });
         }
       } else if (action === 'later') {
-        responseMsg = 'Braucht noch 10 Minuten ⏳';
-        alert("⏳ Dein Partner hat auf in 10 Minuten verschoben!");
+        alert("⏳ In 10 Minuten geht es los!");
         state.activeCraving = null;
-        LiveStream.sendData({ type: 'craving_response', action: 'later', message: responseMsg });
+        LiveStream.sendData({ type: 'craving_response', action: 'later' });
       } else if (action === 'evening') {
-        responseMsg = 'Für heute Abend reserviert 🌙';
         state.eveningReservation = { from: state.activeCraving.from, kinks: state.activeCraving.kinks, roleDescription: state.activeCraving.roleDescription, goal: state.activeCraving.goal };
         state.activeCraving = null;
-        LiveStream.sendData({ type: 'craving_response', action: 'evening', message: responseMsg });
+        LiveStream.sendData({ type: 'craving_response', action: 'evening' });
       }
       saveState();
     }
