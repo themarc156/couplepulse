@@ -82,7 +82,7 @@
     </header>
 
     <!-- ================================================================= -->
-    <!-- HAUPTSEITE: HEUTE & JETZT -->
+    <!-- HAUPTSEITE: HEUTE & JETZT (Optimierter, natürlicher Abstand) -->
     <!-- ================================================================= -->
     <main class="w-full p-4 space-y-4 flex-1 flex flex-col justify-start">
 
@@ -114,23 +114,20 @@
         </div>
       </section>
 
-      <!-- LIVE-BANNER: EINGEHENDES GELÜST (MIT TIPPEN-ZUM-ENTHÜLLEN-EFFEKT) -->
+      <!-- LIVE-BANNER: EINGEHENDES GELÜST (MIT FREIRUBBELN-EFFEKT) -->
       <section id="incoming-craving-banner" class="hidden bg-gradient-to-r from-rose-950 to-pink-950 border border-rose-600/70 rounded-2xl p-4 glow-rose space-y-3 relative overflow-hidden">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
           <span>⚡ Spontanes Signal von Partner</span>
           <span id="incoming-time-badge" class="bg-rose-900/80 px-2 py-0.5 rounded-full text-[10px] border border-rose-500/40">BLITZ ⚡</span>
         </div>
         
-        <!-- Enthüllungs-Box (Sicher & flüssig auf allen Tablets/Handys) -->
-        <div id="craving-reveal-box" onclick="toggleRevealCraving()" class="relative rounded-xl overflow-hidden border border-rose-800/60 bg-gradient-to-r from-rose-900 to-pink-900 p-4 cursor-pointer text-center transition-all select-none shadow-inner">
-          <div id="craving-cover-content" class="py-3 space-y-1">
-            <div class="text-2xl animate-bounce">🎁</div>
-            <div class="text-xs font-bold text-rose-100 uppercase tracking-wider">Geheimes Signal erhalten!</div>
-            <div class="text-[10px] text-rose-300">Tippen zum Entpacken ✨</div>
-          </div>
-          <div id="craving-hidden-content" class="hidden text-left space-y-2 bg-slate-950/95 p-3 rounded-lg">
-            <div id="incoming-craving-text" class="text-xs leading-relaxed text-slate-100"></div>
-          </div>
+        <!-- Wrapper mit Rubbel-Canvas darüber -->
+        <div id="scratch-wrapper" class="relative rounded-xl overflow-hidden border border-rose-800/40">
+          <!-- Inhalt (versteckt unter dem Rubbel-Los) -->
+          <div id="incoming-craving-text" class="text-sm font-semibold text-slate-100 bg-slate-950/90 p-3 leading-relaxed"></div>
+          
+          <!-- Canvas Overlay zum Rubbeln -->
+          <canvas id="scratch-canvas" class="absolute inset-0 w-full h-full cursor-pointer touch-none"></canvas>
         </div>
         
         <div class="space-y-2 pt-1">
@@ -161,7 +158,7 @@
       <section class="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 border border-amber-500/50 rounded-2xl p-4 glow-amber space-y-2.5">
         <div class="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-amber-400">
           <span id="partner-needs-title" class="flex items-center gap-1.5"><span>🔥</span> Nachholbedarf von Partner</span>
-          <span class="text-[9px] bg-amber-950 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-800/60 font-bold">Offen</span>
+          <span class="text-[9px] bg-amber-950 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-800/50">Offen</span>
         </div>
         <div id="stats-unfulfilled-list" class="space-y-2 text-xs pt-0.5"></div>
       </section>
@@ -306,7 +303,7 @@
       </div>
     </div>
 
-    <!-- MODAL: SPONTAN-WUNSCH (SPIELARTEN OPTIONAL) -->
+    <!-- MODAL: SPONTAN-WUNSCH (KOMPAKT & OPTIMIERT) -->
     <div id="craving-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end justify-center p-0">
       <div class="bg-slate-900 border-t border-slate-800 w-full rounded-t-3xl p-4 space-y-3 max-h-[85vh] overflow-y-auto shadow-2xl">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -328,7 +325,7 @@
           </div>
         </div>
 
-        <div class="space-y-1.5 text-xs">
+        <div class="space-y-1 text-xs">
           <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">2. Deine Rolle</label>
           <div class="grid grid-cols-3 gap-1.5">
             <button id="role-btn-passiv" onclick="setRole('passiv')" class="py-2 px-1 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-medium text-[11px]">🧘 Verwöhne mich</button>
@@ -400,7 +397,6 @@
 
     let currentUnfulfilledIndex = 0;
     let activeReviewItem = null;
-    let isCravingRevealed = false;
 
     const catalog = {
       sein_koerper: {
@@ -558,7 +554,6 @@
         } else if (data.type === 'new_craving') {
           state.activeCraving = data.craving;
           state.requestHistory.unshift(data.craving);
-          isCravingRevealed = false; // Reset reveal state for new craving
           saveState();
           playSensualSound('chime');
           updateUI();
@@ -705,12 +700,12 @@
     }
 
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v53', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v52', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v53');
+      const saved = localStorage.getItem('couple_pulse_state_v52');
       if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch (e) {} }
       updateUI();
     }
@@ -738,14 +733,7 @@
           <div class="text-slate-300 text-xs mt-1">Dynamik: ${state.activeCraving.roleDescription}</div>
           <div class="text-amber-300 font-bold text-xs mt-1 bg-amber-950/40 p-1.5 rounded-lg border border-amber-800/40">🎯 ZIEL: ${state.activeCraving.goal}</div>
         `;
-        
-        // Update reveal box state
-        const hiddenContent = document.getElementById('craving-hidden-content');
-        const coverContent = document.getElementById('craving-cover-content');
-        if (hiddenContent && coverContent) {
-          hiddenContent.classList.toggle('hidden', !isCravingRevealed);
-          coverContent.classList.toggle('hidden', isCravingRevealed);
-        }
+        setTimeout(() => initScratchCanvas('scratch-wrapper', 'scratch-canvas'), 100);
       } else { banner.classList.add('hidden'); }
 
       const eveningBanner = document.getElementById('evening-reservation-banner');
@@ -754,20 +742,70 @@
         document.getElementById('evening-reservation-text').innerHTML = `🔥 ${state.eveningReservation.kinks.join(' + ')} | ${state.eveningReservation.goal}`;
       } else { eveningBanner.classList.add('hidden'); }
 
-      document.getElementById('btn-user-er').className = state.currentUser === 'Er' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
-      document.getElementById('btn-user-sie').className = state.currentUser === 'Sie' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
+      document.getElementById('btn-user-er').className = state.currentUser === 'Er' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 text-white font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
+      document.getElementById('btn-user-sie').className = state.currentUser === 'Sie' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 text-white font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
 
       renderPartnerUnfulfilledCard();
     }
 
-    function toggleRevealCraving() {
-      isCravingRevealed = !isCravingRevealed;
-      const hiddenContent = document.getElementById('craving-hidden-content');
-      const coverContent = document.getElementById('craving-cover-content');
-      if (hiddenContent && coverContent) {
-        hiddenContent.classList.toggle('hidden', !isCravingRevealed);
-        coverContent.classList.toggle('hidden', isCravingRevealed);
+    function initScratchCanvas(wrapperId, canvasId) {
+      const wrapper = document.getElementById(wrapperId);
+      const canvas = document.getElementById(canvasId);
+      if (!wrapper || !canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      canvas.width = wrapper.offsetWidth || 320;
+      canvas.height = wrapper.offsetHeight || 100;
+
+      ctx.fillStyle = '#881337';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#fda4af';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('✨ Hier wischen zum Freirubbeln ✨', canvas.width / 2, canvas.height / 2);
+
+      let isDrawing = false;
+
+      function scratch(e) {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        if (!clientX || !clientY) return;
+
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x, y, 25, 0, Math.PI * 2, false);
+        ctx.fill();
+
+        checkProgress();
       }
+
+      function checkProgress() {
+        const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let cleared = 0;
+        for (let i = 3; i < pixels.length; i += 32) {
+          if (pixels[i] === 0) cleared++;
+        }
+        if (cleared > (pixels.length / 32) * 0.35) {
+          canvas.style.transition = 'opacity 0.4s ease';
+          canvas.style.opacity = '0';
+          setTimeout(() => canvas.classList.add('hidden'), 400);
+        }
+      }
+
+      canvas.onmousedown = () => isDrawing = true;
+      window.onmouseup = () => isDrawing = false;
+      canvas.onmousemove = scratch;
+
+      canvas.ontouchstart = (e) => { isDrawing = true; scratch(e); };
+      window.ontouchend = () => isDrawing = false;
+      canvas.ontouchmove = scratch;
     }
 
     function switchUser(newUser) {
