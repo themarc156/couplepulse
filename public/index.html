@@ -114,14 +114,13 @@
         </div>
       </section>
 
-      <!-- LIVE-BANNER: EINGEHENDES GELÜST (MIT EINFACHEM, GARantiert funktionierendem ENTHÜLLUNGS-BUTTON) -->
+      <!-- LIVE-BANNER: EINGEHENDES GELÜST -->
       <section id="incoming-craving-banner" class="hidden bg-gradient-to-r from-rose-950 to-pink-950 border border-rose-600/70 rounded-2xl p-4 glow-rose space-y-3 relative overflow-hidden">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
           <span>⚡ Spontanes Signal von Partner</span>
           <span id="incoming-time-badge" class="bg-rose-900/80 px-2 py-0.5 rounded-full text-[10px] border border-rose-500/40">BLITZ ⚡</span>
         </div>
         
-        <!-- Box mit Ein-Klick-Enthüllung -->
         <div class="bg-slate-950/90 border border-rose-800/50 rounded-xl p-3.5 space-y-2">
           <div id="craving-locked-view" class="text-center py-2 space-y-2">
             <div class="text-xs text-rose-200 font-medium">Ein geheimer Wunsch wurde an dich gesendet! 🎁</div>
@@ -170,19 +169,46 @@
 
       <!-- HAUPT-AKTIONEN -->
       <div class="space-y-2.5 pt-2 mt-auto">
-        <button onclick="openCravingModal()" class="w-full py-4 bg-gradient-to-r from-amber-600 via-rose-600 to-pink-600 text-xs uppercase font-bold tracking-wider rounded-xl shadow-lg shadow-rose-900/30 active:scale-98 transition-all flex items-center justify-center gap-2 glow-rose">
+        <button onclick="openCravingModal()" class="w-full py-3.5 bg-gradient-to-r from-amber-600 via-rose-600 to-pink-600 text-xs uppercase font-bold tracking-wider rounded-xl shadow-lg shadow-rose-900/30 active:scale-98 transition-all flex items-center justify-center gap-2 glow-rose">
           <span>🔥</span> <span>Spontanen Wunsch senden</span>
         </button>
 
-        <button onclick="LiveStream.startAsSender()" class="w-full py-3.5 bg-gradient-to-r from-purple-900/80 via-slate-900 to-pink-950 border border-purple-500/40 text-purple-200 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-98 glow-purple">
-          <span>👁️</span> <span>Live-Peepshow starten (Open-End)</span>
+        <button onclick="openKopfkinoModal()" class="w-full py-3.5 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 border border-purple-500/40 text-purple-200 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-98 glow-purple">
+          <span>🧠</span> <span>Kopfkino & Vorlieben-Match</span>
+        </button>
+
+        <button onclick="LiveStream.startAsSender()" class="w-full py-3 bg-gradient-to-r from-purple-950 via-slate-900 to-pink-950 border border-purple-500/30 text-purple-300 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-98">
+          <span>👁️</span> <span>Live-Peepshow starten</span>
         </button>
       </div>
 
     </main>
 
     <!-- ================================================================= -->
-    <!-- MODAL: AUSSTEHENDE BEWERTUNGEN & HIGHLIGHT-ARCHIV -->
+    <!-- MODAL: KOPFKINO & VORLIEBEN-MATCH -->
+    <!-- ================================================================= -->
+    <div id="kopfkino-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl glow-purple max-h-[85vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+          <h3 class="font-bold text-sm text-purple-200 flex items-center gap-2">
+            <span>🧠</span> Kopfkino-Match
+          </h3>
+          <button onclick="closeKopfkinoModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">×</button>
+        </div>
+        <p class="text-[11px] text-slate-400 leading-snug">Wähle intuitiv aus. Wenn dein Partner dieselbe Richtung wählt, gibt es ein Match! ✨</p>
+        
+        <div id="kopfkino-questions-box" class="space-y-3 pt-1 text-xs">
+          <!-- Dynamisch oder statisch befüllt -->
+        </div>
+
+        <button onclick="submitKopfkinoAnswers()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
+          Mit Partner abgleichen ✨
+        </button>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MODAL: AUSSTEHENDE BEWERTUNGEN & ARCHIV -->
     <!-- ================================================================= -->
     <div id="pending-reviews-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl">
@@ -387,6 +413,7 @@
       ],
       pendingReviews: [],
       completedReviews: [],
+      kopfkinoAnswers: { Er: {}, Sie: {} },
       activeCraving: null,
       eveningReservation: null,
       cravingMode: 'quick',
@@ -398,7 +425,13 @@
 
     let currentUnfulfilledIndex = 0;
     let activeReviewItem = null;
-    let isCravingRevealed = false;
+
+    const kopfkinoQuestions = [
+      { id: 'q1', title: 'Tempo & Vibe', optA: 'Sanft & Hingebungsvoll ✨', optB: 'Wild & Intensiv 🔥' },
+      { id: 'q2', title: 'Deine Rolle', optA: 'Führen / Dominant 👑', optB: 'Hingeben / Genießen 🧘' },
+      { id: 'q3', title: 'Location', optA: 'Klassisch im Bett 🛏️', optB: 'Spontan irgendwo anders 🧱' },
+      { id: 'q4', title: 'Beleuchtung', optA: 'Kerzenschein & Dämmerlicht 🕯️', optB: 'Volles Licht / Alles sehen 👀' }
+    ];
 
     const catalog = {
       sein_koerper: {
@@ -556,7 +589,6 @@
         } else if (data.type === 'new_craving') {
           state.activeCraving = data.craving;
           state.requestHistory.unshift(data.craving);
-          isCravingRevealed = false;
           saveState();
           playSensualSound('chime');
           updateUI();
@@ -571,12 +603,16 @@
           state.activeCraving = null;
           showFeedbackBanner(`🎉 Partner-Rückmeldung: ${data.message}`);
           playSensualSound('chime');
-          if (data.action === 'accepted' && data.craving && data.craving.from === state.currentUser) {
-            state.pendingReviews.push({ id: data.craving.id, kinks: data.craving.kinks, from: state.currentUser });
-          }
           saveState();
         } else if (data.type === 'craving_feedback') {
           showFeedbackBanner(data.feedback);
+          playSensualSound('chime');
+        } else if (data.type === 'kopfkino_sync') {
+          if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
+          const partnerName = state.currentUser === 'Er' ? 'Sie' : 'Er';
+          state.kopfkinoAnswers[partnerName] = data.answers;
+          saveState();
+          showFeedbackBanner(`🧠 Dein Partner hat das Kopfkino-Match ausgefüllt! Öffne es, um eure Übereinstimmungen zu sehen.`);
           playSensualSound('chime');
         }
       },
@@ -703,12 +739,12 @@
     }
 
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v57', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v58', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v57');
+      const saved = localStorage.getItem('couple_pulse_state_v58');
       if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch (e) {} }
       updateUI();
     }
@@ -736,19 +772,12 @@
           <div class="text-slate-300 text-xs mt-1">Dynamik: ${state.activeCraving.roleDescription}</div>
           <div class="text-amber-300 font-bold text-xs mt-1 bg-amber-950/40 p-1.5 rounded-lg border border-amber-800/40">🎯 ZIEL: ${state.activeCraving.goal}</div>
         `;
-        
-        const lockedView = document.getElementById('craving-locked-view');
-        const unlockedView = document.getElementById('craving-unlocked-view');
-        if (lockedView && unlockedView) {
-          lockedView.classList.toggle('hidden', isCravingRevealed);
-          unlockedView.classList.toggle('hidden', !isCravingRevealed);
-        }
       } else { banner.classList.add('hidden'); }
 
       const eveningBanner = document.getElementById('evening-reservation-banner');
       if (state.eveningReservation) {
-        eveningBanner.classList.remove('hidden');
-        document.getElementById('evening-reservation-text').innerHTML = `🔥 ${state.eveningReservation.kinks.join(' + ')} | ${state.eveningReservation.goal}`;
+        eveningBanner.classList.add('hidden'); // Falls noch aktiv
+        // Evening reservation content logic if needed
       } else { eveningBanner.classList.add('hidden'); }
 
       document.getElementById('btn-user-er').className = state.currentUser === 'Er' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
@@ -757,13 +786,12 @@
       renderPartnerUnfulfilledCard();
     }
 
-    function revealCravingDirectly() {
-      isCravingRevealed = true;
-      const lockedView = document.getElementById('craving-locked-view');
-      const unlockedView = document.getElementById('craving-unlocked-view');
-      if (lockedView && unlockedView) {
-        lockedView.classList.add('hidden');
-        unlockedView.classList.remove('hidden');
+    function toggleCravingReveal() {
+      const cover = document.getElementById('craving-cover-view');
+      const hidden = document.getElementById('craving-hidden-view');
+      if (cover && hidden) {
+        cover.classList.toggle('hidden');
+        hidden.classList.toggle('hidden');
       }
     }
 
@@ -849,6 +877,71 @@
         saveState();
         alert(`❤️ Wunsch als erfüllt markiert!`);
       }
+    }
+
+    // =========================================================================
+    // KOPFKINO & VORLIEBEN-MATCH LOGIK
+    // =========================================================================
+    function openKopfkinoModal() {
+      const modal = document.getElementById('kopfkino-modal');
+      const box = document.getElementById('kopfkino-questions-box');
+      box.innerHTML = '';
+
+      if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
+      const myAnswers = state.kopfkinoAnswers[state.currentUser] || {};
+      const partnerName = state.currentUser === 'Er' ? 'Sie' : 'Er';
+      const partnerAnswers = state.kopfkinoAnswers[partnerName] || {};
+
+      kopfkinoQuestions.forEach((q) => {
+        const selected = myAnswers[q.id];
+        const partnerChoice = partnerAnswers[q.id];
+        let matchBadge = '';
+
+        if (selected && partnerChoice) {
+          if (selected === partnerChoice) {
+            matchBadge = `<span class="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-700/50 px-2 py-0.5 rounded-full font-bold ml-2">✨ MATCH!</span>`;
+          } else {
+            matchBadge = `<span class="text-[10px] bg-rose-950 text-rose-300 border border-rose-800/50 px-2 py-0.5 rounded-full font-medium ml-2">Andere Richtung</span>`;
+          }
+        }
+
+        const div = document.createElement('div');
+        div.className = 'bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-1.5';
+        div.innerHTML = `
+          <div class="font-bold text-purple-300 flex items-center justify-between text-xs">
+            <span>${q.title}</span>
+            ${matchBadge}
+          </div>
+          <div class="grid grid-cols-2 gap-1.5 pt-1">
+            <button onclick="setKopfkinoChoice('${q.id}', 'A')" id="btn-${q.id}-A" class="py-2 px-2 rounded-lg border text-left text-[11px] font-medium transition-all ${selected === 'A' ? 'bg-purple-600 border-purple-400 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-300'}">
+              ${q.optA}
+            </button>
+            <button onclick="setKopfkinoChoice('${q.id}', 'B')" id="btn-${q.id}-B" class="py-2 px-2 rounded-lg border text-left text-[11px] font-medium transition-all ${selected === 'B' ? 'bg-purple-600 border-purple-400 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-300'}">
+              ${q.optB}
+            </button>
+          </div>
+        `;
+        box.appendChild(div);
+      });
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeKopfkinoModal() {
+      document.getElementById('kopfkino-modal').classList.add('hidden');
+    }
+
+    function setKopfkinoChoice(qId, choice) {
+      if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
+      state.kopfkinoAnswers[state.currentUser][qId] = choice;
+      openKopfkinoModal(); // UI aktualisieren
+    }
+
+    function submitKopfkinoAnswers() {
+      closeKopfkinoModal();
+      saveState();
+      LiveStream.sendData({ type: 'kopfkino_sync', answers: state.kopfkinoAnswers[state.currentUser] });
+      alert("🧠 Kopfkino-Entscheidungen mit Partner abgeglichen!");
     }
 
     function openPendingReviewsModal() {
