@@ -187,7 +187,9 @@
           </h3>
           <button onclick="closePendingReviewsModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">×</button>
         </div>
-        <div id="pending-reviews-container" class="space-y-2.5 max-h-[60vh] overflow-y-auto text-xs"></div>
+        <div id="pending-reviews-container" class="space-y-2.5 max-h-[60vh] overflow-y-auto text-xs">
+          <!-- Dynamisch befüllt -->
+        </div>
       </div>
     </div>
 
@@ -687,12 +689,12 @@
     }
 
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v54', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v55', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v54');
+      const saved = localStorage.getItem('couple_pulse_state_v55');
       if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch (e) {} }
       updateUI();
     }
@@ -811,9 +813,9 @@
       window.onmouseup = () => isDrawing = false;
       canvas.onmousemove = scratch;
 
-      canvas.ontouchstart = (e) => { isDrawing = true; scratch(e); e.preventDefault(); };
+      canvas.ontouchstart = (e) => { isDrawing = true; scratch(e); };
       window.ontouchend = () => isDrawing = false;
-      canvas.ontouchmove = (e) => { scratch(e); e.preventDefault(); };
+      canvas.ontouchmove = (e) => { scratch(e); };
     }
 
     function switchUser(newUser) {
