@@ -89,7 +89,7 @@
       <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK -->
       <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950 to-purple-950 border border-rose-500/70 rounded-2xl p-3.5 glow-rose space-y-2 animate-pulse">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
-          <span>💖 Rückmeldung vom Partner</span>
+          <span>💖 Feedback vom Partner</span>
           <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Schließen</button>
         </div>
         <div id="incoming-feedback-text" class="text-sm font-bold text-slate-100 bg-slate-950/70 p-2.5 rounded-xl border border-rose-800/40"></div>
@@ -114,7 +114,7 @@
         </div>
       </section>
 
-      <!-- LIVE-BANNER: EINGEHENDES GELÜST (MIT ROBUSTEM FREIRUBBELN-EFFEKT) -->
+      <!-- LIVE-BANNER: EINGEHENDES GELÜST (FLÜSSIGER RUBBEL-EFFEKT) -->
       <section id="incoming-craving-banner" class="hidden bg-gradient-to-r from-rose-950 to-pink-950 border border-rose-600/70 rounded-2xl p-4 glow-rose space-y-3 relative overflow-hidden">
         <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
           <span>⚡ Spontanes Signal von Partner</span>
@@ -553,13 +553,17 @@
           saveState();
           playSensualSound('chime');
           updateUI();
+        } else if (data.type === 'craving_accepted') {
+          if (data.craving && data.craving.from === state.currentUser) {
+            state.pendingReviews.push({ id: data.craving.id, kinks: data.craving.kinks, from: state.currentUser });
+            saveState();
+            playSensualSound('chime');
+            showFeedbackBanner(`🎉 Dein Partner hat deinen Wunsch ("${data.craving.kinks.join(' + ')}") angenommen!`);
+          }
         } else if (data.type === 'craving_response') {
           state.activeCraving = null;
           showFeedbackBanner(`🎉 Partner-Rückmeldung: ${data.message}`);
           playSensualSound('chime');
-          if (data.action === 'accepted' && data.craving && data.craving.from === state.currentUser) {
-            state.pendingReviews.push({ id: data.craving.id, kinks: data.craving.kinks, from: state.currentUser });
-          }
           saveState();
         } else if (data.type === 'craving_feedback') {
           showFeedbackBanner(data.feedback);
@@ -689,12 +693,12 @@
     }
 
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v55', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v54', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v55');
+      const saved = localStorage.getItem('couple_pulse_state_v54');
       if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch (e) {} }
       updateUI();
     }
@@ -790,23 +794,6 @@
         ctx.beginPath();
         ctx.arc(x, y, 25, 0, Math.PI * 2, false);
         ctx.fill();
-
-        checkProgress();
-      }
-
-      function checkProgress() {
-        try {
-          const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-          let cleared = 0;
-          for (let i = 3; i < pixels.length; i += 32) {
-            if (pixels[i] === 0) cleared++;
-          }
-          if (cleared > (pixels.length / 32) * 0.35) {
-            canvas.style.transition = 'opacity 0.4s ease';
-            canvas.style.opacity = '0';
-            setTimeout(() => canvas.classList.add('hidden'), 400);
-          }
-        } catch(err) {}
       }
 
       canvas.onmousedown = (e) => { isDrawing = true; scratch(e); };
@@ -1125,9 +1112,7 @@
     }
 
     function respondCraving(action) {
-      let responseMsg = '';
       if (action === 'accepted') {
-        responseMsg = 'Kommt sofort! ❤️';
         const cravingObj = state.activeCraving;
         state.activeCraving = null;
         playSensualSound('chime');
@@ -1137,15 +1122,13 @@
           LiveStream.sendData({ type: 'craving_accepted', craving: cravingObj });
         }
       } else if (action === 'later') {
-        responseMsg = 'Braucht noch 10 Minuten ⏳';
         alert("⏳ Dein Partner hat auf in 10 Minuten verschoben!");
         state.activeCraving = null;
-        LiveStream.sendData({ type: 'craving_response', action: 'later', message: responseMsg });
+        LiveStream.sendData({ type: 'craving_response', action: 'later', message: 'Braucht noch 10 Minuten ⏳' });
       } else if (action === 'evening') {
-        responseMsg = 'Für heute Abend reserviert 🌙';
         state.eveningReservation = { from: state.activeCraving.from, kinks: state.activeCraving.kinks, roleDescription: state.activeCraving.roleDescription, goal: state.activeCraving.goal };
         state.activeCraving = null;
-        LiveStream.sendData({ type: 'craving_response', action: 'evening', message: responseMsg });
+        LiveStream.sendData({ type: 'craving_response', action: 'evening', message: 'Für heute Abend reserviert 🌙' });
       }
       saveState();
     }
