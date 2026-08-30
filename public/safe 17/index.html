@@ -124,12 +124,12 @@
         <div class="bg-slate-950/90 border border-rose-800/50 rounded-xl p-3.5 space-y-2">
           <div id="craving-locked-view" class="text-center py-2 space-y-2">
             <div class="text-xs text-rose-200 font-medium">Ein geheimer Wunsch wurde an dich gesendet! 🎁</div>
-            <button onclick="toggleCravingReveal()" class="w-full py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md active:scale-98 transition-all">
+            <button onclick="revealCravingDirectly()" class="w-full py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md active:scale-98 transition-all">
               ✨ Wunsch aufdecken ✨
             </button>
           </div>
           
-          <div id="craving-hidden-view" class="hidden space-y-2">
+          <div id="craving-unlocked-view" class="hidden space-y-2">
             <div id="incoming-craving-text" class="text-xs font-semibold text-slate-100 leading-relaxed"></div>
           </div>
         </div>
@@ -169,7 +169,7 @@
 
       <!-- HAUPT-AKTIONEN -->
       <div class="space-y-2.5 pt-2 mt-auto">
-        <button onclick="openCravingModal()" class="w-full py-4 bg-gradient-to-r from-amber-600 via-rose-600 to-pink-600 text-xs uppercase font-bold tracking-wider rounded-xl shadow-lg shadow-rose-900/30 active:scale-98 transition-all flex items-center justify-center gap-2 glow-rose">
+        <button onclick="openCravingModal()" class="w-full py-3.5 bg-gradient-to-r from-amber-600 via-rose-600 to-pink-600 text-xs uppercase font-bold tracking-wider rounded-xl shadow-lg shadow-rose-900/30 active:scale-98 transition-all flex items-center justify-center gap-2 glow-rose">
           <span>🔥</span> <span>Spontanen Wunsch senden</span>
         </button>
 
@@ -185,53 +185,30 @@
     </main>
 
     <!-- ================================================================= -->
-    <!-- MODAL: KOPFKINO (DECK-BUILDING & ZUFÄLLIGE KARTEN-RUNDE) -->
+    <!-- MODAL: KOPFKINO & VORLIEBEN-MATCH -->
     <!-- ================================================================= -->
     <div id="kopfkino-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl glow-purple max-h-[85vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
           <h3 class="font-bold text-sm text-purple-200 flex items-center gap-2">
-            <span>🧠</span> Kopfkino-Kompass
+            <span>🧠</span> Kopfkino-Match
           </h3>
           <button onclick="closeKopfkinoModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">×</button>
         </div>
+        <p class="text-[11px] text-slate-400 leading-snug">Wähle intuitiv aus. Wenn dein Partner dieselbe Richtung wählt, gibt es ein Match! ✨</p>
         
-        <div id="kopfkino-content-area">
-          <!-- Dynamischer Inhalt (Setup oder Swipe-Karten) -->
+        <div id="kopfkino-questions-box" class="space-y-3 pt-1 text-xs">
+          <!-- Dynamisch oder statisch befüllt -->
         </div>
-      </div>
-    </div>
 
-    <!-- MODAL: EIGENE KOPFKINO-KARTE ERSTELLEN (MIT EINZELNEN EINGABEFELDERN) -->
-    <div id="kopfkino-create-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
-          <h3 id="create-modal-title" class="font-bold text-sm text-purple-200">➕ Eigene Kopfkino-Karte</h3>
-          <button onclick="closeKopfkinoCreateModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">×</button>
-        </div>
-        <div class="space-y-3 text-xs">
-          <div>
-            <label class="font-bold text-slate-400 uppercase tracking-wider block pb-1">Thema / Titel</label>
-            <input id="custom-kink-title" type="text" placeholder="z. B. Massage im Wohnzimmer ✨" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500">
-          </div>
-          <div>
-            <label class="font-bold text-slate-400 uppercase tracking-wider block pb-1">Antwortmöglichkeiten</label>
-            <div id="custom-options-list" class="space-y-2">
-              <input type="text" class="custom-option-input w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500" value="🔗 Aktiv">
-              <input type="text" class="custom-option-input w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500" value="⛓️ Passiv">
-              <input type="text" class="custom-option-input w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500" value="❌ Heute nicht">
-            </div>
-            <button onclick="addCustomOptionField()" class="text-[11px] text-purple-400 font-semibold pt-2 block">+ Weitere Antwortmöglichkeit</button>
-          </div>
-          <button onclick="saveCustomKopfkinoCard()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold uppercase tracking-wider rounded-xl shadow">
-            Speichern 🚀
-          </button>
-        </div>
+        <button onclick="submitKopfkinoAnswers()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
+          Mit Partner abgleichen ✨
+        </button>
       </div>
     </div>
 
     <!-- ================================================================= -->
-    <!-- MODAL: AUSSTEHENDE BEWERTUNGEN & HIGHLIGHT-ARCHIV -->
+    <!-- MODAL: AUSSTEHENDE BEWERTUNGEN & ARCHIV -->
     <!-- ================================================================= -->
     <div id="pending-reviews-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl">
@@ -437,48 +414,23 @@
       pendingReviews: [],
       completedReviews: [],
       kopfkinoAnswers: { Er: {}, Sie: {} },
-      kopfkinoDeck: ['bondage', 'spanking', 'oral', 'toys', 'control'],
       activeCraving: null,
       eveningReservation: null,
       cravingMode: 'quick',
       selectedRole: 'passiv',
       selectedKinks: [],
       selectedGoalIndex: 0,
-      customKopfkinoCards: [],
       customChips: []
     };
 
     let currentUnfulfilledIndex = 0;
     let activeReviewItem = null;
-    let currentKopfkinoCardIndex = 0;
-    let editingCardId = null;
 
-    const defaultKopfkinoCards = [
-      { 
-        id: 'bondage', 
-        title: 'Fesseln & Fixieren (Bondage)', 
-        options: ['🔗 Aktiv (Fesseln)', '⛓️ Passiv (Gefesselt werden)', '🤝 Egal / Beides', '❌ Heute nicht'] 
-      },
-      { 
-        id: 'spanking', 
-        title: 'Spanking & Klapse (Impact)', 
-        options: ['👋 Aktiv (Austeilen)', '🍑 Passiv (Einstecken)', '🤝 Egal / Beides', '❌ Heute nicht'] 
-      },
-      { 
-        id: 'oral', 
-        title: 'Oraler Sex', 
-        options: ['👅 Aktiv (Geben)', '💋 Passiv (Nehmen)', '🔥 Gegenseitig (69)', '❌ Heute nicht'] 
-      },
-      { 
-        id: 'toys', 
-        title: 'Toys & Hilfsmittel', 
-        options: ['🔌 Mit Toy-Einsatz', '✨ Pure Haut-zu-Haut-Nähe', '🤝 Egal / Beides', '❌ Heute nicht'] 
-      },
-      { 
-        id: 'control', 
-        title: 'Führung & Kontrolle', 
-        options: ['👑 Ich führe heute', '🧘 Ich lasse mich fallen', '🤝 Spontan / Wechseln', '❌ Heute nicht'] 
-      }
+    const kopfkinoQuestions = [
+      { id: 'q1', title: 'Tempo & Vibe', optA: 'Sanft & Hingebungsvoll ✨', optB: 'Wild & Intensiv 🔥' },
+      { id: 'q2', title: 'Deine Rolle', optA: 'Führen / Dominant 👑', optB: 'Hingeben / Genießen 🧘' },
+      { id: 'q3', title: 'Location', optA: 'Klassisch im Bett 🛏️', optB: 'Spontan irgendwo anders 🧱' },
+      { id: 'q4', title: 'Beleuchtung', optA: 'Kerzenschein & Dämmerlicht 🕯️', optB: 'Volles Licht / Alles sehen 👀' }
     ];
 
     const catalog = {
@@ -660,7 +612,7 @@
           const partnerName = state.currentUser === 'Er' ? 'Sie' : 'Er';
           state.kopfkinoAnswers[partnerName] = data.answers;
           saveState();
-          showFeedbackBanner(`🧠 Dein Partner hat das Kopfkino-Deck aktualisiert! Öffne es, um eure Übereinstimmungen zu sehen.`);
+          showFeedbackBanner(`🧠 Dein Partner hat das Kopfkino-Match ausgefüllt! Öffne es, um eure Übereinstimmungen zu sehen.`);
           playSensualSound('chime');
         }
       },
@@ -699,8 +651,8 @@
 
       switchControlTab(tab) {
         ['emoji', 'regie', 'whisper'].forEach(t => {
-          document.getElementById(`tab-ctrl-${t}`).className = (t === tab) ? 'text-rose-400 font-bold' : 'text-slate-400';
           document.getElementById(`ctrl-panel-${t}`).classList.toggle('hidden', t !== tab);
+          document.getElementById(`tab-ctrl-${t}`).className = (t === tab) ? 'text-rose-400 font-bold' : 'text-slate-400';
         });
       },
 
@@ -787,12 +739,12 @@
     }
 
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v68', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v58', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v68');
+      const saved = localStorage.getItem('couple_pulse_state_v58');
       if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch (e) {} }
       updateUI();
     }
@@ -824,7 +776,8 @@
 
       const eveningBanner = document.getElementById('evening-reservation-banner');
       if (state.eveningReservation) {
-        eveningBanner.classList.add('hidden');
+        eveningBanner.classList.add('hidden'); // Falls noch aktiv
+        // Evening reservation content logic if needed
       } else { eveningBanner.classList.add('hidden'); }
 
       document.getElementById('btn-user-er').className = state.currentUser === 'Er' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
@@ -834,10 +787,10 @@
     }
 
     function toggleCravingReveal() {
-      const locked = document.getElementById('craving-locked-view');
+      const cover = document.getElementById('craving-cover-view');
       const hidden = document.getElementById('craving-hidden-view');
-      if (locked && hidden) {
-        locked.classList.toggle('hidden');
+      if (cover && hidden) {
+        cover.classList.toggle('hidden');
         hidden.classList.toggle('hidden');
       }
     }
@@ -927,261 +880,61 @@
     }
 
     // =========================================================================
-    // KOPFKINO & DECK-BUILDING LOGIK
+    // KOPFKINO & VORLIEBEN-MATCH LOGIK
     // =========================================================================
-    function getAllAvailableCards() {
-      const defaults = defaultKopfkinoCards;
-      const custom = state.customKopfkinoCards || [];
-      return [...defaults, ...custom];
-    }
-
     function openKopfkinoModal() {
-      if (!state.kopfkinoDeck || state.kopfkinoDeck.length === 0) {
-        state.kopfkinoDeck = defaultKopfkinoCards.map(c => c.id);
-      }
-      renderKopfkinoSetup();
-      document.getElementById('kopfkino-modal').classList.remove('hidden');
+      const modal = document.getElementById('kopfkino-modal');
+      const box = document.getElementById('kopfkino-questions-box');
+      box.innerHTML = '';
+
+      if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
+      const myAnswers = state.kopfkinoAnswers[state.currentUser] || {};
+      const partnerName = state.currentUser === 'Er' ? 'Sie' : 'Er';
+      const partnerAnswers = state.kopfkinoAnswers[partnerName] || {};
+
+      kopfkinoQuestions.forEach((q) => {
+        const selected = myAnswers[q.id];
+        const partnerChoice = partnerAnswers[q.id];
+        let matchBadge = '';
+
+        if (selected && partnerChoice) {
+          if (selected === partnerChoice) {
+            matchBadge = `<span class="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-700/50 px-2 py-0.5 rounded-full font-bold ml-2">✨ MATCH!</span>`;
+          } else {
+            matchBadge = `<span class="text-[10px] bg-rose-950 text-rose-300 border border-rose-800/50 px-2 py-0.5 rounded-full font-medium ml-2">Andere Richtung</span>`;
+          }
+        }
+
+        const div = document.createElement('div');
+        div.className = 'bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-1.5';
+        div.innerHTML = `
+          <div class="font-bold text-purple-300 flex items-center justify-between text-xs">
+            <span>${q.title}</span>
+            ${matchBadge}
+          </div>
+          <div class="grid grid-cols-2 gap-1.5 pt-1">
+            <button onclick="setKopfkinoChoice('${q.id}', 'A')" id="btn-${q.id}-A" class="py-2 px-2 rounded-lg border text-left text-[11px] font-medium transition-all ${selected === 'A' ? 'bg-purple-600 border-purple-400 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-300'}">
+              ${q.optA}
+            </button>
+            <button onclick="setKopfkinoChoice('${q.id}', 'B')" id="btn-${q.id}-B" class="py-2 px-2 rounded-lg border text-left text-[11px] font-medium transition-all ${selected === 'B' ? 'bg-purple-600 border-purple-400 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-300'}">
+              ${q.optB}
+            </button>
+          </div>
+        `;
+        box.appendChild(div);
+      });
+
+      modal.classList.remove('hidden');
     }
 
     function closeKopfkinoModal() {
       document.getElementById('kopfkino-modal').classList.add('hidden');
     }
 
-    function renderKopfkinoSetup() {
-      const container = document.getElementById('kopfkino-content-area');
-      const allCards = getAllAvailableCards();
-      const activeDeck = state.kopfkinoDeck || [];
-
-      let cardsHtml = allCards.map(c => {
-        const isInDeck = activeDeck.includes(c.id);
-        const isCustom = c.id.startsWith('custom_');
-        let actionButtons = '';
-        if (isCustom) {
-          actionButtons = `
-            <div class="flex items-center gap-1.5">
-              <button onclick="event.stopPropagation(); openKopfkinoCreateModal('${c.id}')" class="p-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded text-[10px]">✏️</button>
-              <button onclick="event.stopPropagation(); deleteCustomKopfkinoCard('${c.id}')" class="p-1 bg-slate-900 hover:bg-slate-800 text-rose-400 rounded text-[10px]">🗑️</button>
-            </div>
-          `;
-        }
-        return `
-          <div onclick="toggleCardInDeck('${c.id}')" class="p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${isInDeck ? 'bg-purple-950/60 border-purple-500 text-purple-200 font-semibold' : 'bg-slate-950 border-slate-850 text-slate-400'}">
-            <span class="text-xs truncate max-w-[170px]">🔥 ${c.title}</span>
-            <div class="flex items-center gap-2">
-              <span class="text-[10px]">${isInDeck ? '✅ Aktiv' : '➕ Hinzufügen'}</span>
-              ${actionButtons}
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      container.innerHTML = `
-        <div class="space-y-3">
-          <div class="text-xs text-slate-300">Wähle aus, welche Themen heute <b>im Spiel</b> sein sollen:</div>
-          <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-            ${cardsHtml}
-          </div>
-          <button onclick="openKopfkinoCreateModal()" class="w-full py-2 bg-slate-900 border border-slate-800 text-purple-300 text-xs font-semibold rounded-xl">
-            ➕ Eigene Kopfkino-Karte erstellen
-          </button>
-          <button onclick="startKopfkinoSwipeSession()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
-            Karten-Runde starten 🚀
-          </button>
-        </div>
-      `;
-    }
-
-    function toggleCardInDeck(cardId) {
-      if (!state.kopfkinoDeck) state.kopfkinoDeck = defaultKopfkinoCards.map(c => c.id);
-      if (state.kopfkinoDeck.includes(cardId)) {
-        if (state.kopfkinoDeck.length > 1) {
-          state.kopfkinoDeck = state.kopfkinoDeck.filter(id => id !== cardId);
-        } else {
-          alert("Mindestens eine Karte muss aktiv sein.");
-        }
-      } else {
-        state.kopfkinoDeck.push(cardId);
-      }
-      saveState();
-      renderKopfkinoSetup();
-    }
-
-    function openKopfkinoCreateModal(cardId = null) {
-      editingCardId = cardId;
-      const titleInput = document.getElementById('custom-kink-title');
-      const listContainer = document.getElementById('custom-options-list');
-      const modalTitle = document.getElementById('create-modal-title');
-      listContainer.innerHTML = '';
-
-      if (cardId) {
-        const card = (state.customKopfkinoCards || []).find(c => c.id === cardId);
-        if (card) {
-          titleInput.value = card.title;
-          modalTitle.innerText = '✏️ Kopfkino-Karte bearbeiten';
-          (card.options || []).forEach(opt => addCustomOptionField(opt));
-        }
-      } else {
-        titleInput.value = '';
-        modalTitle.innerText = '➕ Eigene Kopfkino-Karte';
-        addCustomOptionField('🔗 Aktiv');
-        addCustomOptionField('⛓️ Passiv');
-        addCustomOptionField('❌ Heute nicht');
-      }
-      document.getElementById('kopfkino-create-modal').classList.remove('hidden');
-    }
-
-    function closeKopfkinoCreateModal() {
-      document.getElementById('kopfkino-create-modal').classList.add('hidden');
-    }
-
-    function addCustomOptionField(value = '') {
-      const list = document.getElementById('custom-options-list');
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'custom-option-input w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500';
-      input.value = value;
-      input.placeholder = 'Antwortmöglichkeit...';
-      list.appendChild(input);
-    }
-
-    function saveCustomKopfkinoCard() {
-      const title = document.getElementById('custom-kink-title').value.trim();
-      const inputs = document.querySelectorAll('.custom-option-input');
-      const options = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
-
-      if (!title) { alert("Bitte Titel eingeben."); return; }
-      if (options.length === 0) { alert("Bitte mindestens eine Antwortmöglichkeit angeben."); return; }
-
-      if (editingCardId) {
-        const card = state.customKopfkinoCards.find(c => c.id === editingCardId);
-        if (card) {
-          card.title = title;
-          card.options = options;
-        }
-      } else {
-        const id = 'custom_' + Date.now();
-        const newCard = { id, title, type: 'kink', options };
-        if (!state.customKopfkinoCards) state.customKopfkinoCards = [];
-        state.customKopfkinoCards.push(newCard);
-        if (!state.kopfkinoDeck) state.kopfkinoDeck = defaultKopfkinoCards.map(c => c.id);
-        state.kopfkinoDeck.push(id);
-      }
-
-      closeKopfkinoCreateModal();
-      saveState();
-      renderKopfkinoSetup();
-      alert("✓ Karte erfolgreich gespeichert!");
-    }
-
-    function deleteCustomKopfkinoCard(cardId) {
-      if (confirm("Möchtest du diese eigene Karte wirklich löschen?")) {
-        state.customKopfkinoCards = (state.customKopfkinoCards || []).filter(c => c.id !== cardId);
-        state.kopfkinoDeck = (state.kopfkinoDeck || []).filter(id => id !== cardId);
-        saveState();
-        renderKopfkinoSetup();
-      }
-    }
-
-    function startKopfkinoSwipeSession() {
-      currentKopfkinoCardIndex = 0;
+    function setKopfkinoChoice(qId, choice) {
       if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
-      renderKopfkinoSwipeCard();
-    }
-
-    function renderKopfkinoSwipeCard() {
-      const container = document.getElementById('kopfkino-content-area');
-      const allCards = getAllAvailableCards();
-      const activeDeckIds = state.kopfkinoDeck || allCards.map(c => c.id);
-      const activeCards = allCards.filter(c => activeDeckIds.includes(c.id));
-
-      if (currentKopfkinoCardIndex >= activeCards.length) {
-        submitKopfkinoAnswers();
-        return;
-      }
-
-      const q = activeCards[currentKopfkinoCardIndex];
-      const myAnswers = state.kopfkinoAnswers[state.currentUser] || {};
-      const selected = myAnswers[q.id];
-
-      const partnerName = state.currentUser === 'Er' ? 'Sie' : 'Er';
-      const partnerAnswers = state.kopfkinoAnswers[partnerName] || {};
-      const partnerChoice = partnerAnswers[q.id];
-
-      let matchInfoHtml = '';
-      if (selected && partnerChoice) {
-        if (selected.includes('Heute nicht') || partnerChoice.includes('Heute nicht')) {
-          matchInfoHtml = `<div class="bg-rose-950/85 border border-rose-600/50 text-rose-300 p-2.5 rounded-xl text-center font-bold text-xs">⚠️ Grenze / Heute nicht dabei.</div>`;
-        } else if (selected === partnerChoice) {
-          matchInfoHtml = `<div class="bg-emerald-950/85 border border-emerald-600/50 text-emerald-300 p-2.5 rounded-xl text-center font-bold text-xs">✨ Vibe-Match! Ihr habt dasselbe gewählt.</div>`;
-        } else if ((selected.includes('Aktiv') && partnerChoice.includes('Passiv')) || (selected.includes('Passiv') && partnerChoice.includes('Aktiv')) || (selected.includes('austeilen') && partnerChoice.includes('einstecken')) || (selected.includes('einstecken') && partnerChoice.includes('austeilen'))) {
-          matchInfoHtml = `<div class="bg-purple-950/85 border border-purple-600/50 text-purple-300 p-2.5 rounded-xl text-center font-bold text-xs">⛓️ Perfekter Rollen-Match (Aktiv/Passiv)!</div>`;
-        } else {
-          matchInfoHtml = `<div class="bg-slate-900 border border-slate-800 text-slate-300 p-2.5 rounded-xl text-center text-xs">Partner hat eine andere Richtung gewählt.</div>`;
-        }
-      }
-
-      let optionsHtml = q.options.map((opt) => {
-        const isSelected = selected === opt;
-        const isNo = opt.includes('Heute nicht');
-        let btnClass = isSelected 
-          ? 'bg-gradient-to-r from-rose-600 to-pink-600 border-rose-400 text-white font-bold shadow-lg' 
-          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700';
-        if (isNo && !isSelected) {
-          btnClass = 'bg-slate-950 border-slate-800 text-rose-400 hover:border-rose-900';
-        }
-        return `<button onclick="selectKopfkinoOption('${q.id}', '${opt}')" class="w-full py-2.5 px-3.5 rounded-xl border text-left text-xs font-medium transition-all flex items-center justify-between ${btnClass}">
-          <span>${opt}</span>
-          ${isSelected ? '<span>✓</span>' : ''}
-        </button>`;
-      }).join('');
-
-      container.innerHTML = `
-        <div class="space-y-4">
-          <div class="flex justify-between items-center text-[10px] font-bold text-purple-400 uppercase tracking-wider">
-            <span>Karte ${currentKopfkinoCardIndex + 1} von ${activeCards.length}</span>
-            <button onclick="openKopfkinoModal()" class="text-slate-400 underline">← Deck bearbeiten</button>
-          </div>
-          <div class="bg-slate-950 border border-slate-850 p-4 rounded-2xl space-y-3">
-            <h4 class="font-bold text-slate-100 text-sm">🔥 ${q.title}</h4>
-            <div class="space-y-2 pt-1">
-              ${optionsHtml}
-            </div>
-          </div>
-          ${matchInfoHtml}
-          
-          <div class="flex gap-2 pt-2">
-            ${currentKopfkinoCardIndex > 0 ? `<button onclick="prevKopfkinoCard()" class="py-2.5 px-4 bg-slate-800 text-xs font-semibold rounded-xl text-slate-300">← Zurück</button>` : ''}
-            ${currentKopfkinoCardIndex < activeCards.length - 1 ? 
-              `<button onclick="nextKopfkinoCard()" class="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow">Weiter →</button>` : 
-              `<button onclick="submitKopfkinoAnswers()" class="flex-1 py-2.5 bg-gradient-to-r from-rose-600 to-purple-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg">Mit Partner abgleichen ✨</button>`
-            }
-          </div>
-        </div>
-      `;
-    }
-
-    function nextKopfkinoCard() {
-      const allCards = getAllAvailableCards();
-      const activeDeckIds = state.kopfkinoDeck || allCards.map(c => c.id);
-      const activeCards = allCards.filter(c => activeDeckIds.includes(c.id));
-      if (currentKopfkinoCardIndex < activeCards.length - 1) {
-        currentKopfkinoCardIndex++;
-        renderKopfkinoSwipeCard();
-      }
-    }
-
-    function prevKopfkinoCard() {
-      if (currentKopfkinoCardIndex > 0) {
-        currentKopfkinoCardIndex--;
-        renderKopfkinoSwipeCard();
-      }
-    }
-
-    function selectKopfkinoOption(qId, option) {
-      if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
-      state.kopfkinoAnswers[state.currentUser][qId] = option;
-      saveState();
-      renderKopfkinoSwipeCard();
+      state.kopfkinoAnswers[state.currentUser][qId] = choice;
+      openKopfkinoModal(); // UI aktualisieren
     }
 
     function submitKopfkinoAnswers() {
@@ -1414,24 +1167,28 @@
     }
 
     function respondCraving(action) {
+      let responseMsg = '';
       if (action === 'accepted') {
+        responseMsg = 'Kommt sofort! ❤️ (Sofort da)';
         const cravingObj = state.activeCraving;
         state.activeCraving = null;
         playSensualSound('chime');
         alert("❤️ Angenommen! Viel Spaß.");
         
         if (cravingObj) {
-          LiveStream.sendData({ type: 'craving_response', action: 'accepted', message: 'Kommt sofort! ❤️', craving: cravingObj });
+          LiveStream.sendData({ type: 'craving_response', action: 'accepted', message: responseMsg, craving: cravingObj });
           LiveStream.sendData({ type: 'craving_accepted', craving: cravingObj });
         }
       } else if (action === 'later') {
+        responseMsg = 'Braucht noch 10 Minuten ⏳';
         alert("⏳ Dein Partner hat auf in 10 Minuten verschoben!");
         state.activeCraving = null;
-        LiveStream.sendData({ type: 'craving_response', action: 'later', message: 'Braucht noch 10 Minuten ⏳' });
+        LiveStream.sendData({ type: 'craving_response', action: 'later', message: responseMsg });
       } else if (action === 'evening') {
+        responseMsg = 'Für heute Abend reserviert 🌙';
         state.eveningReservation = { from: state.activeCraving.from, kinks: state.activeCraving.kinks, roleDescription: state.activeCraving.roleDescription, goal: state.activeCraving.goal };
         state.activeCraving = null;
-        LiveStream.sendData({ type: 'craving_response', action: 'evening', message: 'Für heute Abend reserviert 🌙' });
+        LiveStream.sendData({ type: 'craving_response', action: 'evening', message: responseMsg });
       }
       saveState();
     }
