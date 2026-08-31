@@ -94,20 +94,6 @@
         <div id="incoming-feedback-text" class="text-sm font-bold text-slate-100 bg-slate-950/70 p-2.5 rounded-xl border border-rose-800/40"></div>
       </section>
 
-      <!-- BANNER: KOPFKINO MATCH BEREIT / EINLADUNG -->
-      <section id="kopfkino-match-ready-banner" class="hidden bg-gradient-to-r from-purple-950 via-indigo-950 to-pink-950 border border-purple-500/70 rounded-2xl p-4 glow-purple space-y-2.5 animate-pulse">
-        <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
-          <span id="kopfkino-banner-title">✨ Kopfkino-Match bereit!</span>
-          <span class="bg-purple-900/80 px-2 py-0.5 rounded-full text-[10px] border border-purple-500/40 font-bold">MATCH 🔥</span>
-        </div>
-        <div id="kopfkino-banner-desc" class="text-xs text-slate-200 bg-slate-950/60 p-2.5 rounded-xl border border-purple-800/40">
-          Beide haben die Vorlieben eingeloggt. Enthülle jetzt euer gemeinsames Match & den Abend-Fahrplan!
-        </div>
-        <button onclick="openKopfkinoModal()" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg">
-          🔍 Abend-Match ansehen
-        </button>
-      </section>
-
       <!-- LIVE-BANNER: EINGEHENDER LIVE-STREAM VOM PARTNER -->
       <section id="incoming-stream-banner" class="hidden bg-gradient-to-r from-purple-950 to-pink-950 border border-purple-500/70 rounded-2xl p-4 glow-purple space-y-2 animate-pulse">
         <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
@@ -180,39 +166,6 @@
         <div id="stats-unfulfilled-list" class="space-y-2 text-xs pt-0.5"></div>
       </section>
 
-      <!-- OPTION C: ZENTRALE FLÜSTER-SHOUTBOX (HOMESCREEN) -->
-      <section class="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-3.5 space-y-2.5 glow-purple">
-        <div class="flex justify-between items-center">
-          <span class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
-            <span>💬</span> Flüsterbox für heute
-          </span>
-          <span class="text-[10px] text-slate-400">Live P2P</span>
-        </div>
-
-        <!-- Verlauf -->
-        <div id="home-shoutbox-messages" class="space-y-1.5 max-h-32 overflow-y-auto pr-1 text-xs">
-          <!-- Dynamisch befüllt -->
-        </div>
-
-        <!-- Emojis & Input -->
-        <div class="space-y-1.5 pt-1 border-t border-slate-800/80">
-          <div class="flex gap-1 overflow-x-auto pb-1 text-base">
-            <button onclick="sendQuickShoutEmoji('🔥')" class="p-1 hover:scale-125 transition-all">🔥</button>
-            <button onclick="sendQuickShoutEmoji('❤️')" class="p-1 hover:scale-125 transition-all">❤️</button>
-            <button onclick="sendQuickShoutEmoji('😈')" class="p-1 hover:scale-125 transition-all">😈</button>
-            <button onclick="sendQuickShoutEmoji('💋')" class="p-1 hover:scale-125 transition-all">💋</button>
-            <button onclick="sendQuickShoutEmoji('🍷')" class="p-1 hover:scale-125 transition-all">🍷</button>
-            <button onclick="sendQuickShoutEmoji('🪶')" class="p-1 hover:scale-125 transition-all">🪶</button>
-            <button onclick="sendQuickShoutEmoji('🍑')" class="p-1 hover:scale-125 transition-all">🍑</button>
-            <button onclick="sendQuickShoutEmoji('🕯️')" class="p-1 hover:scale-125 transition-all">🕯️</button>
-          </div>
-          <div class="flex gap-1.5">
-            <input id="home-shout-input" type="text" placeholder="Notiz, Emoji oder Flüsternachricht..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
-            <button onclick="sendShoutboxMessage('home-shout-input')" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow">Senden</button>
-          </div>
-        </div>
-      </section>
-
       <!-- HAUPT-AKTIONEN -->
       <div class="space-y-2.5 pt-2 mt-auto">
         <button onclick="openCravingModal()" class="w-full py-4 bg-gradient-to-r from-amber-600 via-rose-600 to-pink-600 text-xs uppercase font-bold tracking-wider rounded-xl shadow-lg shadow-rose-900/30 active:scale-98 transition-all flex items-center justify-center gap-2 glow-rose">
@@ -220,7 +173,7 @@
         </button>
 
         <button onclick="openKopfkinoModal()" class="w-full py-3.5 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 border border-purple-500/40 text-purple-200 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-98 glow-purple">
-          <span>🧠</span> <span>Kopfkino & Abend-Match</span>
+          <span>🧠</span> <span>Kopfkino & Fahrplan (3 Schritte)</span>
         </button>
 
         <button onclick="LiveStream.startAsSender()" class="w-full py-3 bg-gradient-to-r from-purple-950 via-slate-900 to-pink-950 border border-purple-500/30 text-purple-300 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-98">
@@ -231,7 +184,7 @@
     </main>
 
     <!-- ================================================================= -->
-    <!-- KOPFKINO MODAL: GRENZEN & REVEAL-MATCH SCREEN -->
+    <!-- 3-SCHRITTE KOPFKINO WIZARD MODAL -->
     <!-- ================================================================= -->
     <div id="kopfkino-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl glow-purple max-h-[90vh] overflow-y-auto flex flex-col justify-between">
@@ -241,20 +194,24 @@
             <div class="flex items-center gap-2">
               <span class="text-lg">🧠</span>
               <div>
-                <h3 id="kopfkino-modal-title" class="font-bold text-xs text-purple-200 uppercase tracking-wider">Kopfkino-Abstimmung</h3>
-                <p id="kopfkino-modal-subtitle" class="text-[10px] text-slate-400">Vorlieben & Grenzen für heute</p>
+                <h3 class="font-bold text-xs text-purple-200 uppercase tracking-wider">Kopfkino-Fahrplan</h3>
+                <p id="wizard-step-indicator" class="text-[10px] text-slate-400">Schritt 1 von 3: Grenzen & Fokus</p>
               </div>
             </div>
             <button onclick="closeKopfkinoModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-2">✕</button>
           </div>
+
+          <div class="w-full bg-slate-950 h-1.5 rounded-full mt-2 overflow-hidden border border-slate-800">
+            <div id="wizard-progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-rose-500 transition-all duration-300 w-1/3"></div>
+          </div>
         </div>
 
-        <div id="kopfkino-modal-content" class="my-auto py-1">
-          <!-- Dynamischer Inhalt -->
+        <div id="wizard-content" class="my-auto py-2">
+          <!-- Dynamischer Wizard Step Inhalt -->
         </div>
 
-        <div id="kopfkino-modal-actions" class="flex gap-2 pt-2 border-t border-slate-850">
-          <!-- Dynamische Buttons -->
+        <div id="wizard-actions" class="flex gap-2 pt-2 border-t border-slate-850">
+          <!-- Dynamische Wizard Actions -->
         </div>
 
       </div>
@@ -473,7 +430,7 @@
     const defaultTabooCategories = [
       { id: 'spanking', label: 'Spanking & Schläge 👋', keywords: ['spank', 'schlag', 'hintern', 'klaps', 'arsch'] },
       { id: 'bondage', label: 'Fesseln & Fixieren 🔗', keywords: ['fessel', 'binden', 'seil', 'fixier', 'handschellen'] },
-      { id: 'oral_deep', label: 'Oralverkehr & Deep 💋', keywords: ['deep', 'tief', 'schlucken', 'würgen', 'oral', 'blowjob', 'lecken'] },
+      { id: 'oral_deep', label: 'Tiefer Oralverkehr / Deepthroat 💋', keywords: ['deep', 'tief', 'schlucken', 'würgen', 'oral', 'blowjob', 'lecken'] },
       { id: 'toys', label: 'Intensive Toys & Plugs 🔌', keywords: ['plug', 'toy', 'vibrator', 'dildo', 'strom', 'wand'] },
       { id: 'anal', label: 'Anale Spielarten 🍑', keywords: ['anal', 'hintern', 'po', 'prostata'] },
       { id: 'dirtytalk', label: 'Dominanter Dirty Talk 🗣️', keywords: ['dirty', 'beschimpfen', 'demütig', 'laut', 'befehl'] }
@@ -490,14 +447,14 @@
       pendingReviews: [],
       completedReviews: [],
       kopfkino: {
+        currentStep: 1,
         tabooCatalog: defaultTabooCategories,
-        erPreferences: null,
-        siePreferences: null,
-        isUnlocked: false
+        myPreferences: {}, // { topicId: { mode: 'erlaubt'|'aktiv'|'passiv'|'tabu', focus: boolean } }
+        partnerPreferences: {},
+        myOhrwurm: '',
+        partnerOhrwurm: '',
+        vibePlan: null
       },
-      shoutboxMessages: [
-        { id: 1, from: 'System', text: 'Willkommen in eurer privaten Flüsterbox! Hinterlasst Notizen oder Teaser für heute ✨', timestamp: Date.now() }
-      ],
       cravingChips: JSON.parse(JSON.stringify(defaultCravingChips)),
       activeCraving: null,
       eveningReservation: null,
@@ -512,7 +469,7 @@
     let isChipEditMode = false;
 
     // =========================================================================
-    // PEERJS LIVE DATA SYNC & STREAMING
+    // PEERJS & WEBRTC ENGINE
     // =========================================================================
     const LiveStream = {
       peer: null,
@@ -674,44 +631,14 @@
         } else if (data.type === 'craving_feedback') {
           showFeedbackBanner(data.feedback);
           playSensualSound('chime');
-        } 
-        // KOPFKINO SYNC
-        else if (data.type === 'kopfkino_submitted') {
-          if (data.sender === 'Er') state.kopfkino.erPreferences = data.preferences;
-          if (data.sender === 'Sie') state.kopfkino.siePreferences = data.preferences;
+        } else if (data.type === 'kopfkino_wizard_sync') {
+          if (!state.kopfkino) state.kopfkino = {};
+          state.kopfkino.partnerPreferences = data.preferences || {};
+          state.kopfkino.partnerOhrwurm = data.ohrwurm || '';
           if (data.catalog) state.kopfkino.tabooCatalog = data.catalog;
-          
-          checkKopfkinoUnlock();
           saveState();
           playSensualSound('chime');
-          
-          if (state.kopfkino.isUnlocked) {
-            showFeedbackBanner(`✨ Beide haben gewählt: Euer Abend-Match ist jetzt freigeschaltet!`);
-          } else {
-            showFeedbackBanner(`🧠 ${data.sender} hat Vorlieben eingeloggt. Mach jetzt mit!`);
-          }
-        }
-        // SHOUTBOX SYNC
-        else if (data.type === 'shoutbox_message') {
-          if (!state.shoutboxMessages) state.shoutboxMessages = [];
-          state.shoutboxMessages.push(data.message);
-          saveState();
-          playSensualSound('heartbeat');
-          renderAllShoutboxes();
-          showFeedbackBanner(`💬 ${data.message.from}: ${data.message.text}`);
-        }
-        // KOPFKINO ERLEBNIS ERFÜLLT SYNC
-        else if (data.type === 'kopfkino_fulfilled_event') {
-          if (data.fulfilledKinkNames && data.fulfilledKinkNames.length > 0) {
-            state.requestHistory.forEach(item => {
-              if (item.kinks && item.kinks.some(k => data.fulfilledKinkNames.some(fn => k.includes(fn) || fn.includes(k)))) {
-                item.fulfilled = true;
-              }
-            });
-          }
-          saveState();
-          playSensualSound('chime');
-          showFeedbackBanner(`🎉 Euer gemeinsamer Abend ("${data.title}") wurde als erfüllt markiert!`);
+          showFeedbackBanner(`🧠 ${data.sender} hat den Kopfkino-Fahrplan & Fokus synchronisiert!`);
         }
       },
 
@@ -843,12 +770,12 @@
     // STORAGE & PERSISTENZ
     // =========================================================================
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v106', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v102', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v106');
+      const saved = localStorage.getItem('couple_pulse_state_v102');
       if (saved) { 
         try { 
           const parsed = JSON.parse(saved);
@@ -860,24 +787,19 @@
       }
       if (!state.kopfkino) {
         state.kopfkino = {
+          currentStep: 1,
           tabooCatalog: defaultTabooCategories,
-          erPreferences: null,
-          siePreferences: null,
-          isUnlocked: false
+          myPreferences: {},
+          partnerPreferences: {},
+          myOhrwurm: '',
+          partnerOhrwurm: '',
+          vibePlan: null
         };
       }
       if (!state.kopfkino.tabooCatalog || state.kopfkino.tabooCatalog.length === 0) {
         state.kopfkino.tabooCatalog = defaultTabooCategories;
       }
-      if (!state.shoutboxMessages) {
-        state.shoutboxMessages = [];
-      }
-      checkKopfkinoUnlock();
       updateUI();
-    }
-
-    function checkKopfkinoUnlock() {
-      state.kopfkino.isUnlocked = Boolean(state.kopfkino.erPreferences && state.kopfkino.siePreferences);
     }
 
     function updateUI() {
@@ -892,23 +814,6 @@
         reviewCount.innerText = pendingCount;
       } else {
         reviewBtn.classList.add('hidden');
-      }
-
-      // KOPFKINO STATUS BANNER
-      const kopfkinoBanner = document.getElementById('kopfkino-match-ready-banner');
-      const myPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
-      const partnerPrefs = state.currentUser === 'Er' ? state.kopfkino.siePreferences : state.kopfkino.erPreferences;
-
-      if (state.kopfkino.isUnlocked) {
-        kopfkinoBanner.classList.remove('hidden');
-        document.getElementById('kopfkino-banner-title').innerText = '✨ Euer Abend-Match ist bereit!';
-        document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben gewählt. Entdecke euer Match, die gemeinsame Schnittmenge & die Flüsterbox!';
-      } else if (partnerPrefs && !myPrefs) {
-        kopfkinoBanner.classList.remove('hidden');
-        document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat Vorlieben eingeloggt!`;
-        document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um euer Match für heute Abend zu enthüllen.`;
-      } else {
-        kopfkinoBanner.classList.add('hidden');
       }
 
       const banner = document.getElementById('incoming-craving-banner');
@@ -935,7 +840,6 @@
       document.getElementById('btn-user-sie').className = state.currentUser === 'Sie' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
 
       renderPartnerUnfulfilledCard();
-      renderAllShoutboxes();
     }
 
     function toggleCravingReveal() {
@@ -1032,163 +936,96 @@
     }
 
     // =========================================================================
-    // OPTION C: FLÜSTER-SHOUTBOX ENGINE (HOMESCREEN & MATCH-MODAL)
+    // 3-SCHRITTE KOPFKINO ENGINE MIT EDITIERBAREN THEMEN & FOKUS-MARKER
     // =========================================================================
-    function renderAllShoutboxes() {
-      const homeBox = document.getElementById('home-shoutbox-messages');
-      const modalBox = document.getElementById('modal-shoutbox-messages');
-      const messages = state.shoutboxMessages || [];
-
-      const html = messages.map(m => {
-        const isMe = m.from === state.currentUser;
-        const isSys = m.from === 'System';
-        if (isSys) {
-          return `<div class="text-[10px] text-slate-500 italic text-center py-0.5">${m.text}</div>`;
-        }
-        return `
-          <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
-            <div class="max-w-[80%] rounded-2xl px-2.5 py-1 text-[11px] ${isMe ? 'bg-gradient-to-r from-purple-600 to-rose-600 text-white rounded-br-none' : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-bl-none'}">
-              <span class="text-[9px] block opacity-70 font-bold">${m.from}</span>
-              <span>${m.text}</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      if (homeBox) {
-        homeBox.innerHTML = html;
-        homeBox.scrollTop = homeBox.scrollHeight;
-      }
-      if (modalBox) {
-        modalBox.innerHTML = html;
-        modalBox.scrollTop = modalBox.scrollHeight;
-      }
-    }
-
-    function sendShoutboxMessage(inputId) {
-      const input = document.getElementById(inputId);
-      if (!input) return;
-      const text = input.value.trim();
-      if (!text) return;
-
-      const newMsg = {
-        id: Date.now(),
-        from: state.currentUser,
-        text: text,
-        timestamp: Date.now()
-      };
-
-      if (!state.shoutboxMessages) state.shoutboxMessages = [];
-      state.shoutboxMessages.push(newMsg);
-      input.value = '';
-
-      LiveStream.sendData({
-        type: 'shoutbox_message',
-        message: newMsg
-      });
-
-      playSensualSound('heartbeat');
-      saveState();
-      renderAllShoutboxes();
-    }
-
-    function sendQuickShoutEmoji(emoji) {
-      const newMsg = {
-        id: Date.now(),
-        from: state.currentUser,
-        text: emoji,
-        timestamp: Date.now()
-      };
-
-      if (!state.shoutboxMessages) state.shoutboxMessages = [];
-      state.shoutboxMessages.push(newMsg);
-
-      LiveStream.sendData({
-        type: 'shoutbox_message',
-        message: newMsg
-      });
-
-      playSensualSound('chime');
-      saveState();
-      renderAllShoutboxes();
-    }
-
-    // =========================================================================
-    // KOPFKINO ENGINE: 2-PHASEN ABSTIMMUNG & MATCH-AUSWERTUNG
-    // =========================================================================
-    let localDraftPreferences = {};
-
     function openKopfkinoModal() {
-      checkKopfkinoUnlock();
-      const myPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
-      
-      if (state.kopfkino.isUnlocked) {
-        renderKopfkinoMatchReveal();
-      } else {
-        localDraftPreferences = JSON.parse(JSON.stringify(myPrefs || {}));
-        state.kopfkino.tabooCatalog.forEach(t => {
-          if (!localDraftPreferences[t.id]) {
-            localDraftPreferences[t.id] = { mode: 'erlaubt', focus: false };
-          }
-        });
-        renderKopfkinoInputPhase();
+      if (!state.kopfkino) {
+        state.kopfkino = {
+          currentStep: 1,
+          tabooCatalog: defaultTabooCategories,
+          myPreferences: {},
+          partnerPreferences: {},
+          myOhrwurm: '',
+          partnerOhrwurm: '',
+          vibePlan: null
+        };
       }
-
+      state.kopfkino.currentStep = 1;
       document.getElementById('kopfkino-modal').classList.remove('hidden');
+      renderWizardStep();
     }
 
     function closeKopfkinoModal() {
       document.getElementById('kopfkino-modal').classList.add('hidden');
     }
 
-    // -------------------------------------------------------------------------
-    // PHASE 1: GRENZEN & FOKUS SETZEN
-    // -------------------------------------------------------------------------
-    function renderKopfkinoInputPhase() {
-      const modalTitle = document.getElementById('kopfkino-modal-title');
-      const modalSubtitle = document.getElementById('kopfkino-modal-subtitle');
-      const content = document.getElementById('kopfkino-modal-content');
-      const actions = document.getElementById('kopfkino-modal-actions');
-      const partner = state.currentUser === 'Er' ? 'Sie' : 'Er';
-      const partnerPrefs = state.currentUser === 'Er' ? state.kopfkino.siePreferences : state.kopfkino.erPreferences;
+    function renderWizardStep() {
+      const step = state.kopfkino.currentStep;
+      const content = document.getElementById('wizard-content');
+      const actions = document.getElementById('wizard-actions');
+      const indicator = document.getElementById('wizard-step-indicator');
+      const bar = document.getElementById('wizard-progress-bar');
 
-      modalTitle.innerText = "Abend-Vorlieben einloggen";
-      modalSubtitle.innerText = partnerPrefs ? `💌 ${partner} hat bereits gewählt!` : `Wähle diskret – Match erfolgt nach beiden Eingaben`;
+      bar.style.width = step === 1 ? '33%' : step === 2 ? '66%' : '100%';
 
-      let itemsHtml = state.kopfkino.tabooCatalog.map(t => {
-        const itemPref = localDraftPreferences[t.id] || { mode: 'erlaubt', focus: false };
+      if (step === 1) {
+        indicator.innerText = "Schritt 1 von 3: Grenzen & Fokus heute";
+        renderStep1Topics(content, actions);
+      } else if (step === 2) {
+        indicator.innerText = "Schritt 2 von 3: Vibe & Rahmen heute Abend";
+        renderStep2Vibe(content, actions);
+      } else if (step === 3) {
+        indicator.innerText = "Schritt 3 von 3: Dein Ohrwurm-Impuls";
+        renderStep3Ohrwurm(content, actions);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // SCHRITT 1: THEMEN, BUTTONS (Erlaubt, Nur aktiv, Nur passiv, Tabu) & FOKUS
+    // -------------------------------------------------------------------------
+    function renderStep1Topics(content, actions) {
+      const catalog = state.kopfkino.tabooCatalog || defaultTabooCategories;
+      const prefs = state.kopfkino.myPreferences || {};
+
+      let itemsHtml = catalog.map(t => {
+        const itemPref = prefs[t.id] || { mode: 'erlaubt', focus: false };
         const mode = itemPref.mode || 'erlaubt';
         const isFocus = itemPref.focus === true && mode !== 'tabu';
 
         return `
           <div class="bg-slate-950/85 border ${isFocus ? 'border-amber-500/70 glow-amber' : 'border-slate-800'} rounded-2xl p-2.5 space-y-2 transition-all">
             <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-slate-200 truncate max-w-[160px]">${t.label}</span>
+              <span class="font-bold text-slate-200 truncate max-w-[170px]">${t.label}</span>
               
               <div class="flex items-center gap-1.5">
-                <button type="button" onclick="toggleDraftFocus('${t.id}')" 
-                  class="px-2 py-0.5 rounded-full text-[10px] font-bold border transition-all ${isFocus ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md animate-pulse' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-300'}">
+                <!-- FOKUS-MARKER TOGGLE -->
+                <button type="button" onclick="toggleTopicFocus('${t.id}')" 
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold border transition-all ${isFocus ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md animate-pulse' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-300'}"
+                  title="Besonders viel Lust / Fokus heute">
                   🔥 Fokus
                 </button>
-                <button type="button" onclick="openTopicModal('${t.id}')" class="text-slate-500 hover:text-slate-200 text-xs px-0.5">✏️</button>
-                <button type="button" onclick="deleteTopic('${t.id}')" class="text-slate-500 hover:text-rose-400 text-xs px-0.5">🗑️</button>
+                
+                <!-- EDIT / DELETE -->
+                <button type="button" onclick="openTopicModal('${t.id}')" class="text-slate-500 hover:text-slate-200 text-xs px-0.5" title="Bearbeiten">✏️</button>
+                <button type="button" onclick="deleteTopic('${t.id}')" class="text-slate-500 hover:text-rose-400 text-xs px-0.5" title="Löschen">🗑️</button>
               </div>
             </div>
             
+            <!-- 4-WEGE BUTTONS: Erlaubt | Nur aktiv | Nur passiv | Tabu -->
             <div class="grid grid-cols-4 gap-1 text-[9px] font-bold">
-              <button type="button" onclick="setDraftMode('${t.id}', 'erlaubt')" 
+              <button type="button" onclick="setTopicMode('${t.id}', 'erlaubt')" 
                 class="py-1 rounded-lg border transition-all ${mode === 'erlaubt' ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300 shadow' : 'bg-slate-900 border-slate-800 text-slate-400'}">
                 Erlaubt
               </button>
-              <button type="button" onclick="setDraftMode('${t.id}', 'aktiv')" 
+              <button type="button" onclick="setTopicMode('${t.id}', 'aktiv')" 
                 class="py-1 rounded-lg border transition-all ${mode === 'aktiv' ? 'bg-rose-950/80 border-rose-500 text-rose-300 shadow' : 'bg-slate-900 border-slate-800 text-slate-400'}">
                 Nur aktiv
               </button>
-              <button type="button" onclick="setDraftMode('${t.id}', 'passiv')" 
+              <button type="button" onclick="setTopicMode('${t.id}', 'passiv')" 
                 class="py-1 rounded-lg border transition-all ${mode === 'passiv' ? 'bg-purple-950/80 border-purple-500 text-purple-300 shadow' : 'bg-slate-900 border-slate-800 text-slate-400'}">
                 Nur passiv
               </button>
-              <button type="button" onclick="setDraftMode('${t.id}', 'tabu')" 
+              <button type="button" onclick="setTopicMode('${t.id}', 'tabu')" 
                 class="py-1 rounded-lg border transition-all ${mode === 'tabu' ? 'bg-rose-600 border-rose-400 text-white shadow' : 'bg-slate-900 border-slate-800 text-slate-400'}">
                 Tabu
               </button>
@@ -1200,7 +1037,7 @@
       content.innerHTML = `
         <div class="space-y-2 text-xs">
           <div class="flex justify-between items-center">
-            <span class="text-slate-400 text-[11px]">Bestimme deine Grenzen & Wünsche:</span>
+            <p class="text-slate-400 text-[11px]">Bestimme Rolle & Fokus für den heutigen Abend:</p>
             <button onclick="openTopicModal()" class="text-[10px] text-purple-400 hover:text-purple-300 font-bold underline">+ Neues Thema</button>
           </div>
           <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
@@ -1210,269 +1047,40 @@
       `;
 
       actions.innerHTML = `
-        <button onclick="submitMyPreferences()" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
-          🚀 Einloggen & Partner benachrichtigen
+        <button onclick="calculateVibeAndNext()" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
+          Vibe berechnen & Weiter →
         </button>
       `;
     }
 
-    function setDraftMode(topicId, mode) {
-      if (!localDraftPreferences[topicId]) localDraftPreferences[topicId] = { mode: 'erlaubt', focus: false };
-      localDraftPreferences[topicId].mode = mode;
-      if (mode === 'tabu') localDraftPreferences[topicId].focus = false;
-      renderKopfkinoInputPhase();
-    }
-
-    function toggleDraftFocus(topicId) {
-      if (!localDraftPreferences[topicId]) localDraftPreferences[topicId] = { mode: 'erlaubt', focus: false };
-      if (localDraftPreferences[topicId].mode === 'tabu') localDraftPreferences[topicId].mode = 'erlaubt';
-      localDraftPreferences[topicId].focus = !localDraftPreferences[topicId].focus;
-      playSensualSound('chime');
-      renderKopfkinoInputPhase();
-    }
-
-    function submitMyPreferences() {
-      if (state.currentUser === 'Er') {
-        state.kopfkino.erPreferences = JSON.parse(JSON.stringify(localDraftPreferences));
-      } else {
-        state.kopfkino.siePreferences = JSON.parse(JSON.stringify(localDraftPreferences));
+    function setTopicMode(topicId, mode) {
+      if (!state.kopfkino.myPreferences[topicId]) {
+        state.kopfkino.myPreferences[topicId] = { mode: 'erlaubt', focus: false };
       }
-
-      checkKopfkinoUnlock();
+      state.kopfkino.myPreferences[topicId].mode = mode;
+      // Bei Tabu automatisch Fokus ausschalten
+      if (mode === 'tabu') {
+        state.kopfkino.myPreferences[topicId].focus = false;
+      }
       saveState();
+      renderStep1Topics(document.getElementById('wizard-content'), document.getElementById('wizard-actions'));
+    }
 
-      LiveStream.sendData({
-        type: 'kopfkino_submitted',
-        sender: state.currentUser,
-        preferences: localDraftPreferences,
-        catalog: state.kopfkino.tabooCatalog
-      });
-
-      fetch('/api/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sender: state.currentUser })
-      }).catch(err => {});
-
-      closeKopfkinoModal();
-      playSensualSound('chime');
-
-      if (state.kopfkino.isUnlocked) {
-        alert("✨ Perfekt! Beide haben gewählt. Euer Abend-Match steht fest!");
-        openKopfkinoModal();
-      } else {
-        alert("✓ Deine Vorlieben wurden gespeichert! Du wirst benachrichtigt, sobald dein Partner fertig ist.");
+    function toggleTopicFocus(topicId) {
+      if (!state.kopfkino.myPreferences[topicId]) {
+        state.kopfkino.myPreferences[topicId] = { mode: 'erlaubt', focus: false };
       }
-    }
-
-    // -------------------------------------------------------------------------
-    // PHASE 2: MATCH REVEAL MIT ERFÜLLT-MARKER & EMBEDDED SHOUTBOX
-    // -------------------------------------------------------------------------
-    let currentMatchHighlightTitles = [];
-
-    function renderKopfkinoMatchReveal() {
-      const modalTitle = document.getElementById('kopfkino-modal-title');
-      const modalSubtitle = document.getElementById('kopfkino-modal-subtitle');
-      const content = document.getElementById('kopfkino-modal-content');
-      const actions = document.getElementById('kopfkino-modal-actions');
-
-      modalTitle.innerText = "✨ Euer Abend-Kompass";
-      modalSubtitle.innerText = "Gemeinsame Schnittmenge & Flüsterbox";
-
-      const erPrefs = state.kopfkino.erPreferences || {};
-      const siePrefs = state.kopfkino.siePreferences || {};
-      const catalog = state.kopfkino.tabooCatalog || defaultTabooCategories;
-
-      let highlights = [];
-      let roleMatches = [];
-      let flexibleAllowed = [];
-      let roleQuestions = [];
-      let blockedTaboos = [];
-      currentMatchHighlightTitles = [];
-
-      catalog.forEach(t => {
-        const erP = erPrefs[t.id] || { mode: 'erlaubt', focus: false };
-        const sieP = siePrefs[t.id] || { mode: 'erlaubt', focus: false };
-
-        const erMode = erP.mode || 'erlaubt';
-        const sieMode = sieP.mode || 'erlaubt';
-        const erFocus = erP.focus === true && erMode !== 'tabu';
-        const sieFocus = sieP.focus === true && sieMode !== 'tabu';
-
-        // 1. TABU-CHECK
-        if (erMode === 'tabu' || sieMode === 'tabu') {
-          blockedTaboos.push(t.label);
-          return;
-        }
-
-        // 2. SACKGASSE
-        if (erMode === 'aktiv' && sieMode === 'aktiv') {
-          roleQuestions.push(`👑 <strong>${t.label}</strong>: Beide wollen nur geben (Führungs-Frage)`);
-          return;
-        }
-        if (erMode === 'passiv' && sieMode === 'passiv') {
-          roleQuestions.push(`🧘 <strong>${t.label}</strong>: Beide wollen nur empfangen (Wer legt los?)`);
-          return;
-        }
-
-        // 3. KOMPATIBEL
-        let roleDesc = 'Völlig frei & beidseitig flexibel';
-        if (erMode === 'aktiv' && sieMode === 'passiv') {
-          roleDesc = 'Er verwöhnt aktiv ↔ Sie genießt passiv';
-        } else if (sieMode === 'aktiv' && erMode === 'passiv') {
-          roleDesc = 'Sie verwöhnt aktiv ↔ Er genießt passiv';
-        } else if (erMode === 'aktiv' && sieMode === 'erlaubt') {
-          roleDesc = 'Er führt aktiv ↔ Sie ist offen für beides';
-        } else if (sieMode === 'aktiv' && erMode === 'erlaubt') {
-          roleDesc = 'Sie führt aktiv ↔ Er ist offen für beides';
-        } else if (erMode === 'passiv' && sieMode === 'erlaubt') {
-          roleDesc = 'Er lässt sich verwöhnen ↔ Sie ist offen für beides';
-        } else if (sieMode === 'passiv' && erMode === 'erlaubt') {
-          roleDesc = 'Sie lässt sich verwöhnen ↔ Er ist offen für beides';
-        }
-
-        currentMatchHighlightTitles.push(t.label);
-
-        if (erFocus || sieFocus) {
-          if (erFocus && sieFocus) {
-            highlights.push(`🔥 <strong>${t.label}</strong>: DOPPELTER VOLLTREFFER! Beide haben Fokus gesetzt! (${roleDesc})`);
-          } else {
-            const who = erFocus ? 'Er' : 'Sie';
-            highlights.push(`✨ <strong>${t.label}</strong>: Fokus von ${who} (${roleDesc})`);
-          }
-        } else if ((erMode === 'aktiv' && sieMode === 'passiv') || (sieMode === 'aktiv' && erMode === 'passiv')) {
-          roleMatches.push(`👑 <strong>${t.label}</strong>: ${roleDesc}`);
-        } else {
-          flexibleAllowed.push({ label: t.label, desc: roleDesc });
-        }
-      });
-
-      content.innerHTML = `
-        <div class="space-y-3 text-xs">
-          
-          <!-- 1. HIGHLIGHTS & VOLLTREFFER -->
-          ${highlights.length > 0 ? `
-            <div class="bg-gradient-to-br from-amber-950/80 to-slate-900 border border-amber-500/60 rounded-2xl p-3 glow-amber space-y-1.5">
-              <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider block">🔥 Volltreffer & Highlights:</span>
-              <div class="text-[11px] text-slate-100 space-y-1">
-                ${highlights.map(h => `<div>${h}</div>`).join('')}
-              </div>
-            </div>
-          ` : ''}
-
-          <!-- 2. KLARE ROLLENVERTEILUNG -->
-          ${roleMatches.length > 0 ? `
-            <div class="bg-purple-950/60 border border-purple-500/50 rounded-2xl p-3 space-y-1.5">
-              <span class="text-[9px] font-bold text-purple-300 uppercase tracking-wider block">👑 Klare Rollenverteilung:</span>
-              <div class="text-[11px] text-slate-200 space-y-1">
-                ${roleMatches.map(r => `<div>${r}</div>`).join('')}
-              </div>
-            </div>
-          ` : ''}
-
-          <!-- 3. FREIGESCHALTETE SPIELWIESE -->
-          ${flexibleAllowed.length > 0 ? `
-            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 space-y-1.5">
-              <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider block">🌿 Freigeschaltete Spielwiese:</span>
-              <div class="space-y-1">
-                ${flexibleAllowed.map(f => `
-                  <div class="flex items-center justify-between text-[11px] bg-slate-900/80 p-1.5 rounded-xl border border-slate-855">
-                    <span class="font-bold text-slate-200">${f.label}</span>
-                    <span class="text-[10px] text-emerald-400/90">${f.desc}</span>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          ` : ''}
-
-          <!-- 4. ROLLEN-FRAGEZEICHEN -->
-          ${roleQuestions.length > 0 ? `
-            <div class="bg-amber-950/40 border border-amber-600/40 rounded-2xl p-2.5 space-y-1 text-slate-300">
-              <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider block">⚠️ Rollen-Fragezeichen (Gleiche Richtung):</span>
-              <div class="text-[10px] space-y-0.5">
-                ${roleQuestions.map(q => `<div>${q}</div>`).join('')}
-              </div>
-            </div>
-          ` : ''}
-
-          <!-- 5. TABUS DISKRET GEWAHRT -->
-          ${blockedTaboos.length > 0 ? `
-            <div class="bg-slate-950/60 border border-slate-900 rounded-xl p-2 text-[10px] text-slate-500">
-              🛑 Diskret ausgeschlossen: ${blockedTaboos.join(', ')}
-            </div>
-          ` : ''}
-
-          <!-- 6. EMBEDDED SHOUTBOX IM MATCH-SCREEN -->
-          <div class="bg-slate-950 border border-purple-500/40 rounded-2xl p-3 space-y-2">
-            <span class="text-[9px] font-bold text-purple-300 uppercase tracking-wider block flex items-center gap-1.5">
-              <span>💬</span> Flüsterbox für diesen Abend
-            </span>
-            <div id="modal-shoutbox-messages" class="space-y-1 max-h-24 overflow-y-auto pr-1 text-xs"></div>
-            <div class="flex gap-1 overflow-x-auto pb-1 text-sm">
-              <button onclick="sendQuickShoutEmoji('🔥')" class="p-1 hover:scale-125 transition-all">🔥</button>
-              <button onclick="sendQuickShoutEmoji('❤️')" class="p-1 hover:scale-125 transition-all">❤️</button>
-              <button onclick="sendQuickShoutEmoji('😈')" class="p-1 hover:scale-125 transition-all">😈</button>
-              <button onclick="sendQuickShoutEmoji('💋')" class="p-1 hover:scale-125 transition-all">💋</button>
-              <button onclick="sendQuickShoutEmoji('🍷')" class="p-1 hover:scale-125 transition-all">🍷</button>
-              <button onclick="sendQuickShoutEmoji('🪶')" class="p-1 hover:scale-125 transition-all">🪶</button>
-            </div>
-            <div class="flex gap-1.5">
-              <input id="modal-shout-input" type="text" placeholder="Gedanke, Teaser oder Emoji..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
-              <button onclick="sendShoutboxMessage('modal-shout-input')" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow">Senden</button>
-            </div>
-          </div>
-
-          <!-- 7. EVENT ALS ERFÜLLT MARKIEREN BUTTON -->
-          <button onclick="markKopfkinoFulfilled()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all flex items-center justify-center gap-1.5 mt-2">
-            <span>✨</span> <span>Unser Abend-Erlebnis als erfüllt markieren</span>
-          </button>
-
-        </div>
-      `;
-
-      actions.innerHTML = `
-        <button onclick="renderKopfkinoInputPhase()" class="w-full py-2.5 bg-slate-800 text-xs font-semibold rounded-xl text-slate-400">
-          ✏️ Vorlieben & Grenzen anpassen
-        </button>
-      `;
-
-      renderAllShoutboxes();
-    }
-
-    // KOPFKINO ALS ERFÜLLT MARKIEREN & FEEDBACK MODAL ÖFFNEN
-    function markKopfkinoFulfilled() {
-      const matchTitle = currentMatchHighlightTitles.length > 0 
-        ? currentMatchHighlightTitles.slice(0, 2).join(' + ') 
-        : 'Gemeinsames Kopfkino-Erlebnis';
-
-      // 1. Offene Wünsche im Partner-Nachholbedarf automatisch abgleichen & erfüllen
-      state.requestHistory.forEach(item => {
-        if (item.kinks && item.kinks.some(k => currentMatchHighlightTitles.some(ht => k.includes(ht) || ht.includes(k)))) {
-          item.fulfilled = true;
-        }
-      });
-
-      // 2. Synchronisation an den Partner
-      LiveStream.sendData({
-        type: 'kopfkino_fulfilled_event',
-        title: matchTitle,
-        fulfilledKinkNames: currentMatchHighlightTitles
-      });
-
-      // 3. Setze aktives Review Item für das Feedback-Modal
-      activeReviewItem = {
-        id: Date.now(),
-        kinks: [matchTitle],
-        from: state.currentUser
-      };
-
-      closeKopfkinoModal();
+      const current = state.kopfkino.myPreferences[topicId];
+      if (current.mode === 'tabu') {
+        current.mode = 'erlaubt';
+      }
+      current.focus = !current.focus;
       saveState();
       playSensualSound('chime');
-      openFeedbackModal();
+      renderStep1Topics(document.getElementById('wizard-content'), document.getElementById('wizard-actions'));
     }
 
-    // THEMEN VERWALTEN (MODAL)
+    // THEMEN EDITIEREN & ERSTELLEN
     function openTopicModal(topicId = null) {
       editingTopicId = topicId;
       const modal = document.getElementById('topic-edit-modal');
@@ -1498,13 +1106,14 @@
       const label = document.getElementById('topic-label-input').value.trim();
       if (!label) { alert("Bitte einen Namen für das Thema eingeben."); return; }
 
+      // Automatische Keywords aus dem Text extrahieren
       const rawWords = label.toLowerCase().replace(/[^a-zäöüß0-9\s]/gi, '').split(/\s+/).filter(w => w.length > 2);
 
       if (editingTopicId) {
         const item = state.kopfkino.tabooCatalog.find(t => t.id === editingTopicId);
         if (item) {
           item.label = label;
-          item.keywords = Array.from(new Set([...(item.keywords || []), ...rawWords]));
+          item.keywords = Array.from(new Set([...item.keywords, ...rawWords]));
         }
       } else {
         const newId = 'custom_' + Date.now();
@@ -1513,21 +1122,209 @@
           label: label,
           keywords: rawWords.length > 0 ? rawWords : [label.toLowerCase()]
         });
-        localDraftPreferences[newId] = { mode: 'erlaubt', focus: false };
       }
 
       closeTopicModal();
       saveState();
-      renderKopfkinoInputPhase();
+      renderStep1Topics(document.getElementById('wizard-content'), document.getElementById('wizard-actions'));
     }
 
     function deleteTopic(topicId) {
       if (confirm("Möchtest du dieses Thema wirklich löschen?")) {
         state.kopfkino.tabooCatalog = state.kopfkino.tabooCatalog.filter(t => t.id !== topicId);
-        delete localDraftPreferences[topicId];
+        delete state.kopfkino.myPreferences[topicId];
         saveState();
-        renderKopfkinoInputPhase();
+        renderStep1Topics(document.getElementById('wizard-content'), document.getElementById('wizard-actions'));
       }
+    }
+
+    // -------------------------------------------------------------------------
+    // SCHRITT 2: VIBE-ABLEITUNG
+    // -------------------------------------------------------------------------
+    function calculateVibeAndNext() {
+      const prefs = state.kopfkino.myPreferences || {};
+      const catalog = state.kopfkino.tabooCatalog || defaultTabooCategories;
+      
+      const focusedTopics = catalog.filter(t => prefs[t.id]?.focus);
+      const taboos = catalog.filter(t => prefs[t.id]?.mode === 'tabu');
+      const activeOnly = catalog.filter(t => prefs[t.id]?.mode === 'aktiv');
+      const passiveOnly = catalog.filter(t => prefs[t.id]?.mode === 'passiv');
+
+      let vibe = {
+        title: 'Sinnlich & Ausgeglichen 🌊',
+        tempo: 'Sanftes Warm-Up mit flexiblem Übergang',
+        focus: 'Verbindung, Nähe & gegenseitiges Erspüren',
+        highlight: focusedTopics.length > 0 ? `Besonderer Wunsch: ${focusedTopics.map(t => t.label).join(', ')}` : null
+      };
+
+      if (focusedTopics.length > 0) {
+        vibe.title = `Fokus auf: ${focusedTopics[0].label} 🔥`;
+        vibe.tempo = 'Gezielte Vorbereitung auf das Highlight';
+        vibe.focus = focusedTopics.map(t => t.label).join(' & ');
+      } else if (taboos.length >= 3) {
+        vibe.title = 'Entspannt, Achtsam & Sanft 🕯️';
+        vibe.tempo = 'Slow-Burn / Kein Leistungsdruck';
+        vibe.focus = 'Kuscheln, Streicheln & stressfreie Intimität';
+      } else if (passiveOnly.length > activeOnly.length) {
+        vibe.title = 'Verwöhn- & Empfangs-Modus 🧘';
+        vibe.tempo = 'Du lässt dich heute fallen und führen';
+        vibe.focus = 'Hingabe & passive Genussmomente';
+      } else if (activeOnly.length > passiveOnly.length) {
+        vibe.title = 'Verwöhner- & Macher-Vibe 👑';
+        vibe.tempo = 'Du übernimmst aktiv die Führung';
+        vibe.focus = 'Partner verwöhnen & Signale lesen';
+      } else if (taboos.length === 0) {
+        vibe.title = 'Hemmungslos & Völlig Offen 🔥';
+        vibe.tempo = 'Freies Treibenlassen ohne Tabu-Grenzen';
+        vibe.focus = 'Alle Spielarten sind heute freigeschaltet';
+      }
+
+      state.kopfkino.vibePlan = vibe;
+      state.kopfkino.currentStep = 2;
+      saveState();
+      renderWizardStep();
+    }
+
+    function renderStep2Vibe(content, actions) {
+      const vibe = state.kopfkino.vibePlan;
+
+      content.innerHTML = `
+        <div class="space-y-3.5 text-xs py-1">
+          <div class="bg-gradient-to-br from-purple-950/80 to-slate-900 border border-purple-500/50 rounded-2xl p-3.5 space-y-2 glow-purple">
+            <span class="text-[9px] font-bold text-purple-400 uppercase tracking-widest block">Erkannter Vibe für heute:</span>
+            <div class="text-sm font-bold text-slate-100">${vibe.title}</div>
+            
+            <div class="space-y-1.5 pt-1 text-[11px]">
+              <div class="flex items-center gap-2 text-slate-300">
+                <span class="text-rose-400">⏱️</span> <span><strong>Tempo:</strong> ${vibe.tempo}</span>
+              </div>
+              <div class="flex items-center gap-2 text-slate-300">
+                <span class="text-amber-400">🎯</span> <span><strong>Fokus:</strong> ${vibe.focus}</span>
+              </div>
+              ${vibe.highlight ? `
+                <div class="bg-amber-950/50 border border-amber-500/50 p-2 rounded-xl text-amber-200 text-[10px] font-bold flex items-center gap-1.5 mt-2">
+                  <span>🔥</span> <span>${vibe.highlight}</span>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-[11px] text-slate-400 leading-relaxed">
+            💡 <em>Dieser Rahmen sorgt dafür, dass ihr beide ohne Missverständnisse und mit maximalem Freiraum in den Abend startet.</em>
+          </div>
+        </div>
+      `;
+
+      actions.innerHTML = `
+        <button onclick="state.kopfkino.currentStep = 1; renderWizardStep();" class="py-2.5 px-3 bg-slate-800 text-xs font-semibold rounded-xl text-slate-300">
+          ← Zurück
+        </button>
+        <button onclick="state.kopfkino.currentStep = 3; renderWizardStep();" class="flex-1 py-2.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg">
+          Zum Ohrwurm-Impuls ✨
+        </button>
+      `;
+    }
+
+    // -------------------------------------------------------------------------
+    // SCHRITT 3: OHRWURM-FREITEXT & KOLLISIONSPRÜFUNG
+    // -------------------------------------------------------------------------
+    function renderStep3Ohrwurm(content, actions) {
+      // Partner-Fokus Match Check
+      const partnerPrefs = state.kopfkino.partnerPreferences || {};
+      const catalog = state.kopfkino.tabooCatalog || defaultTabooCategories;
+      const partnerFocusList = catalog.filter(t => partnerPrefs[t.id]?.focus);
+
+      content.innerHTML = `
+        <div class="space-y-3 text-xs">
+          ${partnerFocusList.length > 0 ? `
+            <div class="bg-amber-950/60 border border-amber-500/60 p-2.5 rounded-2xl flex items-center gap-2">
+              <span class="text-lg animate-bounce">🔥</span>
+              <div class="text-[10px] text-amber-200">
+                <strong>Partner-Fokus:</strong> Dein Partner hat heute besondere Lust auf <strong>${partnerFocusList.map(t => t.label).join(', ')}</strong>!
+              </div>
+            </div>
+          ` : ''}
+
+          <div>
+            <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1">
+              💭 Was schwirrt dir gerade im Kopf herum?
+            </label>
+            <textarea id="ohrwurm-input" rows="3" oninput="checkOhrwurmCollision(this.value)" placeholder="z. B. Ich will dir heute ganz langsam die Augen verbinden und dich verwöhnen..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-slate-200 focus:outline-none focus:border-rose-500 transition-all resize-none">${state.kopfkino.myOhrwurm || ''}</textarea>
+          </div>
+
+          <div id="ohrwurm-collision-box" class="hidden bg-rose-950/90 border border-rose-500/70 p-2.5 rounded-xl text-[11px] text-rose-200 space-y-1 animate-pulse">
+            <div class="font-bold flex items-center gap-1.5">
+              <span>⚠️</span> <span>Tabu-Warnung deines Partners</span>
+            </div>
+            <div id="ohrwurm-collision-text" class="text-[10px] text-rose-300 leading-tight"></div>
+          </div>
+
+          ${state.kopfkino.partnerOhrwurm ? `
+            <div class="bg-indigo-950/60 border border-indigo-500/40 p-3 rounded-2xl space-y-1">
+              <span class="text-[9px] font-bold text-indigo-300 uppercase tracking-wider block">💌 Fantasie deines Partners:</span>
+              <div class="text-xs italic text-slate-200">"${state.kopfkino.partnerOhrwurm}"</div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      actions.innerHTML = `
+        <button onclick="state.kopfkino.currentStep = 2; renderWizardStep();" class="py-2.5 px-3 bg-slate-800 text-xs font-semibold rounded-xl text-slate-300">
+          ← Zurück
+        </button>
+        <button onclick="sendOhrwurmPackage()" class="flex-1 py-3 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
+          Fahrplan an Partner senden 🚀
+        </button>
+      `;
+    }
+
+    function checkOhrwurmCollision(text) {
+      state.kopfkino.myOhrwurm = text;
+      const box = document.getElementById('ohrwurm-collision-box');
+      const msg = document.getElementById('ohrwurm-collision-text');
+      if (!box || !msg) return;
+
+      const partnerPrefs = state.kopfkino.partnerPreferences || {};
+      const catalog = state.kopfkino.tabooCatalog || defaultTabooCategories;
+      const lowerText = text.toLowerCase();
+
+      let hits = [];
+      catalog.forEach(item => {
+        const pref = partnerPrefs[item.id];
+        if (pref && pref.mode !== 'erlaubt') {
+          const match = (item.keywords || []).some(kw => lowerText.includes(kw.toLowerCase()));
+          if (match) {
+            hits.push(`'${item.label}' (Einstellung: ${pref.mode.toUpperCase()})`);
+          }
+        }
+      });
+
+      if (hits.length > 0) {
+        box.classList.remove('hidden');
+        msg.innerText = `Dein Text berührt Tabus/Einschränkungen deines Partners: ${hits.join(', ')}.`;
+      } else {
+        box.classList.add('hidden');
+      }
+    }
+
+    function sendOhrwurmPackage() {
+      const text = (document.getElementById('ohrwurm-input')?.value || '').trim();
+      state.kopfkino.myOhrwurm = text;
+
+      const packageData = {
+        type: 'kopfkino_wizard_sync',
+        sender: state.currentUser,
+        preferences: state.kopfkino.myPreferences,
+        vibe: state.kopfkino.vibePlan,
+        ohrwurm: text,
+        catalog: state.kopfkino.tabooCatalog
+      };
+
+      LiveStream.sendData(packageData);
+      saveState();
+      closeKopfkinoModal();
+      playSensualSound('chime');
+      alert("✨ Kopfkino-Fahrplan & Vorlieben erfolgreich mit Partner synchronisiert!");
     }
 
     // =========================================================================
@@ -1866,15 +1663,13 @@
       state.completedReviews = []; 
       state.activeCraving = null; 
       state.eveningReservation = null; 
-      state.kopfkino = {
-        tabooCatalog: defaultTabooCategories,
-        erPreferences: null,
-        siePreferences: null,
-        isUnlocked: false
-      };
-      state.shoutboxMessages = [
-        { id: Date.now(), from: 'System', text: 'Neuer Tag gestartet! Flüsterbox zurückgesetzt ✨', timestamp: Date.now() }
-      ];
+      if (state.kopfkino) {
+        state.kopfkino.myPreferences = {};
+        state.kopfkino.partnerPreferences = {};
+        state.kopfkino.myOhrwurm = '';
+        state.kopfkino.partnerOhrwurm = '';
+        state.kopfkino.vibePlan = null;
+      }
       saveState(); 
     }
 
