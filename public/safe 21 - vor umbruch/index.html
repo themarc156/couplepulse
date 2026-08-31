@@ -67,6 +67,7 @@
           <span class="font-bold tracking-wider text-xs uppercase text-slate-400">CouplePulse</span>
         </div>
         <div class="flex items-center gap-2">
+          <!-- HEADER ICON FÜR AUSSTEHENDE BEWERTUNGEN & ARCHIV -->
           <button onclick="openPendingReviewsModal()" id="header-review-btn" class="relative p-1.5 bg-slate-900 border border-slate-800 rounded-full text-slate-300 hover:text-white text-xs hidden flex items-center justify-center">
             💌 <span id="header-review-count" class="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
           </button>
@@ -173,7 +174,7 @@
         </button>
 
         <button onclick="openKopfkinoModal()" class="w-full py-3.5 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 border border-purple-500/40 text-purple-200 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-98 glow-purple">
-          <span>🧠</span> <span>Kopfkino & Fahrplan (3 Schritte)</span>
+          <span>🧠</span> <span>Kopfkino & Vorlieben-Match</span>
         </button>
 
         <button onclick="LiveStream.startAsSender()" class="w-full py-3 bg-gradient-to-r from-purple-950 via-slate-900 to-pink-950 border border-purple-500/30 text-purple-300 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-98">
@@ -184,53 +185,76 @@
     </main>
 
     <!-- ================================================================= -->
-    <!-- 3-SCHRITTE KOPFKINO WIZARD MODAL -->
+    <!-- MODAL: KOPFKINO (SETUP & SWIPE KARTEN) -->
     <!-- ================================================================= -->
-    <div id="kopfkino-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl glow-purple max-h-[90vh] overflow-y-auto flex flex-col justify-between">
+    <div id="kopfkino-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl glow-purple max-h-[85vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+          <h3 class="font-bold text-sm text-purple-200 flex items-center gap-2">
+            <span>🧠</span> Kopfkino-Kompass
+          </h3>
+          <button onclick="closeKopfkinoModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">×</button>
+        </div>
         
-        <div>
-          <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
-            <div class="flex items-center gap-2">
-              <span class="text-lg">🧠</span>
-              <div>
-                <h3 class="font-bold text-xs text-purple-200 uppercase tracking-wider">Kopfkino-Fahrplan</h3>
-                <p id="wizard-step-indicator" class="text-[10px] text-slate-400">Schritt 1 von 3: Grenzen & Fokus</p>
-              </div>
-            </div>
-            <button onclick="closeKopfkinoModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-2">✕</button>
-          </div>
-
-          <div class="w-full bg-slate-950 h-1.5 rounded-full mt-2 overflow-hidden border border-slate-800">
-            <div id="wizard-progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-rose-500 transition-all duration-300 w-1/3"></div>
-          </div>
+        <div id="kopfkino-content-area">
+          <!-- Dynamischer Inhalt -->
         </div>
-
-        <div id="wizard-content" class="my-auto py-2">
-          <!-- Dynamischer Wizard Step Inhalt -->
-        </div>
-
-        <div id="wizard-actions" class="flex gap-2 pt-2 border-t border-slate-850">
-          <!-- Dynamische Wizard Actions -->
-        </div>
-
       </div>
     </div>
 
-    <!-- MODAL: THEMA ERSTELLEN ODER BEARBEITEN -->
-    <div id="topic-edit-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-          <h3 id="topic-modal-title" class="font-bold text-sm text-purple-200">Thema anpassen</h3>
-          <button onclick="closeTopicModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-1">✕</button>
+    <!-- MODAL: PRAKTIK ERSTELLEN ODER BEARBEITEN (2-SPALTEN-LAYOUT) -->
+    <div id="kopfkino-create-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-purple-500/40 w-full max-w-md rounded-3xl p-5 space-y-3.5 shadow-2xl max-h-[85vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+          <h3 id="practice-modal-title" class="font-bold text-sm text-purple-200">➕ Praktik bearbeiten / erstellen</h3>
+          <button onclick="closeKopfkinoCreateModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">×</button>
         </div>
         <div class="space-y-3 text-xs">
           <div>
-            <label class="font-bold text-slate-400 uppercase tracking-wider block pb-1">Bezeichnung & Emoji</label>
-            <input id="topic-label-input" type="text" placeholder="z. B. Ganzkörper-Massage & Öl 🪶" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500">
+            <label class="font-bold text-slate-400 uppercase tracking-wider block pb-1">Titel der Praktik</label>
+            <input id="custom-practice-title" type="text" placeholder="z. B. Sinnesentzug & Massage ✨" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500">
           </div>
-          <button onclick="saveTopic()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold uppercase tracking-wider rounded-xl shadow mt-2">
-            Thema speichern ✨
+          
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div class="space-y-1.5 bg-slate-950/80 p-2.5 rounded-2xl border border-slate-800 flex flex-col">
+              <label class="font-bold text-rose-400 uppercase tracking-wider text-[9px] block text-center pb-1 border-b border-slate-850">👉 Aktiv (Geben)</label>
+              <div id="custom-active-inputs" class="space-y-1.5 flex-1"></div>
+              <button type="button" onclick="addOptionRow('custom-active-inputs')" class="text-[10px] text-rose-400 hover:text-rose-300 font-semibold pt-1 block text-center">+ Option</button>
+            </div>
+
+            <div class="space-y-1.5 bg-slate-950/80 p-2.5 rounded-2xl border border-slate-800 flex flex-col">
+              <label class="font-bold text-purple-400 uppercase tracking-wider text-[9px] block text-center pb-1 border-b border-slate-850">👉 Passiv (Nehmen)</label>
+              <div id="custom-passive-inputs" class="space-y-1.5 flex-1"></div>
+              <button type="button" onclick="addOptionRow('custom-passive-inputs')" class="text-[10px] text-purple-400 hover:text-purple-300 font-semibold pt-1 block text-center">+ Option</button>
+            </div>
+          </div>
+
+          <button onclick="saveCustomPractice()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold uppercase tracking-wider rounded-xl shadow mt-2">
+            Praktik speichern 🚀
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: TOY-BOX BEARBEITEN -->
+    <div id="kopfkino-toy-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl max-h-[85vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+          <h3 class="font-bold text-sm text-purple-200">✏️ Toy-Kiste bearbeiten</h3>
+          <button onclick="closeKopfkinoToyModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">×</button>
+        </div>
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="font-bold text-slate-400 uppercase tracking-wider block pb-1">Titel der Toy-Karte</label>
+            <input id="toycard-title" type="text" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500">
+          </div>
+          <div>
+            <label class="font-bold text-purple-400 uppercase tracking-wider text-[10px] block pb-1">Toys & Hilfsmittel</label>
+            <div id="toy-items-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
+            <button type="button" onclick="addToyItemRow()" class="text-[11px] text-purple-400 hover:text-purple-300 font-semibold pt-1.5 block">+ Neues Toy hinzufügen</button>
+          </div>
+          <button onclick="saveToyCard()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold uppercase tracking-wider rounded-xl shadow mt-2">
+            Toy-Kiste speichern 🚀
           </button>
         </div>
       </div>
@@ -245,9 +269,11 @@
           <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
             <span>💌</span> Deine Erlebnisse & Bewertungen
           </h3>
-          <button onclick="closePendingReviewsModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">✕</button>
+          <button onclick="closePendingReviewsModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">×</button>
         </div>
-        <div id="pending-reviews-container" class="space-y-2.5 max-h-[60vh] overflow-y-auto text-xs"></div>
+        <div id="pending-reviews-container" class="space-y-2.5 max-h-[60vh] overflow-y-auto text-xs">
+          <!-- Dynamisch befüllt -->
+        </div>
       </div>
     </div>
 
@@ -357,16 +383,17 @@
       </div>
     </div>
 
-    <!-- MODAL: SPONTAN-WUNSCH -->
+    <!-- MODAL: SPONTAN-WUNSCH (KOMPAKT MIT DRINGEND-KOMMEN TOGGLE & EDITIERBAREN CHIPS) -->
     <div id="craving-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end justify-center p-0">
       <div class="bg-slate-900 border-t border-slate-800 w-full rounded-t-3xl p-4 space-y-3 max-h-[85vh] overflow-y-auto shadow-2xl">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
           <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
             <span>🔥</span> Worauf hast du gerade Lust?
           </h3>
-          <button onclick="closeCravingModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">✕</button>
+          <button onclick="closeCravingModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">×</button>
         </div>
 
+        <!-- 1. Modus & Dringend Kommen Toggle -->
         <div class="space-y-1">
           <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">1. Modus & Fokus</label>
           <div class="grid grid-cols-2 gap-2 text-xs">
@@ -379,6 +406,7 @@
           </div>
         </div>
 
+        <!-- 2. Rolle -->
         <div class="space-y-1.5 text-xs">
           <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">2. Deine Rolle</label>
           <div class="grid grid-cols-3 gap-1.5">
@@ -388,6 +416,7 @@
           </div>
         </div>
 
+        <!-- 3. Spielart (Voll editierbar mit Bearbeiten-Button) -->
         <div class="space-y-1">
           <div class="flex justify-between items-center">
             <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">3. Spielart (Optional)</label>
@@ -427,15 +456,6 @@
       beide: ['Zungenkuss-Marathon 💋', 'Hände unters Shirt ✨', 'An die Wand gedrückt 🧱', 'Knutschen im Stehen ⚡']
     };
 
-    const defaultTabooCategories = [
-      { id: 'spanking', label: 'Spanking & Schläge 👋', keywords: ['spank', 'schlag', 'hintern', 'klaps', 'arsch'] },
-      { id: 'bondage', label: 'Fesseln & Fixieren 🔗', keywords: ['fessel', 'binden', 'seil', 'fixier', 'handschellen'] },
-      { id: 'oral_deep', label: 'Tiefer Oralverkehr / Deepthroat 💋', keywords: ['deep', 'tief', 'schlucken', 'würgen', 'oral', 'blowjob', 'lecken'] },
-      { id: 'toys', label: 'Intensive Toys & Plugs 🔌', keywords: ['plug', 'toy', 'vibrator', 'dildo', 'strom', 'wand'] },
-      { id: 'anal', label: 'Anale Spielarten 🍑', keywords: ['anal', 'hintern', 'po', 'prostata'] },
-      { id: 'dirtytalk', label: 'Dominanter Dirty Talk 🗣️', keywords: ['dirty', 'beschimpfen', 'demütig', 'laut', 'befehl'] }
-    ];
-
     let state = {
       currentUser: localStorage.getItem('cp_current_user') || 'Er',
       requestHistory: [
@@ -446,15 +466,37 @@
       ],
       pendingReviews: [],
       completedReviews: [],
-      kopfkino: {
-        currentStep: 1,
-        tabooCatalog: defaultTabooCategories,
-        myPreferences: {}, // { topicId: { mode: 'erlaubt'|'aktiv'|'passiv'|'tabu', focus: boolean } }
-        partnerPreferences: {},
-        myOhrwurm: '',
-        partnerOhrwurm: '',
-        vibePlan: null
-      },
+      kopfkinoCards: [
+        { 
+          id: 'bondage', 
+          type: 'practice',
+          title: 'Fesseln & Fixieren', 
+          activeOptions: ['Hände fixieren 🔗', 'Ganzkörper-Bondage ⛓️', 'Augenbinde anlegen 🕶️'],
+          passiveOptions: ['Gefesselt werden 🧘', 'Mit Augenbinde 🕶️', 'Bewegungsunfähig 🛏️']
+        },
+        { 
+          id: 'spanking', 
+          type: 'practice',
+          title: 'Spanking & Klapse', 
+          activeOptions: ['Mit flacher Hand 👋', 'Mit Hilfsmittel (Paddle) 💥', 'Leichte Klapse ✨'],
+          passiveOptions: ['Über den Knien 🍑', 'An die Wand gedrückt 🧱', 'Roter Hintern 🔥']
+        },
+        { 
+          id: 'oral', 
+          type: 'practice',
+          title: 'Oraler Sex', 
+          activeOptions: ['Ausgiebige Zungenarbeit 👅', 'Tiefes Saugen 💋', 'Vorbereiten ✨'],
+          passiveOptions: ['Verwöhnen lassen 🧘', 'Bis zum Orgasmus 🎯', '69er Gegenseitig 🔥']
+        },
+        { 
+          id: 'toys', 
+          type: 'toys',
+          title: 'Toy-Kiste & Hilfsmittel', 
+          toyList: ['Augenbinde 🕶️', 'Vibrator / Wand 🔌', 'Massage- & Mandelöl ✨', 'Handschellen ⛓️', 'Butt Plug 🍑', 'Feder / Kitzel-Tool 🪶']
+        }
+      ],
+      kopfkinoDeck: ['bondage', 'spanking', 'oral', 'toys'],
+      kopfkinoAnswers: { Er: {}, Sie: {} },
       cravingChips: JSON.parse(JSON.stringify(defaultCravingChips)),
       activeCraving: null,
       eveningReservation: null,
@@ -464,13 +506,12 @@
 
     let currentUnfulfilledIndex = 0;
     let activeReviewItem = null;
-    let editingTopicId = null;
+    let currentKopfkinoCardIndex = 0;
+    let editingPracticeId = null;
+    let editingToyCardId = null;
     let isDringendKommen = false;
     let isChipEditMode = false;
 
-    // =========================================================================
-    // PEERJS & WEBRTC ENGINE
-    // =========================================================================
     const LiveStream = {
       peer: null,
       primaryCall: null,
@@ -496,6 +537,7 @@
         });
 
         this.peer.on('open', (id) => {
+          console.log('Peer verbunden:', id);
           this.connectData();
         });
 
@@ -631,14 +673,13 @@
         } else if (data.type === 'craving_feedback') {
           showFeedbackBanner(data.feedback);
           playSensualSound('chime');
-        } else if (data.type === 'kopfkino_wizard_sync') {
-          if (!state.kopfkino) state.kopfkino = {};
-          state.kopfkino.partnerPreferences = data.preferences || {};
-          state.kopfkino.partnerOhrwurm = data.ohrwurm || '';
-          if (data.catalog) state.kopfkino.tabooCatalog = data.catalog;
+        } else if (data.type === 'kopfkino_sync') {
+          if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
+          const partnerName = state.currentUser === 'Er' ? 'Sie' : 'Er';
+          state.kopfkinoAnswers[partnerName] = data.answers;
           saveState();
+          showFeedbackBanner(`🧠 Dein Partner hat das Kopfkino-Deck aktualisiert!`);
           playSensualSound('chime');
-          showFeedbackBanner(`🧠 ${data.sender} hat den Kopfkino-Fahrplan & Fokus synchronisiert!`);
         }
       },
 
@@ -740,9 +781,6 @@
       }
     };
 
-    // =========================================================================
-    // AUDIO ENGINE
-    // =========================================================================
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSensualSound(type = 'heartbeat') {
       try {
@@ -766,16 +804,13 @@
       } catch (e) {}
     }
 
-    // =========================================================================
-    // STORAGE & PERSISTENZ
-    // =========================================================================
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v102', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v100', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v102');
+      const saved = localStorage.getItem('couple_pulse_state_v100');
       if (saved) { 
         try { 
           const parsed = JSON.parse(saved);
@@ -784,20 +819,6 @@
       }
       if (!state.cravingChips) {
         state.cravingChips = JSON.parse(JSON.stringify(defaultCravingChips));
-      }
-      if (!state.kopfkino) {
-        state.kopfkino = {
-          currentStep: 1,
-          tabooCatalog: defaultTabooCategories,
-          myPreferences: {},
-          partnerPreferences: {},
-          myOhrwurm: '',
-          partnerOhrwurm: '',
-          vibePlan: null
-        };
-      }
-      if (!state.kopfkino.tabooCatalog || state.kopfkino.tabooCatalog.length === 0) {
-        state.kopfkino.tabooCatalog = defaultTabooCategories;
       }
       updateUI();
     }
@@ -829,11 +850,7 @@
 
       const eveningBanner = document.getElementById('evening-reservation-banner');
       if (state.eveningReservation) {
-        eveningBanner.classList.remove('hidden');
-        document.getElementById('evening-reservation-text').innerHTML = `
-          <div class="font-semibold">${state.eveningReservation.kinks.join(' + ')}</div>
-          <div class="text-[10px] text-slate-400">Dynamik: ${state.eveningReservation.roleDescription}</div>
-        `;
+        eveningBanner.classList.add('hidden');
       } else { eveningBanner.classList.add('hidden'); }
 
       document.getElementById('btn-user-er').className = state.currentUser === 'Er' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
@@ -936,400 +953,423 @@
     }
 
     // =========================================================================
-    // 3-SCHRITTE KOPFKINO ENGINE MIT EDITIERBAREN THEMEN & FOKUS-MARKER
+    // KOPFKINO ENGINE: ALLE KARTEN VOLL EDITIERBAR & 2-SPALTEN-LAYOUT
     // =========================================================================
     function openKopfkinoModal() {
-      if (!state.kopfkino) {
-        state.kopfkino = {
-          currentStep: 1,
-          tabooCatalog: defaultTabooCategories,
-          myPreferences: {},
-          partnerPreferences: {},
-          myOhrwurm: '',
-          partnerOhrwurm: '',
-          vibePlan: null
-        };
+      if (!state.kopfkinoDeck || state.kopfkinoDeck.length === 0) {
+        state.kopfkinoDeck = state.kopfkinoCards.map(c => c.id);
       }
-      state.kopfkino.currentStep = 1;
+      renderKopfkinoSetup();
       document.getElementById('kopfkino-modal').classList.remove('hidden');
-      renderWizardStep();
     }
 
     function closeKopfkinoModal() {
       document.getElementById('kopfkino-modal').classList.add('hidden');
     }
 
-    function renderWizardStep() {
-      const step = state.kopfkino.currentStep;
-      const content = document.getElementById('wizard-content');
-      const actions = document.getElementById('wizard-actions');
-      const indicator = document.getElementById('wizard-step-indicator');
-      const bar = document.getElementById('wizard-progress-bar');
+    function renderKopfkinoSetup() {
+      const container = document.getElementById('kopfkino-content-area');
+      const allCards = state.kopfkinoCards || [];
+      const activeDeck = state.kopfkinoDeck || [];
 
-      bar.style.width = step === 1 ? '33%' : step === 2 ? '66%' : '100%';
+      let cardsHtml = allCards.map(c => {
+        const isInDeck = activeDeck.includes(c.id);
+        let badgeType = c.type === 'practice' ? '⚡ Praktik' : '🔌 Toy-Box';
 
-      if (step === 1) {
-        indicator.innerText = "Schritt 1 von 3: Grenzen & Fokus heute";
-        renderStep1Topics(content, actions);
-      } else if (step === 2) {
-        indicator.innerText = "Schritt 2 von 3: Vibe & Rahmen heute Abend";
-        renderStep2Vibe(content, actions);
-      } else if (step === 3) {
-        indicator.innerText = "Schritt 3 von 3: Dein Ohrwurm-Impuls";
-        renderStep3Ohrwurm(content, actions);
-      }
-    }
-
-    // -------------------------------------------------------------------------
-    // SCHRITT 1: THEMEN, BUTTONS (Erlaubt, Nur aktiv, Nur passiv, Tabu) & FOKUS
-    // -------------------------------------------------------------------------
-    function renderStep1Topics(content, actions) {
-      const catalog = state.kopfkino.tabooCatalog || defaultTabooCategories;
-      const prefs = state.kopfkino.myPreferences || {};
-
-      let itemsHtml = catalog.map(t => {
-        const itemPref = prefs[t.id] || { mode: 'erlaubt', focus: false };
-        const mode = itemPref.mode || 'erlaubt';
-        const isFocus = itemPref.focus === true && mode !== 'tabu';
+        let editBtn = '';
+        if (c.type === 'practice') {
+          editBtn = `
+            <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
+              <button onclick="openKopfkinoCreateModal('${c.id}')" class="p-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded text-[10px]" title="Bearbeiten">✏️</button>
+              <button onclick="deletePractice('${c.id}')" class="p-1 bg-slate-900 hover:bg-slate-800 text-rose-400 rounded text-[10px]" title="Löschen">🗑️</button>
+            </div>
+          `;
+        } else if (c.type === 'toys') {
+          editBtn = `
+            <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
+              <button onclick="openKopfkinoToyModal('${c.id}')" class="p-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded text-[10px]" title="Toy-Kiste bearbeiten">✏️</button>
+            </div>
+          `;
+        }
 
         return `
-          <div class="bg-slate-950/85 border ${isFocus ? 'border-amber-500/70 glow-amber' : 'border-slate-800'} rounded-2xl p-2.5 space-y-2 transition-all">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-slate-200 truncate max-w-[170px]">${t.label}</span>
-              
-              <div class="flex items-center gap-1.5">
-                <!-- FOKUS-MARKER TOGGLE -->
-                <button type="button" onclick="toggleTopicFocus('${t.id}')" 
-                  class="px-2 py-0.5 rounded-full text-[10px] font-bold border transition-all ${isFocus ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md animate-pulse' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-300'}"
-                  title="Besonders viel Lust / Fokus heute">
-                  🔥 Fokus
-                </button>
-                
-                <!-- EDIT / DELETE -->
-                <button type="button" onclick="openTopicModal('${t.id}')" class="text-slate-500 hover:text-slate-200 text-xs px-0.5" title="Bearbeiten">✏️</button>
-                <button type="button" onclick="deleteTopic('${t.id}')" class="text-slate-500 hover:text-rose-400 text-xs px-0.5" title="Löschen">🗑️</button>
-              </div>
+          <div onclick="toggleCardInDeck('${c.id}')" class="p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${isInDeck ? 'bg-purple-950/60 border-purple-500 text-purple-200 font-semibold' : 'bg-slate-950 border-slate-850 text-slate-400'}">
+            <div class="truncate max-w-[170px]">
+              <span class="text-[9px] text-purple-400/80 uppercase block font-bold">${badgeType}</span>
+              <span class="text-xs font-bold text-slate-200">${c.title}</span>
             </div>
-            
-            <!-- 4-WEGE BUTTONS: Erlaubt | Nur aktiv | Nur passiv | Tabu -->
-            <div class="grid grid-cols-4 gap-1 text-[9px] font-bold">
-              <button type="button" onclick="setTopicMode('${t.id}', 'erlaubt')" 
-                class="py-1 rounded-lg border transition-all ${mode === 'erlaubt' ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300 shadow' : 'bg-slate-900 border-slate-800 text-slate-400'}">
-                Erlaubt
-              </button>
-              <button type="button" onclick="setTopicMode('${t.id}', 'aktiv')" 
-                class="py-1 rounded-lg border transition-all ${mode === 'aktiv' ? 'bg-rose-950/80 border-rose-500 text-rose-300 shadow' : 'bg-slate-900 border-slate-800 text-slate-400'}">
-                Nur aktiv
-              </button>
-              <button type="button" onclick="setTopicMode('${t.id}', 'passiv')" 
-                class="py-1 rounded-lg border transition-all ${mode === 'passiv' ? 'bg-purple-950/80 border-purple-500 text-purple-300 shadow' : 'bg-slate-900 border-slate-800 text-slate-400'}">
-                Nur passiv
-              </button>
-              <button type="button" onclick="setTopicMode('${t.id}', 'tabu')" 
-                class="py-1 rounded-lg border transition-all ${mode === 'tabu' ? 'bg-rose-600 border-rose-400 text-white shadow' : 'bg-slate-900 border-slate-800 text-slate-400'}">
-                Tabu
-              </button>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px]">${isInDeck ? '✅ Im Spiel' : '➕ Auswählen'}</span>
+              ${editBtn}
             </div>
           </div>
         `;
       }).join('');
 
-      content.innerHTML = `
-        <div class="space-y-2 text-xs">
-          <div class="flex justify-between items-center">
-            <p class="text-slate-400 text-[11px]">Bestimme Rolle & Fokus für den heutigen Abend:</p>
-            <button onclick="openTopicModal()" class="text-[10px] text-purple-400 hover:text-purple-300 font-bold underline">+ Neues Thema</button>
+      container.innerHTML = `
+        <div class="space-y-3">
+          <div class="text-xs text-slate-300">Wähle Themen für heute oder passe sie über ✏️ an:</div>
+          <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+            ${cardsHtml}
           </div>
-          <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
-            ${itemsHtml}
-          </div>
+          <button onclick="openKopfkinoCreateModal()" class="w-full py-2 bg-slate-900 border border-slate-800 text-purple-300 text-xs font-semibold rounded-xl hover:bg-slate-850">
+            ➕ Neue Praktik anlegen
+          </button>
+          <button onclick="startKopfkinoSwipeSession()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
+            Karten-Runde starten 🚀
+          </button>
         </div>
       `;
-
-      actions.innerHTML = `
-        <button onclick="calculateVibeAndNext()" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
-          Vibe berechnen & Weiter →
-        </button>
-      `;
     }
 
-    function setTopicMode(topicId, mode) {
-      if (!state.kopfkino.myPreferences[topicId]) {
-        state.kopfkino.myPreferences[topicId] = { mode: 'erlaubt', focus: false };
-      }
-      state.kopfkino.myPreferences[topicId].mode = mode;
-      // Bei Tabu automatisch Fokus ausschalten
-      if (mode === 'tabu') {
-        state.kopfkino.myPreferences[topicId].focus = false;
-      }
-      saveState();
-      renderStep1Topics(document.getElementById('wizard-content'), document.getElementById('wizard-actions'));
-    }
-
-    function toggleTopicFocus(topicId) {
-      if (!state.kopfkino.myPreferences[topicId]) {
-        state.kopfkino.myPreferences[topicId] = { mode: 'erlaubt', focus: false };
-      }
-      const current = state.kopfkino.myPreferences[topicId];
-      if (current.mode === 'tabu') {
-        current.mode = 'erlaubt';
-      }
-      current.focus = !current.focus;
-      saveState();
-      playSensualSound('chime');
-      renderStep1Topics(document.getElementById('wizard-content'), document.getElementById('wizard-actions'));
-    }
-
-    // THEMEN EDITIEREN & ERSTELLEN
-    function openTopicModal(topicId = null) {
-      editingTopicId = topicId;
-      const modal = document.getElementById('topic-edit-modal');
-      const input = document.getElementById('topic-label-input');
-      const title = document.getElementById('topic-modal-title');
-
-      if (topicId) {
-        const topic = state.kopfkino.tabooCatalog.find(t => t.id === topicId);
-        title.innerText = 'Thema bearbeiten';
-        input.value = topic ? topic.label : '';
-      } else {
-        title.innerText = '➕ Neues Thema anlegen';
-        input.value = '';
-      }
-      modal.classList.remove('hidden');
-    }
-
-    function closeTopicModal() {
-      document.getElementById('topic-edit-modal').classList.add('hidden');
-    }
-
-    function saveTopic() {
-      const label = document.getElementById('topic-label-input').value.trim();
-      if (!label) { alert("Bitte einen Namen für das Thema eingeben."); return; }
-
-      // Automatische Keywords aus dem Text extrahieren
-      const rawWords = label.toLowerCase().replace(/[^a-zäöüß0-9\s]/gi, '').split(/\s+/).filter(w => w.length > 2);
-
-      if (editingTopicId) {
-        const item = state.kopfkino.tabooCatalog.find(t => t.id === editingTopicId);
-        if (item) {
-          item.label = label;
-          item.keywords = Array.from(new Set([...item.keywords, ...rawWords]));
+    function toggleCardInDeck(cardId) {
+      if (!state.kopfkinoDeck) state.kopfkinoDeck = state.kopfkinoCards.map(c => c.id);
+      if (state.kopfkinoDeck.includes(cardId)) {
+        if (state.kopfkinoDeck.length > 1) {
+          state.kopfkinoDeck = state.kopfkinoDeck.filter(id => id !== cardId);
+        } else {
+          alert("Mindestens eine Karte muss aktiv bleiben.");
         }
       } else {
-        const newId = 'custom_' + Date.now();
-        state.kopfkino.tabooCatalog.push({
-          id: newId,
-          label: label,
-          keywords: rawWords.length > 0 ? rawWords : [label.toLowerCase()]
-        });
+        state.kopfkinoDeck.push(cardId);
       }
-
-      closeTopicModal();
       saveState();
-      renderStep1Topics(document.getElementById('wizard-content'), document.getElementById('wizard-actions'));
+      renderKopfkinoSetup();
     }
 
-    function deleteTopic(topicId) {
-      if (confirm("Möchtest du dieses Thema wirklich löschen?")) {
-        state.kopfkino.tabooCatalog = state.kopfkino.tabooCatalog.filter(t => t.id !== topicId);
-        delete state.kopfkino.myPreferences[topicId];
-        saveState();
-        renderStep1Topics(document.getElementById('wizard-content'), document.getElementById('wizard-actions'));
-      }
+    function addOptionRow(containerId, value = '') {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-1';
+      row.innerHTML = `
+        <input type="text" value="${value.replace(/"/g, '&quot;')}" placeholder="Option..." class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-purple-500">
+        <button type="button" onclick="this.parentElement.remove()" class="text-slate-500 hover:text-rose-400 text-xs px-1">✕</button>
+      `;
+      container.appendChild(row);
     }
 
-    // -------------------------------------------------------------------------
-    // SCHRITT 2: VIBE-ABLEITUNG
-    // -------------------------------------------------------------------------
-    function calculateVibeAndNext() {
-      const prefs = state.kopfkino.myPreferences || {};
-      const catalog = state.kopfkino.tabooCatalog || defaultTabooCategories;
+    function openKopfkinoCreateModal(cardId = null) {
+      editingPracticeId = cardId;
+      const titleInput = document.getElementById('custom-practice-title');
+      const modalTitle = document.getElementById('practice-modal-title');
+      const activeContainer = document.getElementById('custom-active-inputs');
+      const passiveContainer = document.getElementById('custom-passive-inputs');
       
-      const focusedTopics = catalog.filter(t => prefs[t.id]?.focus);
-      const taboos = catalog.filter(t => prefs[t.id]?.mode === 'tabu');
-      const activeOnly = catalog.filter(t => prefs[t.id]?.mode === 'aktiv');
-      const passiveOnly = catalog.filter(t => prefs[t.id]?.mode === 'passiv');
+      activeContainer.innerHTML = '';
+      passiveContainer.innerHTML = '';
 
-      let vibe = {
-        title: 'Sinnlich & Ausgeglichen 🌊',
-        tempo: 'Sanftes Warm-Up mit flexiblem Übergang',
-        focus: 'Verbindung, Nähe & gegenseitiges Erspüren',
-        highlight: focusedTopics.length > 0 ? `Besonderer Wunsch: ${focusedTopics.map(t => t.label).join(', ')}` : null
-      };
+      if (cardId) {
+        const card = state.kopfkinoCards.find(c => c.id === cardId);
+        if (card) {
+          modalTitle.innerText = '✏️ Praktik bearbeiten';
+          titleInput.value = card.title;
+          (card.activeOptions || []).forEach(opt => addOptionRow('custom-active-inputs', opt));
+          (card.passiveOptions || []).forEach(opt => addOptionRow('custom-passive-inputs', opt));
+        }
+      } else {
+        modalTitle.innerText = '➕ Neue Praktik anlegen';
+        titleInput.value = '';
+        addOptionRow('custom-active-inputs', 'Aktiv machen 🔗');
+        addOptionRow('custom-passive-inputs', 'Passiv empfangen 🧘');
+      }
+      document.getElementById('kopfkino-create-modal').classList.remove('hidden');
+    }
 
-      if (focusedTopics.length > 0) {
-        vibe.title = `Fokus auf: ${focusedTopics[0].label} 🔥`;
-        vibe.tempo = 'Gezielte Vorbereitung auf das Highlight';
-        vibe.focus = focusedTopics.map(t => t.label).join(' & ');
-      } else if (taboos.length >= 3) {
-        vibe.title = 'Entspannt, Achtsam & Sanft 🕯️';
-        vibe.tempo = 'Slow-Burn / Kein Leistungsdruck';
-        vibe.focus = 'Kuscheln, Streicheln & stressfreie Intimität';
-      } else if (passiveOnly.length > activeOnly.length) {
-        vibe.title = 'Verwöhn- & Empfangs-Modus 🧘';
-        vibe.tempo = 'Du lässt dich heute fallen und führen';
-        vibe.focus = 'Hingabe & passive Genussmomente';
-      } else if (activeOnly.length > passiveOnly.length) {
-        vibe.title = 'Verwöhner- & Macher-Vibe 👑';
-        vibe.tempo = 'Du übernimmst aktiv die Führung';
-        vibe.focus = 'Partner verwöhnen & Signale lesen';
-      } else if (taboos.length === 0) {
-        vibe.title = 'Hemmungslos & Völlig Offen 🔥';
-        vibe.tempo = 'Freies Treibenlassen ohne Tabu-Grenzen';
-        vibe.focus = 'Alle Spielarten sind heute freigeschaltet';
+    function closeKopfkinoCreateModal() {
+      document.getElementById('kopfkino-create-modal').classList.add('hidden');
+    }
+
+    function saveCustomPractice() {
+      const title = document.getElementById('custom-practice-title').value.trim();
+      if (!title) { alert("Bitte Titel der Praktik eingeben."); return; }
+
+      const activeInputs = document.querySelectorAll('#custom-active-inputs input');
+      const passiveInputs = document.querySelectorAll('#custom-passive-inputs input');
+
+      const activeOptions = Array.from(activeInputs).map(i => i.value.trim()).filter(Boolean);
+      const passiveOptions = Array.from(passiveInputs).map(i => i.value.trim()).filter(Boolean);
+
+      if (activeOptions.length === 0 || passiveOptions.length === 0) {
+        alert("Bitte mindestens eine aktive und eine passive Option angeben.");
+        return;
       }
 
-      state.kopfkino.vibePlan = vibe;
-      state.kopfkino.currentStep = 2;
+      if (editingPracticeId) {
+        const card = state.kopfkinoCards.find(c => c.id === editingPracticeId);
+        if (card) {
+          card.title = title;
+          card.activeOptions = activeOptions;
+          card.passiveOptions = passiveOptions;
+        }
+      } else {
+        const id = 'practice_' + Date.now();
+        const newCard = { id, type: 'practice', title, activeOptions, passiveOptions };
+        state.kopfkinoCards.push(newCard);
+        state.kopfkinoDeck.push(id);
+      }
+
+      closeKopfkinoCreateModal();
       saveState();
-      renderWizardStep();
+      renderKopfkinoSetup();
+      alert("✓ Praktik erfolgreich gespeichert!");
     }
 
-    function renderStep2Vibe(content, actions) {
-      const vibe = state.kopfkino.vibePlan;
-
-      content.innerHTML = `
-        <div class="space-y-3.5 text-xs py-1">
-          <div class="bg-gradient-to-br from-purple-950/80 to-slate-900 border border-purple-500/50 rounded-2xl p-3.5 space-y-2 glow-purple">
-            <span class="text-[9px] font-bold text-purple-400 uppercase tracking-widest block">Erkannter Vibe für heute:</span>
-            <div class="text-sm font-bold text-slate-100">${vibe.title}</div>
-            
-            <div class="space-y-1.5 pt-1 text-[11px]">
-              <div class="flex items-center gap-2 text-slate-300">
-                <span class="text-rose-400">⏱️</span> <span><strong>Tempo:</strong> ${vibe.tempo}</span>
-              </div>
-              <div class="flex items-center gap-2 text-slate-300">
-                <span class="text-amber-400">🎯</span> <span><strong>Fokus:</strong> ${vibe.focus}</span>
-              </div>
-              ${vibe.highlight ? `
-                <div class="bg-amber-950/50 border border-amber-500/50 p-2 rounded-xl text-amber-200 text-[10px] font-bold flex items-center gap-1.5 mt-2">
-                  <span>🔥</span> <span>${vibe.highlight}</span>
-                </div>
-              ` : ''}
-            </div>
-          </div>
-
-          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-[11px] text-slate-400 leading-relaxed">
-            💡 <em>Dieser Rahmen sorgt dafür, dass ihr beide ohne Missverständnisse und mit maximalem Freiraum in den Abend startet.</em>
-          </div>
-        </div>
-      `;
-
-      actions.innerHTML = `
-        <button onclick="state.kopfkino.currentStep = 1; renderWizardStep();" class="py-2.5 px-3 bg-slate-800 text-xs font-semibold rounded-xl text-slate-300">
-          ← Zurück
-        </button>
-        <button onclick="state.kopfkino.currentStep = 3; renderWizardStep();" class="flex-1 py-2.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg">
-          Zum Ohrwurm-Impuls ✨
-        </button>
-      `;
+    function deletePractice(cardId) {
+      if (confirm("Möchtest du diese Praktik wirklich löschen?")) {
+        state.kopfkinoCards = state.kopfkinoCards.filter(c => c.id !== cardId);
+        state.kopfkinoDeck = (state.kopfkinoDeck || []).filter(id => id !== cardId);
+        saveState();
+        renderKopfkinoSetup();
+      }
     }
 
-    // -------------------------------------------------------------------------
-    // SCHRITT 3: OHRWURM-FREITEXT & KOLLISIONSPRÜFUNG
-    // -------------------------------------------------------------------------
-    function renderStep3Ohrwurm(content, actions) {
-      // Partner-Fokus Match Check
-      const partnerPrefs = state.kopfkino.partnerPreferences || {};
-      const catalog = state.kopfkino.tabooCatalog || defaultTabooCategories;
-      const partnerFocusList = catalog.filter(t => partnerPrefs[t.id]?.focus);
+    function openKopfkinoToyModal(cardId) {
+      editingToyCardId = cardId;
+      const card = state.kopfkinoCards.find(c => c.id === cardId);
+      if (!card) return;
 
-      content.innerHTML = `
-        <div class="space-y-3 text-xs">
-          ${partnerFocusList.length > 0 ? `
-            <div class="bg-amber-950/60 border border-amber-500/60 p-2.5 rounded-2xl flex items-center gap-2">
-              <span class="text-lg animate-bounce">🔥</span>
-              <div class="text-[10px] text-amber-200">
-                <strong>Partner-Fokus:</strong> Dein Partner hat heute besondere Lust auf <strong>${partnerFocusList.map(t => t.label).join(', ')}</strong>!
-              </div>
-            </div>
-          ` : ''}
+      document.getElementById('toycard-title').value = card.title;
+      const container = document.getElementById('toy-items-list');
+      container.innerHTML = '';
 
-          <div>
-            <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1">
-              💭 Was schwirrt dir gerade im Kopf herum?
-            </label>
-            <textarea id="ohrwurm-input" rows="3" oninput="checkOhrwurmCollision(this.value)" placeholder="z. B. Ich will dir heute ganz langsam die Augen verbinden und dich verwöhnen..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-slate-200 focus:outline-none focus:border-rose-500 transition-all resize-none">${state.kopfkino.myOhrwurm || ''}</textarea>
-          </div>
-
-          <div id="ohrwurm-collision-box" class="hidden bg-rose-950/90 border border-rose-500/70 p-2.5 rounded-xl text-[11px] text-rose-200 space-y-1 animate-pulse">
-            <div class="font-bold flex items-center gap-1.5">
-              <span>⚠️</span> <span>Tabu-Warnung deines Partners</span>
-            </div>
-            <div id="ohrwurm-collision-text" class="text-[10px] text-rose-300 leading-tight"></div>
-          </div>
-
-          ${state.kopfkino.partnerOhrwurm ? `
-            <div class="bg-indigo-950/60 border border-indigo-500/40 p-3 rounded-2xl space-y-1">
-              <span class="text-[9px] font-bold text-indigo-300 uppercase tracking-wider block">💌 Fantasie deines Partners:</span>
-              <div class="text-xs italic text-slate-200">"${state.kopfkino.partnerOhrwurm}"</div>
-            </div>
-          ` : ''}
-        </div>
-      `;
-
-      actions.innerHTML = `
-        <button onclick="state.kopfkino.currentStep = 2; renderWizardStep();" class="py-2.5 px-3 bg-slate-800 text-xs font-semibold rounded-xl text-slate-300">
-          ← Zurück
-        </button>
-        <button onclick="sendOhrwurmPackage()" class="flex-1 py-3 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
-          Fahrplan an Partner senden 🚀
-        </button>
-      `;
+      (card.toyList || []).forEach(toy => addToyItemRow(toy));
+      document.getElementById('kopfkino-toy-modal').classList.remove('hidden');
     }
 
-    function checkOhrwurmCollision(text) {
-      state.kopfkino.myOhrwurm = text;
-      const box = document.getElementById('ohrwurm-collision-box');
-      const msg = document.getElementById('ohrwurm-collision-text');
-      if (!box || !msg) return;
+    function closeKopfkinoToyModal() {
+      document.getElementById('kopfkino-toy-modal').classList.add('hidden');
+    }
 
-      const partnerPrefs = state.kopfkino.partnerPreferences || {};
-      const catalog = state.kopfkino.tabooCatalog || defaultTabooCategories;
-      const lowerText = text.toLowerCase();
+    function addToyItemRow(value = '') {
+      const container = document.getElementById('toy-items-list');
+      if (!container) return;
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-1';
+      row.innerHTML = `
+        <input type="text" value="${value.replace(/"/g, '&quot;')}" placeholder="z. B. Augenbinde 🕶️" class="toy-input-item flex-1 bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-purple-500">
+        <button type="button" onclick="this.parentElement.remove()" class="text-slate-500 hover:text-rose-400 text-xs px-1">✕</button>
+      `;
+      container.appendChild(row);
+    }
 
-      let hits = [];
-      catalog.forEach(item => {
-        const pref = partnerPrefs[item.id];
-        if (pref && pref.mode !== 'erlaubt') {
-          const match = (item.keywords || []).some(kw => lowerText.includes(kw.toLowerCase()));
-          if (match) {
-            hits.push(`'${item.label}' (Einstellung: ${pref.mode.toUpperCase()})`);
+    function saveToyCard() {
+      const card = state.kopfkinoCards.find(c => c.id === editingToyCardId);
+      if (!card) return;
+
+      const title = document.getElementById('toycard-title').value.trim();
+      if (title) card.title = title;
+
+      const inputs = document.querySelectorAll('.toy-input-item');
+      const toys = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
+
+      if (toys.length === 0) {
+        alert("Bitte mindestens ein Toy angeben.");
+        return;
+      }
+
+      card.toyList = toys;
+      saveState();
+      closeKopfkinoToyModal();
+      renderKopfkinoSetup();
+      alert("✓ Toy-Kiste erfolgreich aktualisiert!");
+    }
+
+    function startKopfkinoSwipeSession() {
+      currentKopfkinoCardIndex = 0;
+      if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
+      renderKopfkinoSwipeCard();
+    }
+
+    function renderKopfkinoSwipeCard() {
+      const container = document.getElementById('kopfkino-content-area');
+      const allCards = state.kopfkinoCards || [];
+      const activeDeckIds = state.kopfkinoDeck || allCards.map(c => c.id);
+      const activeCards = allCards.filter(c => activeDeckIds.includes(c.id));
+
+      if (currentKopfkinoCardIndex >= activeCards.length) {
+        submitKopfkinoAnswers();
+        return;
+      }
+
+      const q = activeCards[currentKopfkinoCardIndex];
+      const myAnswers = state.kopfkinoAnswers[state.currentUser] || {};
+      const partnerName = state.currentUser === 'Er' ? 'Sie' : 'Er';
+      const partnerAnswers = state.kopfkinoAnswers[partnerName] || {};
+
+      let contentHtml = '';
+      let matchInfoHtml = '';
+
+      // PRAKTIKEN: AKTIV & PASSIV NEBENEINANDER
+      if (q.type === 'practice') {
+        const mySelection = myAnswers[q.id] || { active: [], passive: [], no: false };
+        const partnerSelection = partnerAnswers[q.id] || { active: [], passive: [], no: false };
+
+        if (mySelection.no || partnerSelection.no) {
+          matchInfoHtml = `<div class="bg-rose-950/85 border border-rose-600/50 text-rose-300 p-2.5 rounded-xl text-center font-bold text-xs">⚠️ Grenze: Einer hat 'Heute nicht' gewählt.</div>`;
+        } else {
+          const isCrossMatch = (mySelection.active.length > 0 && partnerSelection.passive.length > 0) || 
+                               (mySelection.passive.length > 0 && partnerSelection.active.length > 0);
+          const isBothActive = mySelection.active.length > 0 && partnerSelection.active.length > 0 && mySelection.passive.length === 0 && partnerSelection.passive.length === 0;
+          const isBothPassive = mySelection.passive.length > 0 && partnerSelection.passive.length > 0 && mySelection.active.length === 0 && partnerSelection.active.length === 0;
+
+          if (isCrossMatch) {
+            matchInfoHtml = `<div class="bg-purple-950/85 border border-purple-600/50 text-purple-300 p-2.5 rounded-xl text-center font-bold text-xs">⛓️ Perfekter Rollen-Match (Aktiv ↔ Passiv)!</div>`;
+          } else if (isBothActive) {
+            matchInfoHtml = `<div class="bg-amber-950/85 border border-amber-600/50 text-amber-300 p-2.5 rounded-xl text-center font-bold text-xs">⚠️ Beide wollen aktiv sein – wer übernimmt die Führung?</div>`;
+          } else if (isBothPassive) {
+            matchInfoHtml = `<div class="bg-amber-950/85 border border-amber-600/50 text-amber-300 p-2.5 rounded-xl text-center font-bold text-xs">⚠️ Beide wollen empfangen – wer legt los?</div>`;
           }
         }
-      });
 
-      if (hits.length > 0) {
-        box.classList.remove('hidden');
-        msg.innerText = `Dein Text berührt Tabus/Einschränkungen deines Partners: ${hits.join(', ')}.`;
+        const activeBtns = (q.activeOptions || []).map(opt => {
+          const isSel = mySelection.active.includes(opt);
+          return `<button onclick="togglePracticeSubOption('${q.id}', 'active', '${opt.replace(/'/g, "\\'")}')" class="w-full py-2 px-2 rounded-xl border text-left text-[10px] font-medium transition-all ${isSel ? 'bg-rose-600 border-rose-400 text-white font-bold' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'}">
+            <span class="block">${opt}</span>
+          </button>`;
+        }).join('');
+
+        const passiveBtns = (q.passiveOptions || []).map(opt => {
+          const isSel = mySelection.passive.includes(opt);
+          return `<button onclick="togglePracticeSubOption('${q.id}', 'passive', '${opt.replace(/'/g, "\\'")}')" class="w-full py-2 px-2 rounded-xl border text-left text-[10px] font-medium transition-all ${isSel ? 'bg-purple-600 border-purple-400 text-white font-bold' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'}">
+            <span class="block">${opt}</span>
+          </button>`;
+        }).join('');
+
+        const isNoSel = mySelection.no === true;
+
+        contentHtml = `
+          <div class="space-y-2.5">
+            <div class="grid grid-cols-2 gap-2">
+              <div class="space-y-1.5 bg-slate-950 border border-slate-850 p-2.5 rounded-2xl space-y-1.5 flex flex-col">
+                <span class="text-[9px] font-bold text-rose-400 uppercase tracking-wider block text-center pb-1 border-b border-slate-850">👉 Aktiv (Geben)</span>
+                <div class="space-y-1 flex-1">${activeBtns}</div>
+              </div>
+              <div class="space-y-1.5 bg-slate-950 border border-slate-850 p-2.5 rounded-2xl space-y-1.5 flex flex-col">
+                <span class="text-[9px] font-bold text-purple-400 uppercase tracking-wider block text-center pb-1 border-b border-slate-850">👉 Passiv (Nehmen)</span>
+                <div class="space-y-1 flex-1">${passiveBtns}</div>
+              </div>
+            </div>
+            <button onclick="togglePracticeNo('${q.id}')" class="w-full py-2 px-3 rounded-xl border text-xs font-semibold transition-all ${isNoSel ? 'bg-rose-950 border-rose-600 text-rose-200' : 'bg-slate-950 border-slate-850 text-slate-400 hover:border-slate-700'}">
+              ❌ Heute bei dieser Praktik nicht
+            </button>
+          </div>
+        `;
+      } 
+      // TOY-BOX
+      else if (q.type === 'toys') {
+        const myToys = myAnswers[q.id] || [];
+        const partnerToys = partnerAnswers[q.id] || [];
+
+        const shared = myToys.filter(t => partnerToys.includes(t));
+        if (shared.length > 0) {
+          matchInfoHtml = `<div class="bg-emerald-950/85 border border-emerald-600/50 text-emerald-300 p-2.5 rounded-xl text-center font-bold text-xs">✨ Gemeinsame Toys: ${shared.join(', ')}</div>`;
+        }
+
+        const toyBtns = (q.toyList || []).map(toy => {
+          const isSel = myToys.includes(toy);
+          return `<button onclick="toggleToySelection('${q.id}', '${toy}')" class="py-2.5 px-3 rounded-xl border text-left text-[11px] font-medium transition-all ${isSel ? 'bg-purple-600 border-purple-400 text-white font-bold' : 'bg-slate-950 border-slate-850 text-slate-300 hover:border-slate-700'}">
+            <span>${toy}</span> ${isSel ? '✓' : ''}
+          </button>`;
+        }).join('');
+
+        contentHtml = `
+          <div class="space-y-2.5">
+            <span class="text-xs text-slate-400 block">Tippe an, welche Tools heute mit ins Spiel dürfen:</span>
+            <div class="grid grid-cols-2 gap-1.5 max-h-56 overflow-y-auto pr-1">
+              ${toyBtns}
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex justify-between items-center text-[10px] font-bold text-purple-400 uppercase tracking-wider">
+            <span>Karte ${currentKopfkinoCardIndex + 1} von ${activeCards.length}</span>
+            <button onclick="openKopfkinoModal()" class="text-slate-400 underline">← Deck bearbeiten</button>
+          </div>
+          <h4 class="font-bold text-slate-100 text-sm">🔥 ${q.title}</h4>
+          ${contentHtml}
+          ${matchInfoHtml}
+          
+          <div class="flex gap-2 pt-2">
+            ${currentKopfkinoCardIndex > 0 ? `<button onclick="prevKopfkinoCard()" class="py-2.5 px-4 bg-slate-800 text-xs font-semibold rounded-xl text-slate-300">← Zurück</button>` : ''}
+            ${currentKopfkinoCardIndex < activeCards.length - 1 ? 
+              `<button onclick="nextKopfkinoCard()" class="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow">Weiter →</button>` : 
+              `<button onclick="submitKopfkinoAnswers()" class="flex-1 py-2.5 bg-gradient-to-r from-rose-600 to-purple-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg">Mit Partner abgleichen ✨</button>`
+            }
+          </div>
+        </div>
+      `;
+    }
+
+    function togglePracticeSubOption(cardId, side, opt) {
+      if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
+      if (!state.kopfkinoAnswers[state.currentUser][cardId]) {
+        state.kopfkinoAnswers[state.currentUser][cardId] = { active: [], passive: [], no: false };
+      }
+      const data = state.kopfkinoAnswers[state.currentUser][cardId];
+      data.no = false;
+
+      if (side === 'active') {
+        data.active = data.active.includes(opt) ? data.active.filter(o => o !== opt) : [...data.active, opt];
       } else {
-        box.classList.add('hidden');
+        data.passive = data.passive.includes(opt) ? data.passive.filter(o => o !== opt) : [...data.passive, opt];
+      }
+
+      saveState();
+      renderKopfkinoSwipeCard();
+    }
+
+    function togglePracticeNo(cardId) {
+      if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
+      if (!state.kopfkinoAnswers[state.currentUser][cardId]) {
+        state.kopfkinoAnswers[state.currentUser][cardId] = { active: [], passive: [], no: false };
+      }
+      const data = state.kopfkinoAnswers[state.currentUser][cardId];
+      data.no = !data.no;
+      if (data.no) {
+        data.active = [];
+        data.passive = [];
+      }
+      saveState();
+      renderKopfkinoSwipeCard();
+    }
+
+    function toggleToySelection(cardId, toy) {
+      if (!state.kopfkinoAnswers) state.kopfkinoAnswers = { Er: {}, Sie: {} };
+      let list = state.kopfkinoAnswers[state.currentUser][cardId] || [];
+      list = list.includes(toy) ? list.filter(t => t !== toy) : [...list, toy];
+      state.kopfkinoAnswers[state.currentUser][cardId] = list;
+      saveState();
+      renderKopfkinoSwipeCard();
+    }
+
+    function nextKopfkinoCard() {
+      const allCards = state.kopfkinoCards || [];
+      const activeDeckIds = state.kopfkinoDeck || allCards.map(c => c.id);
+      const activeCards = allCards.filter(c => activeDeckIds.includes(c.id));
+      if (currentKopfkinoCardIndex < activeCards.length - 1) {
+        currentKopfkinoCardIndex++;
+        renderKopfkinoSwipeCard();
       }
     }
 
-    function sendOhrwurmPackage() {
-      const text = (document.getElementById('ohrwurm-input')?.value || '').trim();
-      state.kopfkino.myOhrwurm = text;
-
-      const packageData = {
-        type: 'kopfkino_wizard_sync',
-        sender: state.currentUser,
-        preferences: state.kopfkino.myPreferences,
-        vibe: state.kopfkino.vibePlan,
-        ohrwurm: text,
-        catalog: state.kopfkino.tabooCatalog
-      };
-
-      LiveStream.sendData(packageData);
-      saveState();
-      closeKopfkinoModal();
-      playSensualSound('chime');
-      alert("✨ Kopfkino-Fahrplan & Vorlieben erfolgreich mit Partner synchronisiert!");
+    function prevKopfkinoCard() {
+      if (currentKopfkinoCardIndex > 0) {
+        currentKopfkinoCardIndex--;
+        renderKopfkinoSwipeCard();
+      }
     }
 
-    // =========================================================================
-    // BEWERTUNGEN & FEEDBACK
-    // =========================================================================
+    function submitKopfkinoAnswers() {
+      closeKopfkinoModal();
+      saveState();
+      LiveStream.sendData({ type: 'kopfkino_sync', answers: state.kopfkinoAnswers[state.currentUser] });
+      alert("🧠 Kopfkino-Wahl mit Partner abgeglichen!");
+    }
+
     function openPendingReviewsModal() {
       const modal = document.getElementById('pending-reviews-modal');
       const container = document.getElementById('pending-reviews-container');
@@ -1380,7 +1420,7 @@
 
         history.slice(0, 5).forEach((item) => {
           const div = document.createElement('div');
-          div.className = 'bg-slate-950/60 border border-slate-855 p-2.5 rounded-xl text-xs space-y-0.5 mb-1';
+          div.className = 'bg-slate-950/60 border border-slate-850 p-2.5 rounded-xl text-xs space-y-0.5 mb-1';
           div.innerHTML = `
             <div class="font-semibold text-slate-200">🔥 ${item.kinks}</div>
             <div class="text-[10px] text-rose-400">Bewertung: ${item.feedback}</div>
@@ -1462,9 +1502,7 @@
       document.getElementById('incoming-feedback-banner').classList.add('hidden');
     }
 
-    // =========================================================================
-    // SPONTAN-WUNSCH LOGIK
-    // =========================================================================
+    // SPONTAN-WUNSCH MODAL LOGIK (KOMPAKT & EDITIERBARE CHIPS)
     function openCravingModal() { 
       isDringendKommen = false;
       isChipEditMode = false;
@@ -1658,20 +1696,7 @@
     }
 
     function clearEveningReservation() { state.eveningReservation = null; saveState(); }
-    function resetDay() { 
-      state.pendingReviews = []; 
-      state.completedReviews = []; 
-      state.activeCraving = null; 
-      state.eveningReservation = null; 
-      if (state.kopfkino) {
-        state.kopfkino.myPreferences = {};
-        state.kopfkino.partnerPreferences = {};
-        state.kopfkino.myOhrwurm = '';
-        state.kopfkino.partnerOhrwurm = '';
-        state.kopfkino.vibePlan = null;
-      }
-      saveState(); 
-    }
+    function resetDay() { state.pendingReviews = []; state.completedReviews = []; state.activeCraving = null; state.eveningReservation = null; saveState(); }
 
     loadState();
     LiveStream.initPeer();
