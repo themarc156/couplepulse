@@ -216,7 +216,7 @@
         </button>
 
         <button onclick="openKopfkinoModal()" class="w-full py-3.5 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 border border-purple-500/40 text-purple-200 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-98 glow-purple">
-          <span>🧠</span> <span>Kopfkino-Kompass (5 Schritte)</span>
+          <span>🧠</span> <span>Kopfkino-Kompass (4 Fragen)</span>
         </button>
 
         <button onclick="LiveStream.startAsSender()" class="w-full py-3 bg-gradient-to-r from-purple-950 via-slate-900 to-pink-950 border border-purple-500/30 text-purple-300 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-98">
@@ -227,7 +227,7 @@
     </main>
 
     <!-- ================================================================= -->
-    <!-- KOPFKINO MODAL: 5-SCHRITTE-WIZARD & MATCH SCREEN -->
+    <!-- KOPFKINO MODAL: 4-FRAGEN-WIZARD & MATCH SCREEN -->
     <!-- ================================================================= -->
     <div id="kopfkino-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl glow-purple max-h-[90vh] overflow-y-auto flex flex-col justify-between">
@@ -238,7 +238,7 @@
               <span class="text-lg">🧠</span>
               <div>
                 <h3 id="kopfkino-modal-title" class="font-bold text-xs text-purple-200 uppercase tracking-wider">Kopfkino-Abstimmung</h3>
-                <p id="kopfkino-modal-subtitle" class="text-[10px] text-slate-400">Schritt 1 von 5: Empfangen</p>
+                <p id="kopfkino-modal-subtitle" class="text-[10px] text-slate-400">Schritt 1 von 4: Empfangen</p>
               </div>
             </div>
             <div class="flex items-center gap-2">
@@ -246,9 +246,9 @@
               <button onclick="closeKopfkinoModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-1">✕</button>
             </div>
           </div>
-          <!-- Progress Bar für 5 Schritte -->
+          <!-- Progress Bar für 4 Fragen -->
           <div id="kopfkino-wizard-progress" class="w-full bg-slate-950 h-1.5 rounded-full mt-2 overflow-hidden border border-slate-800">
-            <div id="kopfkino-progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-rose-500 transition-all duration-300 w-1/5"></div>
+            <div id="kopfkino-progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-rose-500 transition-all duration-300 w-1/4"></div>
           </div>
         </div>
 
@@ -259,40 +259,19 @@
       </div>
     </div>
 
-    <!-- MODAL: KATALOG EDITIEREN & ERWEITERN (ROLLEN-TYP WÄHLBAR) -->
+    <!-- MODAL: KATALOG EDITIEREN & ERWEITERN (Z.B. EIER LECKEN) -->
     <div id="catalog-edit-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl max-h-[85vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-          <h3 class="font-bold text-sm text-purple-200">✏️ Praktiken & Optionen bearbeiten</h3>
+          <h3 id="catalog-modal-title" class="font-bold text-sm text-purple-200">✏️ Praktiken & Optionen bearbeiten</h3>
           <button onclick="closeCatalogEditModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-1">✕</button>
         </div>
         
-        <div id="catalog-items-container" class="space-y-2 max-h-56 overflow-y-auto pr-1 text-xs"></div>
+        <div id="catalog-items-container" class="space-y-2 max-h-60 overflow-y-auto pr-1 text-xs"></div>
 
-        <div class="bg-slate-950 border border-purple-500/30 p-3 rounded-2xl space-y-2">
-          <span class="text-[10px] font-bold text-purple-300 uppercase tracking-wider block">➕ Neues Element hinzufügen:</span>
-          
-          <div>
-            <label class="text-[10px] text-slate-400 block pb-0.5">Bereich / Kategorie:</label>
-            <select id="new-item-category" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
-              <option value="both">⚡ Praktik: Beide können es (Symmetrisch)</option>
-              <option value="sie_gives">⚡ Praktik: Sie verwöhnt Ihn (z. B. Eier lecken 🥚 / Titjob)</option>
-              <option value="er_gives">⚡ Praktik: Er verwöhnt Sie (z. B. Kitzler lecken 👅 / Fingern)</option>
-              <option value="org_sie">🎯 Orgasmus-Weg für Sie</option>
-              <option value="org_er">🎯 Orgasmus-Weg für Ihn</option>
-              <option value="cum">💦 Abspritz-Ort</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="text-[10px] text-slate-400 block pb-0.5">Bezeichnung & Emoji:</label>
-            <input id="new-item-label" type="text" placeholder="z. B. Eier lecken & kraulen 🥚" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
-          </div>
-
-          <button onclick="saveNewCatalogItem()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow mt-1">
-            Element zum Katalog hinzufügen ✨
-          </button>
-        </div>
+        <button onclick="openAddPracticePrompt()" class="w-full py-2 bg-slate-950 border border-purple-500/40 text-purple-300 text-xs font-bold rounded-xl hover:bg-slate-850">
+          ➕ Neue Praktik hinzufügen (z. B. Eier lecken 🥚)
+        </button>
       </div>
     </div>
 
@@ -487,22 +466,22 @@
       beide: ['Zungenkuss-Marathon 💋', 'Hände unters Shirt ✨', 'An die Wand gedrückt 🧱', 'Knutschen im Stehen ⚡']
     };
 
-    // DYNAMISCHE MATRIX FÜR FRAGE 1 & FRAGE 2
+    // DYNAMISCHE MATRIX FÜR FRAGE 1 & FRAGE 2 (ERWEITERBAR Z.B. FÜR EIER LECKEN)
     const defaultPracticesCatalog = [
-      { id: 'oral_clit_penis', type: 'both', labelSieRec: 'Zunge & Mund am Kitzler 👅', labelErRec: 'Oral (Blowjob / Mund & Zunge) 💋', labelSieGive: 'Mit Mund & Zunge (Blowjob) 💋', labelErGive: 'Ihre Fotze & Kitzler lecken 👅' },
-      { id: 'hand_clit_penis', type: 'both', labelSieRec: 'Kitzler gerieben bekommen ✨', labelErRec: 'Handjob / Schwanzmassage 🪶', labelSieGive: 'Schwanzmassage mit der Hand 🪶', labelErGive: 'Ihren Kitzler reiben / streicheln ✨' },
-      { id: 'titjob', type: 'sie_gives', labelSieRec: '', labelErRec: 'Mit ihren Brüsten (Titjob) 🍒', labelSieGive: 'Mit meinen Brüsten (Titjob) 🍒', labelErGive: '' },
-      { id: 'balls_lick', type: 'sie_gives', labelSieRec: '', labelErRec: 'Eier lecken & kraulen 🥚', labelSieGive: 'Seine Eier lecken & kraulen 🥚', labelErGive: '' },
-      { id: 'vag_finger', type: 'er_gives', labelSieRec: 'Finger in mir / gefingert werden 🪶', labelErRec: '', labelSieGive: '', labelErGive: 'Sie mit den Fingern ficken 🪶' },
-      { id: 'vag_penis', type: 'er_gives', labelSieRec: 'Schwanz in mir spüren 🍆', labelErRec: '', labelSieGive: '', labelErGive: 'Mit dem Schwanz tief stoßen 🍆' },
-      { id: 'oral_vag', type: 'er_gives', labelSieRec: 'Zunge tief in mir spüren 👅', labelErRec: '', labelSieGive: '', labelErGive: 'Sie mit der Zunge ficken 👅' },
-      { id: 'anal_penis', type: 'both', labelSieRec: 'Schwanz im Arsch (Arschfick) 🔥', labelErRec: 'Prostatamassage 🎯', labelSieGive: 'Seine Prostata massieren 🎯', labelErGive: 'Mit dem Schwanz in ihren Arsch 🔥' },
-      { id: 'anal_finger', type: 'both', labelSieRec: 'Finger im Arsch 🍑', labelErRec: 'Finger anal / Damm-Massage 🍑', labelSieGive: 'Ihn mit Fingern anal verwöhnen 🍑', labelErGive: 'Mit Fingern in ihr Arschloch 🍑' },
-      { id: 'rimming', type: 'both', labelSieRec: 'Zunge an meinem Arschloch 👅', labelErRec: 'Zunge an meinem Arschloch 👅', labelSieGive: 'Sein Arschloch lecken 👅', labelErGive: 'Ihr Arschloch lecken 👅' },
-      { id: 'toys', type: 'both', labelSieRec: 'Spielzeug (Vibrator / Dildo) 🔌', labelErRec: 'Toy / Masturbator / Plug 🔌', labelSieGive: 'Toy bei ihm einsetzen 🔌', labelErGive: 'Vibrator / Toy an ihr bedienen 🔌' },
-      { id: 'bondage', type: 'both', labelSieRec: 'Gefesselt & fixiert werden 🔗', labelErRec: 'Gefesselt & fixiert werden 🔗', labelSieGive: 'Ihn fesseln & bestimmen 🔗', labelErGive: 'Sie fesseln & bestimmen 🔗' },
-      { id: 'spanking', type: 'both', labelSieRec: 'Klapse auf den Po / Spanking 💥', labelErRec: 'Klapse auf den Po / Spanking 💥', labelSieGive: 'Ihm Klapse auf den Po geben 💥', labelErGive: 'Ihr Klapse auf den Po geben 💥' },
-      { id: 'only_receive', type: 'both', labelSieRec: '', labelErRec: '', labelSieGive: 'Heute will ich nur empfangen 🧘', labelErGive: 'Heute will ich nur empfangen 🧘' }
+      { id: 'oral_clit_penis', labelSieRec: 'Zunge & Mund am Kitzler 👅', labelErRec: 'Oral (Blowjob / Mund & Zunge) 💋', labelSieGive: 'Mit Mund & Zunge (Blowjob) 💋', labelErGive: 'Ihre Fotze & Kitzler lecken 👅' },
+      { id: 'hand_clit_penis', labelSieRec: 'Kitzler gerieben bekommen ✨', labelErRec: 'Handjob / Schwanzmassage 🪶', labelSieGive: 'Schwanzmassage mit der Hand 🪶', labelErGive: 'Ihren Kitzler reiben / streicheln ✨' },
+      { id: 'titjob', labelSieRec: '', labelErRec: 'Mit ihren Brüsten (Titjob) 🍒', labelSieGive: 'Mit meinen Brüsten (Titjob) 🍒', labelErGive: '' },
+      { id: 'vag_finger', labelSieRec: 'Finger in mir / gefingert werden 🪶', labelErRec: '', labelSieGive: '', labelErGive: 'Sie mit den Fingern ficken 🪶' },
+      { id: 'vag_penis', labelSieRec: 'Schwanz in mir spüren 🍆', labelErRec: '', labelSieGive: '', labelErGive: 'Mit dem Schwanz tief stoßen 🍆' },
+      { id: 'oral_vag', labelSieRec: 'Zunge tief in mir spüren 👅', labelErRec: '', labelSieGive: '', labelErGive: 'Sie mit der Zunge ficken 👅' },
+      { id: 'anal_penis', labelSieRec: 'Schwanz im Arsch (Arschfick) 🔥', labelErRec: 'Prostatamassage 🎯', labelSieGive: 'Seine Prostata massieren 🎯', labelErGive: 'Mit dem Schwanz in ihren Arsch 🔥' },
+      { id: 'anal_finger', labelSieRec: 'Finger im Arsch 🍑', labelErRec: 'Finger anal / Damm-Massage 🍑', labelSieGive: 'Ihn mit Fingern anal verwöhnen 🍑', labelErGive: 'Mit Fingern in ihr Arschloch 🍑' },
+      { id: 'rimming', labelSieRec: 'Zunge an meinem Arschloch 👅', labelErRec: 'Zunge an meinem Arschloch 👅', labelSieGive: 'Sein Arschloch lecken 👅', labelErGive: 'Ihr Arschloch lecken 👅' },
+      { id: 'balls_lick', labelSieRec: '', labelErRec: 'Eier lecken & kraulen 🥚', labelSieGive: 'Seine Eier lecken & kraulen 🥚', labelErGive: '' },
+      { id: 'toys', labelSieRec: 'Spielzeug (Vibrator / Dildo) 🔌', labelErRec: 'Toy / Masturbator / Plug 🔌', labelSieGive: 'Toy bei ihm einsetzen 🔌', labelErGive: 'Vibrator / Toy an ihr bedienen 🔌' },
+      { id: 'bondage', labelSieRec: 'Gefesselt & fixiert werden 🔗', labelErRec: 'Gefesselt & fixiert werden 🔗', labelSieGive: 'Ihn fesseln & bestimmen 🔗', labelErGive: 'Sie fesseln & bestimmen 🔗' },
+      { id: 'spanking', labelSieRec: 'Klapse auf den Po / Spanking 💥', labelErRec: 'Klapse auf den Po / Spanking 💥', labelSieGive: 'Ihm Klapse auf den Po geben 💥', labelErGive: 'Ihr Klapse auf den Po geben 💥' },
+      { id: 'only_receive', labelSieRec: '', labelErRec: '', labelSieGive: 'Heute will ich nur empfangen 🧘', labelErGive: 'Heute will ich nur empfangen 🧘' }
     ];
 
     // ORGASMUS-OPTIONEN FÜR SIE & IHN (FRAGE 3)
@@ -544,16 +523,6 @@
       { id: 'cum_everywhere', labelSie: 'Völlig egal / Wo es gerade kommt 🔥', labelEr: 'Völlig egal / Wo es gerade kommt 🔥' }
     ];
 
-    // EXPLIZITE NO-GO / TABU CHIPS (FRAGE 5)
-    const defaultNoGoChips = [
-      { id: 'nogo_anal', label: '🚫 Anal (Tabu)', blockedKeywords: ['anal', 'arsch', 'prostata'] },
-      { id: 'nogo_spanking', label: '🚫 Schläge & Spanking', blockedKeywords: ['spank', 'klaps', 'schlag'] },
-      { id: 'nogo_bondage', label: '🚫 Fesseln / Fixieren', blockedKeywords: ['fessel', 'binden', 'seil', 'fixier'] },
-      { id: 'nogo_face', label: '🚫 Gesicht (beim Spritzen)', blockedKeywords: ['gesicht', 'face'] },
-      { id: 'nogo_deeporal', label: '🚫 Tiefer Oralverkehr / Würgen', blockedKeywords: ['deep', 'schlucken', 'würgen'] },
-      { id: 'nogo_dirtytalk', label: '🚫 Dominanter Dirty Talk', blockedKeywords: ['dirty', 'beschimpf'] }
-    ];
-
     let state = {
       currentUser: localStorage.getItem('cp_current_user') || 'Er',
       requestHistory: [
@@ -569,8 +538,7 @@
         orgasmsCatalogSie: defaultOrgasmsSie,
         orgasmsCatalogEr: defaultOrgasmsEr,
         cumCatalog: defaultCumLocations,
-        noGoCatalog: defaultNoGoChips,
-        erAnswers: null, // { receive: [], give: [], orgasm: [], cum: [], noGos: [] }
+        erAnswers: null, // { receive: [], give: [], orgasm: [], cum: [] }
         sieAnswers: null,
         isUnlocked: false
       },
@@ -590,12 +558,12 @@
     let isChipEditMode = false;
     let wizardCurrentStep = 1;
 
+    // Lokaler Draft für die 4 Fragen
     let currentDraftAnswers = {
       receive: [],
       give: [],
       orgasm: [],
-      cum: [],
-      noGos: []
+      cum: []
     };
 
     // =========================================================================
@@ -762,8 +730,8 @@
           showFeedbackBanner(data.feedback);
           playSensualSound('chime');
         } 
-        // KOPFKINO SYNC
-        else if (data.type === 'kopfkino_submitted_data') {
+        // KOPFKINO 4-FRAGEN SYNC
+        else if (data.type === 'kopfkino_4q_submitted') {
           if (data.sender === 'Er') state.kopfkino.erAnswers = data.answers;
           if (data.sender === 'Sie') state.kopfkino.sieAnswers = data.answers;
           if (data.practicesCatalog) state.kopfkino.practicesCatalog = data.practicesCatalog;
@@ -930,12 +898,12 @@
     // STORAGE & PERSISTENZ
     // =========================================================================
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v108', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v107', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v108');
+      const saved = localStorage.getItem('couple_pulse_state_v107');
       if (saved) { 
         try { 
           const parsed = JSON.parse(saved);
@@ -951,7 +919,6 @@
           orgasmsCatalogSie: defaultOrgasmsSie,
           orgasmsCatalogEr: defaultOrgasmsEr,
           cumCatalog: defaultCumLocations,
-          noGoCatalog: defaultNoGoChips,
           erAnswers: null,
           sieAnswers: null,
           isUnlocked: false
@@ -961,7 +928,6 @@
       if (!state.kopfkino.orgasmsCatalogSie) state.kopfkino.orgasmsCatalogSie = defaultOrgasmsSie;
       if (!state.kopfkino.orgasmsCatalogEr) state.kopfkino.orgasmsCatalogEr = defaultOrgasmsEr;
       if (!state.kopfkino.cumCatalog) state.kopfkino.cumCatalog = defaultCumLocations;
-      if (!state.kopfkino.noGoCatalog) state.kopfkino.noGoCatalog = defaultNoGoChips;
 
       if (!state.shoutboxMessages) state.shoutboxMessages = [];
       checkKopfkinoUnlock();
@@ -994,11 +960,11 @@
       if (state.kopfkino.isUnlocked) {
         kopfkinoBanner.classList.remove('hidden');
         document.getElementById('kopfkino-banner-title').innerText = '✨ Euer Abend-Match ist bereit!';
-        document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben gewählt. Entdecke euer Match, die Orgasmus-Fahrpläne & die Flüsterbox!';
+        document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben die 4 Fragen beantwortet. Entdecke euer Match, die Orgasmus-Fahrpläne & die Flüsterbox!';
       } else if (partnerAnswers && !myAnswers) {
         kopfkinoBanner.classList.remove('hidden');
         document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat die Fragen beantwortet!`;
-        document.getElementById('kopfkino-banner-desc').innerText = `Beantworte jetzt deine Fragen, um das Abend-Match zu enthüllen.`;
+        document.getElementById('kopfkino-banner-desc').innerText = `Beantworte jetzt deine 4 Fragen, um das Abend-Match zu enthüllen.`;
       } else {
         kopfkinoBanner.classList.add('hidden');
       }
@@ -1206,7 +1172,7 @@
     }
 
     // =========================================================================
-    // 5-SCHRITTE KOPFKINO ENGINE (POSITIV + NO-GO SCHUTZ)
+    // 4-FRAGEN KOPFKINO ENGINE (WIZARD & MATCH REVEAL)
     // =========================================================================
     function openKopfkinoModal() {
       checkKopfkinoUnlock();
@@ -1220,8 +1186,7 @@
           receive: [],
           give: [],
           orgasm: [],
-          cum: [],
-          noGos: []
+          cum: []
         }));
         renderKopfkinoWizard();
       }
@@ -1234,7 +1199,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // WIZARD SCHRITTE 1 BIS 5
+    // WIZARD SCHRITTE 1 BIS 4
     // -------------------------------------------------------------------------
     function renderKopfkinoWizard() {
       const modalTitle = document.getElementById('kopfkino-modal-title');
@@ -1247,22 +1212,22 @@
 
       progressBox.classList.remove('hidden');
       catalogBtn.classList.remove('hidden');
-      progressBar.style.width = (wizardCurrentStep * 20) + '%';
+      progressBar.style.width = (wizardCurrentStep * 25) + '%';
 
       const isEr = state.currentUser === 'Er';
       const practices = state.kopfkino.practicesCatalog || defaultPracticesCatalog;
 
-      // SCHRITT 1: WIE MÖCHTEST DU VERWÖHNT WERDEN? (EMPFANGEN - MAX 3)
+      // SCHRITT 1: WIE MÖCHTEST DU VERWÖHNT WERDEN? (EMPFANGEN)
       if (wizardCurrentStep === 1) {
-        modalTitle.innerText = "Frage 1 von 5";
-        modalSubtitle.innerText = `Wie möchtest DU heute verwöhnt werden? (${currentDraftAnswers.receive.length}/3 gewählt)`;
+        modalTitle.innerText = "Frage 1 von 4";
+        modalSubtitle.innerText = "Wie möchtest DU heute verwöhnt werden?";
 
         const validItems = practices.filter(p => isEr ? p.labelErRec : p.labelSieRec);
         let itemsHtml = validItems.map(p => {
           const label = isEr ? p.labelErRec : p.labelSieRec;
           const isSelected = currentDraftAnswers.receive.includes(p.id);
           return `
-            <button type="button" onclick="toggleWizardLimitedOption('receive', '${p.id}', 3)" 
+            <button type="button" onclick="toggleWizardOption('receive', '${p.id}')" 
               class="w-full py-2.5 px-3 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between ${isSelected ? 'bg-gradient-to-r from-rose-600 to-pink-600 border-rose-400 text-white shadow-md' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-purple-500'}">
               <span>${label}</span>
               <span>${isSelected ? '✓' : '＋'}</span>
@@ -1272,7 +1237,7 @@
 
         content.innerHTML = `
           <div class="space-y-1.5 max-h-72 overflow-y-auto pr-1">
-            <p class="text-[11px] text-slate-400 pb-1">Wähle max. 3 Favoriten für deine Verwöhn-Momente:</p>
+            <p class="text-[11px] text-slate-400 pb-1">Tippe an, worauf du heute Lust hast:</p>
             ${itemsHtml}
           </div>
         `;
@@ -1284,17 +1249,17 @@
         `;
       }
 
-      // SCHRITT 2: WIE WILLST DU DEINEN PARTNER VERWÖHNEN? (GEBEN - MAX 3)
+      // SCHRITT 2: WIE WILLST DU DEINEN PARTNER VERWÖHNEN? (GEBEN)
       else if (wizardCurrentStep === 2) {
-        modalTitle.innerText = "Frage 2 von 5";
-        modalSubtitle.innerText = `Wie willst DU deinen Partner heute verwöhnen? (${currentDraftAnswers.give.length}/3 gewählt)`;
+        modalTitle.innerText = "Frage 2 von 4";
+        modalSubtitle.innerText = "Wie willst DU deinen Partner heute verwöhnen?";
 
         const validItems = practices.filter(p => isEr ? p.labelErGive : p.labelSieGive);
         let itemsHtml = validItems.map(p => {
           const label = isEr ? p.labelErGive : p.labelSieGive;
           const isSelected = currentDraftAnswers.give.includes(p.id);
           return `
-            <button type="button" onclick="toggleWizardLimitedOption('give', '${p.id}', 3)" 
+            <button type="button" onclick="toggleWizardOption('give', '${p.id}')" 
               class="w-full py-2.5 px-3 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between ${isSelected ? 'bg-gradient-to-r from-purple-600 to-indigo-600 border-purple-400 text-white shadow-md' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-purple-500'}">
               <span>${label}</span>
               <span>${isSelected ? '✓' : '＋'}</span>
@@ -1304,7 +1269,7 @@
 
         content.innerHTML = `
           <div class="space-y-1.5 max-h-72 overflow-y-auto pr-1">
-            <p class="text-[11px] text-slate-400 pb-1">Wähle max. 3 Favoriten, wozu du heute aktiv Lust hast:</p>
+            <p class="text-[11px] text-slate-400 pb-1">Wozu hast du heute aktiv Energie & Lust?</p>
             ${itemsHtml}
           </div>
         `;
@@ -1317,16 +1282,16 @@
         `;
       }
 
-      // SCHRITT 3: DEIN ORGASMUS-FOKUS (MAX 2)
+      // SCHRITT 3: DEIN ORGASMUS-FOKUS
       else if (wizardCurrentStep === 3) {
-        modalTitle.innerText = "Frage 3 von 5";
-        modalSubtitle.innerText = isEr ? `Wie willst du zum Höhepunkt kommen? (${currentDraftAnswers.orgasm.length}/2)` : `Wie möchtest du am liebsten kommen? (${currentDraftAnswers.orgasm.length}/2)`;
+        modalTitle.innerText = "Frage 3 von 4";
+        modalSubtitle.innerText = isEr ? "Wie möchtest du heute zum Höhepunkt kommen?" : "Wie möchtest du heute am liebsten kommen?";
 
         const orgCatalog = isEr ? (state.kopfkino.orgasmsCatalogEr || defaultOrgasmsEr) : (state.kopfkino.orgasmsCatalogSie || defaultOrgasmsSie);
         let itemsHtml = orgCatalog.map(o => {
           const isSelected = currentDraftAnswers.orgasm.includes(o.id);
           return `
-            <button type="button" onclick="toggleWizardLimitedOption('orgasm', '${o.id}', 2)" 
+            <button type="button" onclick="toggleWizardOption('orgasm', '${o.id}')" 
               class="w-full py-2.5 px-3 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between ${isSelected ? 'bg-gradient-to-r from-amber-600 to-rose-600 border-amber-400 text-white shadow-md' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-amber-500'}">
               <span>${o.label}</span>
               <span>${isSelected ? '✓' : '＋'}</span>
@@ -1336,7 +1301,7 @@
 
         content.innerHTML = `
           <div class="space-y-1.5 max-h-72 overflow-y-auto pr-1">
-            <p class="text-[11px] text-slate-400 pb-1">Dein persönlicher Weg zum Höhepunkt (max. 2):</p>
+            <p class="text-[11px] text-slate-400 pb-1">Dein persönlicher Weg zum Höhepunkt:</p>
             ${itemsHtml}
           </div>
         `;
@@ -1349,9 +1314,9 @@
         `;
       }
 
-      // SCHRITT 4: DAS ABSPRITZ-FINALE (UNBEGRENZT)
+      // SCHRITT 4: DAS ABSPRITZ-FINALE
       else if (wizardCurrentStep === 4) {
-        modalTitle.innerText = "Frage 4 von 5: Das Finale";
+        modalTitle.innerText = "Frage 4 von 4: Das Finale";
         modalSubtitle.innerText = isEr ? "Wohin willst du heute abspritzen?" : "Wohin darf er heute seinen Saft spritzen?";
 
         const cumList = state.kopfkino.cumCatalog || defaultCumLocations;
@@ -1369,76 +1334,22 @@
 
         content.innerHTML = `
           <div class="space-y-1.5 max-h-72 overflow-y-auto pr-1">
-            <p class="text-[11px] text-slate-400 pb-1">Wähle alle Orte, die für dich heute freigegeben sind:</p>
+            <p class="text-[11px] text-slate-400 pb-1">Wähle alle Orte, die für dich heute heiß/okay sind:</p>
             ${itemsHtml}
           </div>
         `;
 
         actions.innerHTML = `
           <button onclick="wizardPrevStep()" class="py-2.5 px-3 bg-slate-800 text-xs font-semibold rounded-xl text-slate-400">← Zurück</button>
-          <button onclick="wizardNextStep()" class="flex-1 py-3 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
-            Weiter zum No-Go Schutz 🛑 →
-          </button>
-        `;
-      }
-
-      // SCHRITT 5: EXPLIZITER NO-GO / TABU SCHUTZFILTER
-      else if (wizardCurrentStep === 5) {
-        modalTitle.innerText = "Schritt 5 von 5: Grenzen";
-        modalSubtitle.innerText = "Gibt es heute ein striktes No-Go für dich? (Optional)";
-
-        const noGos = state.kopfkino.noGoCatalog || defaultNoGoChips;
-        let itemsHtml = noGos.map(ng => {
-          const isSelected = currentDraftAnswers.noGos.includes(ng.id);
-          return `
-            <button type="button" onclick="toggleWizardOption('noGos', '${ng.id}')" 
-              class="w-full py-2.5 px-3 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between ${isSelected ? 'bg-rose-950 border-rose-500 text-rose-200 shadow-md animate-pulse' : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'}">
-              <span>${ng.label}</span>
-              <span>${isSelected ? '🛑 Tabu' : '✕'}</span>
-            </button>
-          `;
-        }).join('');
-
-        content.innerHTML = `
-          <div class="space-y-2 text-xs">
-            <div class="bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-[11px] text-slate-400 leading-relaxed">
-              💡 <em>Tippe nur an, was heute absolut ausgeschlossen ist. Gesetzte No-Gos sperren kollidierende Wünsche deines Partners automatisch im Match.</em>
-            </div>
-            <div class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
-              ${itemsHtml}
-            </div>
-          </div>
-        `;
-
-        actions.innerHTML = `
-          <button onclick="wizardPrevStep()" class="py-2.5 px-3 bg-slate-800 text-xs font-semibold rounded-xl text-slate-400">← Zurück</button>
-          <button onclick="submit5QAnswers()" class="flex-1 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
+          <button onclick="submit4QAnswers()" class="flex-1 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
             🚀 Einloggen & Senden
           </button>
         `;
       }
     }
 
-    // Limitierte Auswahl (z.B. max 3) mit dynamischem Nachrücken
-    function toggleWizardLimitedOption(category, id, maxLimit) {
-      if (!currentDraftAnswers[category]) currentDraftAnswers[category] = [];
-      const list = currentDraftAnswers[category];
-      
-      if (list.includes(id)) {
-        currentDraftAnswers[category] = list.filter(item => item !== id);
-      } else {
-        if (list.length >= maxLimit) {
-          list.shift(); // Älteste Auswahl fällt raus
-        }
-        list.push(id);
-      }
-      playSensualSound('chime');
-      renderKopfkinoWizard();
-    }
-
     function toggleWizardOption(category, id) {
-      if (!currentDraftAnswers[category]) currentDraftAnswers[category] = [];
-      const list = currentDraftAnswers[category];
+      const list = currentDraftAnswers[category] || [];
       if (list.includes(id)) {
         currentDraftAnswers[category] = list.filter(item => item !== id);
       } else {
@@ -1449,7 +1360,7 @@
     }
 
     function wizardNextStep() {
-      if (wizardCurrentStep < 5) {
+      if (wizardCurrentStep < 4) {
         wizardCurrentStep++;
         renderKopfkinoWizard();
       }
@@ -1462,7 +1373,7 @@
       }
     }
 
-    function submit5QAnswers() {
+    function submit4QAnswers() {
       if (state.currentUser === 'Er') {
         state.kopfkino.erAnswers = JSON.parse(JSON.stringify(currentDraftAnswers));
       } else {
@@ -1473,7 +1384,7 @@
       saveState();
 
       LiveStream.sendData({
-        type: 'kopfkino_submitted_data',
+        type: 'kopfkino_4q_submitted',
         sender: state.currentUser,
         answers: currentDraftAnswers,
         practicesCatalog: state.kopfkino.practicesCatalog
@@ -1497,7 +1408,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // MATCH REVEAL SCREEN MIT NO-GO FILTER
+    // MATCH REVEAL SCREEN (4-FRAGEN LOGIK)
     // -------------------------------------------------------------------------
     let currentMatchHighlightTitles = [];
 
@@ -1515,79 +1426,50 @@
       modalTitle.innerText = "✨ Euer Abend-Kompass";
       modalSubtitle.innerText = "Gemeinsames Match & Orgasmus-Fahrplan";
 
-      const erA = state.kopfkino.erAnswers || { receive: [], give: [], orgasm: [], cum: [], noGos: [] };
-      const sieA = state.kopfkino.sieAnswers || { receive: [], give: [], orgasm: [], cum: [], noGos: [] };
+      const erA = state.kopfkino.erAnswers || { receive: [], give: [], orgasm: [], cum: [] };
+      const sieA = state.kopfkino.sieAnswers || { receive: [], give: [], orgasm: [], cum: [] };
       const practices = state.kopfkino.practicesCatalog || defaultPracticesCatalog;
       const cumList = state.kopfkino.cumCatalog || defaultCumLocations;
       const orgSieList = state.kopfkino.orgasmsCatalogSie || defaultOrgasmsSie;
       const orgErList = state.kopfkino.orgasmsCatalogEr || defaultOrgasmsEr;
-      const noGoList = state.kopfkino.noGoCatalog || defaultNoGoChips;
-
-      // Sammle aktive No-Go-Keywords
-      const allActiveNoGos = [...(erA.noGos || []), ...(sieA.noGos || [])];
-      const blockedKeywords = [];
-      const blockedNoGoLabels = [];
-
-      allActiveNoGos.forEach(ngId => {
-        const found = noGoList.find(n => n.id === ngId);
-        if (found) {
-          blockedKeywords.push(...found.blockedKeywords);
-          blockedNoGoLabels.push(found.label);
-        }
-      });
-
-      function isBlocked(text) {
-        if (!text) return false;
-        const low = text.toLowerCase();
-        return blockedKeywords.some(kw => low.includes(kw));
-      }
 
       let roleMatches = [];
       let cumMatches = [];
       currentMatchHighlightTitles = [];
 
-      // 1. ROLLEN-MATCHES (GEPRÜFT GEGEN NO-GO FILTER)
+      // 1. ROLLEN-MATCH: Er gibt was Sie empfängt (und umgekehrt)
       practices.forEach(p => {
-        const erGives_sieReceives = (erA.give || []).includes(p.id) && (sieA.receive || []).includes(p.id);
-        const sieGives_erReceives = (sieA.give || []).includes(p.id) && (erA.receive || []).includes(p.id);
+        const erGives_sieReceives = erA.give.includes(p.id) && sieA.receive.includes(p.id);
+        const sieGives_erReceives = sieA.give.includes(p.id) && erA.receive.includes(p.id);
 
         if (erGives_sieReceives && sieGives_erReceives) {
-          const label = p.labelSieRec || p.labelErRec;
-          if (!isBlocked(label) && !isBlocked(p.id)) {
-            roleMatches.push(`🔥 <strong>Gegenseitig:</strong> ${label}`);
-            currentMatchHighlightTitles.push(label);
-          }
+          roleMatches.push(`🔥 <strong>Gegenseitig:</strong> ${p.labelSieRec || p.labelErRec}`);
+          currentMatchHighlightTitles.push(p.labelSieRec || p.labelErRec);
         } else if (erGives_sieReceives) {
-          if (!isBlocked(p.labelErGive) && !isBlocked(p.labelSieRec) && !isBlocked(p.id)) {
-            roleMatches.push(`👑 <strong>Er verwöhnt:</strong> ${p.labelErGive} ↔ Sie genießt`);
-            currentMatchHighlightTitles.push(p.labelSieRec);
-          }
+          roleMatches.push(`👑 <strong>Er verwöhnt:</strong> ${p.labelErGive} ↔ Sie genießt`);
+          currentMatchHighlightTitles.push(p.labelSieRec);
         } else if (sieGives_erReceives) {
-          if (!isBlocked(p.labelSieGive) && !isBlocked(p.labelErRec) && !isBlocked(p.id)) {
-            roleMatches.push(`👑 <strong>Sie verwöhnt:</strong> ${p.labelSieGive} ↔ Er genießt`);
-            currentMatchHighlightTitles.push(p.labelErRec);
-          }
+          roleMatches.push(`👑 <strong>Sie verwöhnt:</strong> ${p.labelSieGive} ↔ Er genießt`);
+          currentMatchHighlightTitles.push(p.labelErRec);
         }
       });
 
-      // 2. ORGASMUS-WEGE
-      const sieOrgLabels = (sieA.orgasm || []).map(id => {
+      // 2. ORGASMUS-WEGE ANZEIGEN
+      const sieOrgLabels = sieA.orgasm.map(id => {
         const found = orgSieList.find(o => o.id === id);
-        return (found && !isBlocked(found.label)) ? found.label : null;
+        return found ? found.label : null;
       }).filter(Boolean);
 
-      const erOrgLabels = (erA.orgasm || []).map(id => {
+      const erOrgLabels = erA.orgasm.map(id => {
         const found = orgErList.find(o => o.id === id);
-        return (found && !isBlocked(found.label)) ? found.label : null;
+        return found ? found.label : null;
       }).filter(Boolean);
 
       // 3. ABSPRITZ-MATCHES
       cumList.forEach(c => {
-        if ((erA.cum || []).includes(c.id) && (sieA.cum || []).includes(c.id)) {
-          if (!isBlocked(c.labelEr) && !isBlocked(c.labelSie) && !isBlocked(c.id)) {
-            cumMatches.push(c.labelEr);
-            currentMatchHighlightTitles.push(c.labelEr);
-          }
+        if (erA.cum.includes(c.id) && sieA.cum.includes(c.id)) {
+          cumMatches.push(c.labelEr);
+          currentMatchHighlightTitles.push(c.labelEr);
         }
       });
 
@@ -1636,14 +1518,7 @@
             ` : `<div class="text-slate-400 italic text-[10px]">Kein gemeinsamer Ort gewählt – sprecht euch ab!</div>`}
           </div>
 
-          <!-- 5. AKTIVE NO-GOS (DISCRET GEWAHRT) -->
-          ${blockedNoGoLabels.length > 0 ? `
-            <div class="bg-rose-950/40 border border-rose-900/60 rounded-xl p-2 text-[10px] text-rose-300">
-              🛑 Diskret geschützt für heute: ${Array.from(new Set(blockedNoGoLabels)).join(', ')}
-            </div>
-          ` : ''}
-
-          <!-- 6. EMBEDDED SHOUTBOX -->
+          <!-- 5. EMBEDDED SHOUTBOX -->
           <div class="bg-slate-950 border border-purple-500/40 rounded-2xl p-3 space-y-2">
             <span class="text-[9px] font-bold text-purple-300 uppercase tracking-wider block flex items-center gap-1.5">
               <span>💬</span> Flüsterbox für diesen Abend
@@ -1663,7 +1538,7 @@
             </div>
           </div>
 
-          <!-- 7. ALS ERFÜLLT MARKIEREN -->
+          <!-- 6. ALS ERFÜLLT MARKIEREN -->
           <button onclick="markKopfkinoFulfilled()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all flex items-center justify-center gap-1.5 mt-2">
             <span>✨</span> <span>Unser Abend-Erlebnis als erfüllt markieren</span>
           </button>
@@ -1682,7 +1557,7 @@
 
     function openKopfkinoRestart() {
       wizardCurrentStep = 1;
-      currentDraftAnswers = { receive: [], give: [], orgasm: [], cum: [], noGos: [] };
+      currentDraftAnswers = { receive: [], give: [], orgasm: [], cum: [] };
       renderKopfkinoWizard();
     }
 
@@ -1716,7 +1591,7 @@
     }
 
     // =========================================================================
-    // DYNAMISCHER KATALOG-EDITOR (TYPISIERTE PRAKTIKEN & OPTIONEN)
+    // DYNAMISCHER KATALOG-EDITOR (PRAKTIKEN BEARBEITEN / ERWEITERN)
     // =========================================================================
     function openCatalogEditModal() {
       renderCatalogItemsList();
@@ -1742,7 +1617,7 @@
             <span>${p.labelSieRec || p.labelErRec || p.labelSieGive || p.labelErGive}</span>
             <button onclick="deleteCatalogPractice(${idx})" class="text-rose-400 hover:text-rose-300 text-xs px-1">🗑️</button>
           </div>
-          <div class="text-[10px] text-purple-400 font-semibold">Typ: ${p.type || 'both'}</div>
+          <div class="text-[10px] text-slate-400">ID: ${p.id}</div>
         </div>
       `).join('');
     }
@@ -1755,55 +1630,24 @@
       }
     }
 
-    function saveNewCatalogItem() {
-      const category = document.getElementById('new-item-category').value;
-      const label = document.getElementById('new-item-label').value.trim();
-      if (!label) { alert("Bitte eine Bezeichnung eingeben."); return; }
+    function openAddPracticePrompt() {
+      const name = prompt("Name der neuen Praktik (z. B. Eier lecken & kraulen 🥚):");
+      if (!name || !name.trim()) return;
 
       const safeId = 'custom_' + Date.now();
+      const newPractice = {
+        id: safeId,
+        labelSieRec: name + " (Empfangen)",
+        labelErRec: name,
+        labelSieGive: name + " (Geben)",
+        labelErGive: name
+      };
 
-      if (category === 'both') {
-        state.kopfkino.practicesCatalog.push({
-          id: safeId,
-          type: 'both',
-          labelSieRec: label,
-          labelErRec: label,
-          labelSieGive: label,
-          labelErGive: label
-        });
-      } else if (category === 'sie_gives') {
-        state.kopfkino.practicesCatalog.push({
-          id: safeId,
-          type: 'sie_gives',
-          labelSieRec: '',
-          labelErRec: label,
-          labelSieGive: label,
-          labelErGive: ''
-        });
-      } else if (category === 'er_gives') {
-        state.kopfkino.practicesCatalog.push({
-          id: safeId,
-          type: 'er_gives',
-          labelSieRec: label,
-          labelErRec: '',
-          labelSieGive: '',
-          labelErGive: label
-        });
-      } else if (category === 'org_sie') {
-        if (!state.kopfkino.orgasmsCatalogSie) state.kopfkino.orgasmsCatalogSie = defaultOrgasmsSie;
-        state.kopfkino.orgasmsCatalogSie.push({ id: safeId, label: label });
-      } else if (category === 'org_er') {
-        if (!state.kopfkino.orgasmsCatalogEr) state.kopfkino.orgasmsCatalogEr = defaultOrgasmsEr;
-        state.kopfkino.orgasmsCatalogEr.push({ id: safeId, label: label });
-      } else if (category === 'cum') {
-        if (!state.kopfkino.cumCatalog) state.kopfkino.cumCatalog = defaultCumLocations;
-        state.kopfkino.cumCatalog.push({ id: safeId, labelSie: label, labelEr: label });
-      }
-
-      document.getElementById('new-item-label').value = '';
+      if (!state.kopfkino.practicesCatalog) state.kopfkino.practicesCatalog = defaultPracticesCatalog;
+      state.kopfkino.practicesCatalog.push(newPractice);
       saveState();
       renderCatalogItemsList();
-      alert(`✓ "${label}" erfolgreich gespeichert!`);
+      alert(`✓ Praktik "${name}" erfolgreich zum Katalog hinzugefügt!`);
     }
 
     // =========================================================================
@@ -2147,7 +1991,6 @@
         orgasmsCatalogSie: defaultOrgasmsSie,
         orgasmsCatalogEr: defaultOrgasmsEr,
         cumCatalog: defaultCumLocations,
-        noGoCatalog: defaultNoGoChips,
         erAnswers: null,
         sieAnswers: null,
         isUnlocked: false
