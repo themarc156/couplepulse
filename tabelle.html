@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fragen & Antworten</title>
+  <style>
+    :root {
+      --bg: #121212;
+      --card: #1e1e1e;
+      --input: #292929;
+      --text: #e0e0e0;
+      --text-muted: #777777;
+      --accent: #bb86fc;
+      --border: #333;
+      --danger: #cf6679;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      max-width: 1500px;
+      margin: 1.5rem auto;
+      padding: 0 1rem 4rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    /* Toolbar oben */
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Zeilen-Container */
+    .q-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+
+    .q-row.single {
+      justify-content: center;
+    }
+
+    .question-block {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem;
+      flex: 1 1 360px;
+      min-width: 330px;
+      max-width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+
+    .question-block:focus-within {
+      border-color: rgba(187, 134, 252, 0.4);
+    }
+
+    .q-row.single .question-block {
+      flex: 0 1 500px;
+      max-width: 500px;
+    }
+
+    .q-header {
+      display: flex;
+      gap: 0.35rem;
+      margin-bottom: 0.45rem;
+      align-items: flex-start;
+    }
+
+    .rows-list {
+      min-height: 38px;
+    }
+
+    /* Antwortzeile mit Drag-Griff */
+    .row {
+      display: grid;
+      grid-template-columns: auto 1fr 1fr auto;
+      gap: 0.35rem;
+      margin-bottom: 0.35rem;
+      align-items: flex-start;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+
+    .row.dragging {
+      opacity: 0.35;
+      background: rgba(187, 134, 252, 0.08);
+      border: 1px dashed var(--accent);
+      border-radius: 4px;
+    }
+
+    /* Drag-Handle Icon */
+    .drag-handle {
+      cursor: grab;
+      user-select: none;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 0.4rem 0.25rem;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 3px;
+    }
+
+    .drag-handle:hover {
+      color: var(--accent);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    /* Textareas */
+    textarea {
+      width: 100%;
+      padding: 0.45rem 0.6rem;
+      background: var(--input);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      line-height: 1.35;
+      resize: none;
+      overflow-y: hidden;
+      min-height: 32px;
+      field-sizing: content;
+    }
+
+    textarea:focus {
+      outline: 1px solid var(--accent);
+      border-color: var(--accent);
+    }
+
+    .btn {
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 0.3rem 0.5rem;
+      border-radius: 3px;
+      white-space: nowrap;
+      transition: background-color 0.15s;
+    }
+
+    .btn:hover {
+      background: #333;
+    }
+
+    .btn-action {
+      background: #2a2a2a;
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-size: 0.75rem;
+      padding: 0.3rem 0.5rem;
+      height: 32px;
+    }
+
+    .btn-action:hover {
+      background: #383838;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.35rem;
+      gap: 0.5rem;
+    }
+
+    .btn-add-row {
+      color: var(--accent);
+      padding: 0.2rem 0.4rem;
+    }
+
+    .btn-del {
+      color: var(--danger);
+      font-size: 0.95rem;
+      padding: 0.35rem 0.45rem;
+      height: 32px;
+    }
+
+    .btn-del:hover {
+      background: rgba(207, 102, 121, 0.15);
+    }
+
+    .btn-add-bottom {
+      display: block;
+      width: 100%;
+      max-width: 500px;
+      margin: 1.5rem auto 0 auto;
+      padding: 0.6rem;
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--accent);
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    .btn-add-bottom:hover {
+      border-color: var(--accent);
+      background: rgba(187, 134, 252, 0.05);
+    }
+
+    /* Druck-Ansicht */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .toolbar, .btn, .btn-action, .btn-del, .btn-add-bottom, .card-footer, .drag-handle {
+        display: none !important;
+      }
+      .row {
+        grid-template-columns: 1fr 1fr !important;
+      }
+      .question-block {
+        background: #fff !important;
+        border: 1px solid #ccc !important;
+        color: #000 !important;
+        break-inside: avoid;
+      }
+      textarea {
+        background: #fff !important;
+        border: 1px solid #eee !important;
+        color: #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toolbar oben rechts -->
+  <div class="toolbar">
+    <button type="button" id="exportBtn" class="btn btn-action" title="Als JSON kopieren">📋 Kopieren</button>
+    <button type="button" id="printBtn" class="btn btn-action" title="Drucken / PDF">🖨 Drucken</button>
+    <button type="button" id="clearBtn" class="btn btn-action" style="color: var(--danger);" title="Alle leeren">🗑 Alles leeren</button>
+  </div>
+
+  <!-- Haupt-Board -->
+  <div id="board"></div>
+
+  <!-- Button ganz unten -->
+  <button type="button" id="addBottomBtn" class="btn btn-add-bottom">+ Neue Frage darunter</button>
+
+  <script>
+    const board = document.getElementById('board');
+    const addBottomBtn = document.getElementById('addBottomBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const printBtn = document.getElementById('printBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
+    const STORAGE_KEY = 'qa_board_state';
+
+    // Auto-Resize für Textfelder
+    function bindAutoResize(textarea) {
+      function adjust() {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+      }
+      textarea.addEventListener('input', () => {
+        adjust();
+        saveState();
+      });
+      // Shortcut: Strg+Enter erzeugt neue Antwortzeile
+      textarea.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          const card = textarea.closest('.question-block');
+          if (card) {
+            const list = card.querySelector('.rows-list');
+            const newRow = createAnswerRow(list);
+            const firstInput = newRow.querySelector('textarea');
+            if (firstInput) firstInput.focus();
+          }
+        }
+      });
+      setTimeout(adjust, 0);
+    }
+
+    // Ermittelt die Position beim Drag & Drop
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('.row:not(.dragging)')];
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // Aktualisiert das Single/Multi-Layout einer Zeile
+    function updateRowLayout(rowElement) {
+      if (rowElement.children.length === 1) {
+        rowElement.classList.add('single');
+      } else {
+        rowElement.classList.remove('single');
+      }
+    }
+
+    // Antwortzeile erzeugen (mit Drag & Drop)
+    function createAnswerRow(list, valA = '', valB = '') {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML = `
+        <span class="drag-handle" title="Verschieben (Ziehen)">⋮⋮</span>
+        <textarea rows="1" placeholder="Antwort...">${valA}</textarea>
+        <textarea rows="1" placeholder="Antwort...">${valB}</textarea>
+        <button type="button" class="btn btn-del" title="Zeile entfernen">✕</button>
+      `;
+
+      row.querySelectorAll('textarea').forEach(bindAutoResize);
+
+      // Drag & Drop Setup: Nur über den Griff aktivierbar
+      const handle = row.querySelector('.drag-handle');
+      handle.addEventListener('mousedown', () => row.draggable = true);
+      handle.addEventListener('mouseup', () => row.draggable = false);
+
+      row.addEventListener('dragstart', (e) => {
+        row.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      row.addEventListener('dragend', () => {
+        row.classList.remove('dragging');
+        row.draggable = false;
+        saveState();
+      });
+
+      // Löschen
+      row.querySelector('.btn-del').addEventListener('click', () => {
+        if (list.children.length > 1) {
+          row.remove();
+        } else {
+          row.querySelectorAll('textarea').forEach(t => {
+            t.value = '';
+            t.style.height = 'auto';
+          });
+        }
+        saveState();
+      });
+
+      list.appendChild(row);
+      return row;
+    }
+
+    // Einzelnen Frageblock erzeugen
+    function createQuestionBlock(data = null) {
+      const block = document.createElement('div');
+      block.className = 'question-block';
+      block.innerHTML = `
+        <div class="q-header">
+          <textarea rows="1" placeholder="Frage eingeben..." style="font-weight: 500;">${data?.question || ''}</textarea>
+          <button type="button" class="btn btn-action btn-add-beside" title="Frageblock rechts daneben einfügen">+ Daneben</button>
+          <button type="button" class="btn btn-del del-q" title="Frage löschen">✕</button>
+        </div>
+        <div class="rows-list"></div>
+        <div class="card-footer">
+          <button type="button" class="btn btn-add-row">+ Antwortzeile</button>
+          <button type="button" class="btn btn-action btn-add-below" title="Neue Frage darunter einfügen">+ Darunter</button>
+        </div>
+      `;
+
+      const qInput = block.querySelector('.q-header textarea');
+      bindAutoResize(qInput);
+
+      const rowsList = block.querySelector('.rows-list');
+      const addRowBtn = block.querySelector('.btn-add-row');
+      const addBesideBtn = block.querySelector('.btn-add-beside');
+      const addBelowBtn = block.querySelector('.btn-add-below');
+      const delQBtn = block.querySelector('.del-q');
+
+      // Dragover & Drop auf die Antworten-Liste
+      rowsList.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const dragging = document.querySelector('.dragging');
+        if (!dragging) return;
+        const afterElement = getDragAfterElement(rowsList, e.clientY);
+        if (afterElement == null) {
+          rowsList.appendChild(dragging);
+        } else {
+          rowsList.insertBefore(dragging, afterElement);
+        }
+      });
+
+      // Antwortzeilen initialisieren
+      if (data && data.answers && data.answers.length > 0) {
+        data.answers.forEach(ans => createAnswerRow(rowsList, ans[0] || '', ans[1] || ''));
+      } else {
+        createAnswerRow(rowsList);
+      }
+
+      addRowBtn.addEventListener('click', () => {
+        createAnswerRow(rowsList);
+        saveState();
+      });
+
+      // + Daneben
+      addBesideBtn.addEventListener('click', () => {
+        const parentRow = block.parentElement;
+        const newBlock = createQuestionBlock();
+        block.after(newBlock);
+        updateRowLayout(parentRow);
+        saveState();
+      });
+
+      // + Darunter
+      addBelowBtn.addEventListener('click', () => {
+        const parentRow = block.parentElement;
+        const newRow = createRowWithBlock();
+        parentRow.after(newRow);
+        saveState();
+      });
+
+      // Löschen
+      delQBtn.addEventListener('click', () => {
+        const parentRow = block.parentElement;
+        if (parentRow.children.length > 1) {
+          block.remove();
+          updateRowLayout(parentRow);
+        } else {
+          if (board.children.length > 1) {
+            parentRow.remove();
+          } else {
+            qInput.value = '';
+            qInput.style.height = 'auto';
+            rowsList.innerHTML = '';
+            createAnswerRow(rowsList);
+          }
+        }
+        saveState();
+      });
+
+      return block;
+    }
+
+    // Erzeugt eine Zeile (.q-row)
+    function createRowWithBlock(data = null) {
+      const row = document.createElement('div');
+      row.className = 'q-row';
+      const block = createQuestionBlock(data);
+      row.appendChild(block);
+      updateRowLayout(row);
+      return row;
+    }
+
+    // Button ganz unten
+    addBottomBtn.addEventListener('click', () => {
+      const newRow = createRowWithBlock();
+      board.appendChild(newRow);
+      saveState();
+    });
+
+    // --- LOCAL STORAGE ---
+    function saveState() {
+      const state = [];
+      board.querySelectorAll('.q-row').forEach(row => {
+        const rowData = [];
+        row.querySelectorAll('.question-block').forEach(block => {
+          const question = block.querySelector('.q-header textarea').value;
+          const answers = [];
+          block.querySelectorAll('.rows-list .row').forEach(r => {
+            const inputs = r.querySelectorAll('textarea');
+            answers.push([inputs[0].value, inputs[1].value]);
+          });
+          rowData.push({ question, answers });
+        });
+        if (rowData.length > 0) state.push(rowData);
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return false;
+      try {
+        const state = JSON.parse(saved);
+        if (!Array.isArray(state) || state.length === 0) return false;
+
+        board.innerHTML = '';
+        state.forEach(rowData => {
+          const row = document.createElement('div');
+          row.className = 'q-row';
+          rowData.forEach(blockData => {
+            row.appendChild(createQuestionBlock(blockData));
+          });
+          updateRowLayout(row);
+          board.appendChild(row);
+        });
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // Toolbar Buttons
+    exportBtn.addEventListener('click', () => {
+      saveState();
+      const data = localStorage.getItem(STORAGE_KEY) || '[]';
+      navigator.clipboard.writeText(data).then(() => {
+        const orig = exportBtn.textContent;
+        exportBtn.textContent = '✓ Kopiert!';
+        setTimeout(() => exportBtn.textContent = orig, 1500);
+      });
+    });
+
+    printBtn.addEventListener('click', () => window.print());
+
+    clearBtn.addEventListener('click', () => {
+      if (confirm('Möchtest du wirklich alle Fragen leeren?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        board.innerHTML = '';
+        board.appendChild(createRowWithBlock());
+      }
+    });
+
+    // Initialisierung
+    if (!loadState()) {
+      board.appendChild(createRowWithBlock());
+    }
+  </script>
+
+</body>
+</html>
