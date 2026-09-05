@@ -278,6 +278,8 @@
               <option value="both">⚡ Praktik: Beide können es (Symmetrisch)</option>
               <option value="sie_gives">⚡ Praktik: Sie verwöhnt Ihn (z. B. Eier lecken 🥚 / Titjob)</option>
               <option value="er_gives">⚡ Praktik: Er verwöhnt Sie (z. B. Kitzler lecken 👅 / Fingern)</option>
+              <option value="org_sie">🎯 Orgasmus-Weg für Sie</option>
+              <option value="org_er">🎯 Orgasmus-Weg für Ihn</option>
               <option value="cum">💦 Abspritz-Ort</option>
             </select>
           </div>
@@ -485,7 +487,7 @@
       beide: ['Zungenkuss-Marathon 💋', 'Hände unters Shirt ✨', 'An die Wand gedrückt 🧱', 'Knutschen im Stehen ⚡']
     };
 
-    // DYNAMISCHE MATRIX FÜR VERWÖHNEN & ROLLEN (BEREICH 1 & 2)
+    // DYNAMISCHE MATRIX FÜR VERWÖHNEN & ROLLEN (FRAGE 1 & 2)
     const defaultPracticesCatalog = [
       { id: 'oral_clit_penis', type: 'both', labelSieRec: 'Zunge & Mund am Kitzler 👅', labelErRec: 'Oral (Blowjob / Mund & Zunge) 💋', labelSieGive: 'Mit Mund & Zunge (Blowjob) 💋', labelErGive: 'Ihre Fotze & Kitzler lecken 👅' },
       { id: 'hand_clit_penis', type: 'both', labelSieRec: 'Kitzler gerieben bekommen ✨', labelErRec: 'Handjob / Schwanzmassage 🪶', labelSieGive: 'Schwanzmassage mit der Hand 🪶', labelErGive: 'Ihren Kitzler reiben / streicheln ✨' },
@@ -493,8 +495,6 @@
       { id: 'balls_lick', type: 'sie_gives', labelSieRec: '', labelErRec: 'Eier lecken & kraulen 🥚', labelSieGive: 'Seine Eier lecken & kraulen 🥚', labelErGive: '' },
       { id: 'vag_finger', type: 'er_gives', labelSieRec: 'Finger in mir / gefingert werden 🪶', labelErRec: '', labelSieGive: '', labelErGive: 'Sie mit den Fingern ficken 🪶' },
       { id: 'vag_penis', type: 'er_gives', labelSieRec: 'Schwanz in mir spüren 🍆', labelErRec: '', labelSieGive: '', labelErGive: 'Mit dem Schwanz tief stoßen 🍆' },
-      { id: 'ride_pos', type: 'both', labelSieRec: 'Beim Reiten (ich oben / bestimme) 🤠', labelErRec: 'Während sie mich reitet 🤠', labelSieGive: 'Ihn reiten & führen 🤠', labelErGive: 'Mich reiten lassen 🤠' },
-      { id: 'doggy_pos', type: 'both', labelSieRec: 'Von hinten genommen werden (Doggy) 🧱', labelErRec: 'Von hinten stoßend (Doggy) 🧱', labelSieGive: 'Ihn von hinten verführen 🧱', labelErGive: 'Sie von hinten nehmen (Doggy) 🧱' },
       { id: 'oral_vag', type: 'er_gives', labelSieRec: 'Zunge tief in mir spüren 👅', labelErRec: '', labelSieGive: '', labelErGive: 'Sie mit der Zunge ficken 👅' },
       { id: 'anal_penis', type: 'both', labelSieRec: 'Schwanz im Arsch (Arschfick) 🔥', labelErRec: 'Prostatamassage 🎯', labelSieGive: 'Seine Prostata massieren 🎯', labelErGive: 'Mit dem Schwanz in ihren Arsch 🔥' },
       { id: 'anal_finger', type: 'both', labelSieRec: 'Finger im Arsch 🍑', labelErRec: 'Finger anal / Damm-Massage 🍑', labelSieGive: 'Ihn mit Fingern anal verwöhnen 🍑', labelErGive: 'Mit Fingern in ihr Arschloch 🍑' },
@@ -502,17 +502,38 @@
       { id: 'toys', type: 'both', labelSieRec: 'Spielzeug (Vibrator / Dildo) 🔌', labelErRec: 'Toy / Masturbator / Plug 🔌', labelSieGive: 'Toy bei ihm einsetzen 🔌', labelErGive: 'Vibrator / Toy an ihr bedienen 🔌' },
       { id: 'bondage', type: 'both', labelSieRec: 'Gefesselt & fixiert werden 🔗', labelErRec: 'Gefesselt & fixiert werden 🔗', labelSieGive: 'Ihn fesseln & bestimmen 🔗', labelErGive: 'Sie fesseln & bestimmen 🔗' },
       { id: 'spanking', type: 'both', labelSieRec: 'Klapse auf den Po / Spanking 💥', labelErRec: 'Klapse auf den Po / Spanking 💥', labelSieGive: 'Ihm Klapse auf den Po geben 💥', labelErGive: 'Ihr Klapse auf den Po geben 💥' },
-      { id: 'edging_game', type: 'both', labelSieRec: 'Orgasmus rauszögern / quälen ⏳', labelErRec: 'Mich quälen & rauszögern (Edging) ⏳', labelSieGive: 'Ihn quälen & rauszögern ⏳', labelErGive: 'Sie quälen & rauszögern ⏳' },
       { id: 'only_receive', type: 'both', labelSieRec: '', labelErRec: '', labelSieGive: 'Heute will ich nur empfangen 🧘', labelErGive: 'Heute will ich nur empfangen 🧘' }
     ];
 
-    // ORGASMUS-RAHMEN & ABSPRITZ-ORTE (BEREICH 3)
-    const defaultFocusFramework = [
-      { id: 'org_priority_must', labelSie: 'Ich will heute unbedingt kommen 🎯', labelEr: 'Ich will heute unbedingt kommen 🎯' },
-      { id: 'org_priority_partner', labelSie: 'Heute soll SEIN Orgasmus im Fokus stehen 👑', labelEr: 'Heute soll IHR Orgasmus im Fokus stehen 👑' },
-      { id: 'org_priority_free', labelSie: 'Kein Orgasmus-Muss / Nur treiben lassen 🌊', labelEr: 'Kein Orgasmus-Muss / Nur treiben lassen 🌊' }
+    // ORGASMUS-OPTIONEN FÜR SIE & IHN
+    const defaultOrgasmsSie = [
+      { id: 'org_w_clit_tongue', label: 'Durch Lecken / Zunge am Kitzler 👅' },
+      { id: 'org_w_toy', label: 'Mit dem Vibrator / Toy am Kitzler 🔌' },
+      { id: 'org_w_gspot', label: 'Durch Fingern / gezielte G-Punkt-Massage ✨' },
+      { id: 'org_w_penetration', label: 'Beim reinen Ficken (Schwanz in mir) 🍆' },
+      { id: 'org_w_double', label: 'Doppelt: Reinstoßen + Kitzler gleichzeitig 🔥' },
+      { id: 'org_w_ride', label: 'Beim Reiten (ich oben / bestimme das Tempo) 🤠' },
+      { id: 'org_w_doggy', label: 'Von hinten genommen werden (Doggy) 🧱' },
+      { id: 'org_w_anal', label: 'Durch Arschfick / anale Reizung 🍑' },
+      { id: 'org_w_self', label: 'Ich mach es mir selbst, während er mich hält/zusieht 👀' },
+      { id: 'org_w_edging', label: 'Orgasmus rauszögern / quälen (Edging) ⏳' },
+      { id: 'org_w_no_pressure', label: 'Kein Orgasmus-Muss heute / nur treiben lassen 🌊' }
     ];
 
+    const defaultOrgasmsEr = [
+      { id: 'org_m_oral', label: 'Durch tiefen Oralverkehr / Blowjob bis zum Schluss 💋' },
+      { id: 'org_m_prostate', label: 'Mit Prostatamassage / Finger im Arsch beim Kommen 🎯' },
+      { id: 'org_m_ride', label: 'Während sie mich reitet 🤠' },
+      { id: 'org_m_doggy', label: 'Von hinten stoßend (Doggy) 🧱' },
+      { id: 'org_m_penetration', label: 'Tief in ihr stoßend (Mumu oder Arsch) 🍆' },
+      { id: 'org_m_titjob', label: 'Durch Titjob (zwischen ihren Brüsten) 🍒' },
+      { id: 'org_m_glans_hand', label: 'Durch gezielte Eichel- & Damm-Massage 🪶' },
+      { id: 'org_m_edging', label: 'Mich quälen / rauszögern (Edging vor dem Spritzen) ⏳' },
+      { id: 'org_m_dom', label: 'Blickkontakt / sie übernimmt die volle Kontrolle 👁️' },
+      { id: 'org_m_no_pressure', label: 'Kein Orgasmus-Muss heute / nur treiben lassen 🌊' }
+    ];
+
+    // ABSPRITZ-ORTE
     const defaultCumLocations = [
       { id: 'cum_vag', labelSie: 'In die Fotze (drinnen) 📥', labelEr: 'In die Fotze (tief rein) 📥' },
       { id: 'cum_mouth', labelSie: 'In den Mund / schlucken 👄', labelEr: 'In ihren Mund / schlucken 👄' },
@@ -535,9 +556,10 @@
       completedReviews: [],
       kopfkino: {
         practicesCatalog: defaultPracticesCatalog,
-        focusFramework: defaultFocusFramework,
+        orgasmsCatalogSie: defaultOrgasmsSie,
+        orgasmsCatalogEr: defaultOrgasmsEr,
         cumCatalog: defaultCumLocations,
-        // State speichert Werte als: { key: { status: 'erlaubt' | 'fokus' | 'tabu' } }
+        // State speichert Werte als: { itemId: { mode: 'lust'|'fokus'|'tabu'|'none' } }
         erPreferences: null,
         siePreferences: null,
         isUnlocked: false
@@ -725,7 +747,7 @@
           playSensualSound('chime');
         } 
         // KOPFKINO SYNC
-        else if (data.type === 'kopfkino_2switch_sync') {
+        else if (data.type === 'kopfkino_vibe_sync') {
           if (data.sender === 'Er') state.kopfkino.erPreferences = data.preferences;
           if (data.sender === 'Sie') state.kopfkino.siePreferences = data.preferences;
           if (data.practicesCatalog) state.kopfkino.practicesCatalog = data.practicesCatalog;
@@ -892,12 +914,12 @@
     // STORAGE & PERSISTENZ
     // =========================================================================
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v110', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v109', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v110');
+      const saved = localStorage.getItem('couple_pulse_state_v109');
       if (saved) { 
         try { 
           const parsed = JSON.parse(saved);
@@ -910,7 +932,8 @@
       if (!state.kopfkino) {
         state.kopfkino = {
           practicesCatalog: defaultPracticesCatalog,
-          focusFramework: defaultFocusFramework,
+          orgasmsCatalogSie: defaultOrgasmsSie,
+          orgasmsCatalogEr: defaultOrgasmsEr,
           cumCatalog: defaultCumLocations,
           erPreferences: null,
           siePreferences: null,
@@ -918,7 +941,8 @@
         };
       }
       if (!state.kopfkino.practicesCatalog) state.kopfkino.practicesCatalog = defaultPracticesCatalog;
-      if (!state.kopfkino.focusFramework) state.kopfkino.focusFramework = defaultFocusFramework;
+      if (!state.kopfkino.orgasmsCatalogSie) state.kopfkino.orgasmsCatalogSie = defaultOrgasmsSie;
+      if (!state.kopfkino.orgasmsCatalogEr) state.kopfkino.orgasmsCatalogEr = defaultOrgasmsEr;
       if (!state.kopfkino.cumCatalog) state.kopfkino.cumCatalog = defaultCumLocations;
 
       if (!state.shoutboxMessages) state.shoutboxMessages = [];
@@ -1164,7 +1188,7 @@
     }
 
     // =========================================================================
-    // KOPFKINO ENGINE: 2-SCHALTER-LOGIK (FOKUS / TABU / DEFAULT ERLAUBT)
+    // KOPFKINO ENGINE: 2-SCHRITTE EINGABE + 3-SÄULEN MATCH REVEAL
     // =========================================================================
     function openKopfkinoModal() {
       checkKopfkinoUnlock();
@@ -1185,42 +1209,43 @@
       document.getElementById('kopfkino-modal').classList.add('hidden');
     }
 
-    function toggleDraftItemStatus(key, status) {
+    function setDraftItemStatus(key, status) {
       if (!currentDraftPreferences[key]) {
-        currentDraftPreferences[key] = { status: 'erlaubt' };
+        currentDraftPreferences[key] = { status: 'none' };
       }
-      // Toggle-Mechanik: Wenn bereits aktiv -> zurück auf 'erlaubt'
-      if (currentDraftPreferences[key].status === status) {
-        currentDraftPreferences[key].status = 'erlaubt';
-      } else {
-        currentDraftPreferences[key].status = status;
-      }
+      currentDraftPreferences[key].status = status;
       playSensualSound('chime');
       renderKopfkinoWizard();
     }
 
-    function render2SwitchCard(key, label) {
-      const current = (currentDraftPreferences[key] && currentDraftPreferences[key].status) ? currentDraftPreferences[key].status : 'erlaubt';
-      const isFokus = current === 'fokus';
-      const isTabu = current === 'tabu';
+    function renderItemCard(key, label) {
+      const current = (currentDraftPreferences[key] && currentDraftPreferences[key].status) ? currentDraftPreferences[key].status : 'none';
 
       return `
-        <div class="bg-slate-950/85 border ${isFokus ? 'border-amber-500/80 glow-amber' : isTabu ? 'border-rose-600/70' : 'border-slate-800'} rounded-2xl p-2.5 space-y-2 transition-all">
+        <div class="bg-slate-950/85 border ${current === 'fokus' ? 'border-amber-500/80 glow-amber' : current === 'tabu' ? 'border-rose-600/70' : current === 'lust' ? 'border-purple-500/70 glow-purple' : 'border-slate-800'} rounded-2xl p-2.5 space-y-2 transition-all">
           <div class="flex justify-between items-center text-xs">
             <span class="font-bold text-slate-200 truncate max-w-[170px]">${label}</span>
-            <span class="text-[9px] font-bold ${isFokus ? 'text-amber-400' : isTabu ? 'text-rose-400' : 'text-emerald-400/90'}">
-              ${isFokus ? '🔥 Fokus' : isTabu ? '🛑 Tabu' : '🌿 Erlaubt'}
+            <span class="text-[9px] font-bold ${current === 'fokus' ? 'text-amber-400' : current === 'tabu' ? 'text-rose-400' : current === 'lust' ? 'text-purple-300' : 'text-slate-500'}">
+              ${current === 'fokus' ? '🔥 Fokus' : current === 'tabu' ? '🛑 Tabu' : current === 'lust' ? '✨ Lust' : 'Offen'}
             </span>
           </div>
           
-          <div class="grid grid-cols-2 gap-1.5 text-[9px] font-bold">
-            <button type="button" onclick="toggleDraftItemStatus('${key}', 'fokus')" 
-              class="py-1.5 rounded-xl border transition-all ${isFokus ? 'bg-amber-500 border-amber-400 text-slate-950 shadow animate-pulse' : 'bg-slate-900 border-slate-800 text-amber-300/80 hover:border-amber-500'}">
-              🔥 Fokus heute
+          <div class="grid grid-cols-4 gap-1 text-[9px] font-bold">
+            <button type="button" onclick="setDraftItemStatus('${key}', 'none')" 
+              class="py-1 rounded-lg border transition-all ${current === 'none' ? 'bg-slate-800 border-slate-600 text-white' : 'bg-slate-900 border-slate-800 text-slate-500'}">
+              Offen
             </button>
-            <button type="button" onclick="toggleDraftItemStatus('${key}', 'tabu')" 
-              class="py-1.5 rounded-xl border transition-all ${isTabu ? 'bg-rose-600 border-rose-400 text-white shadow' : 'bg-slate-900 border-slate-800 text-rose-400/80 hover:border-rose-500'}">
-              🛑 Heute Tabu
+            <button type="button" onclick="setDraftItemStatus('${key}', 'lust')" 
+              class="py-1 rounded-lg border transition-all ${current === 'lust' ? 'bg-purple-600 border-purple-400 text-white shadow' : 'bg-slate-900 border-slate-800 text-purple-300'}">
+              ✨ Lust
+            </button>
+            <button type="button" onclick="setDraftItemStatus('${key}', 'fokus')" 
+              class="py-1 rounded-lg border transition-all ${current === 'fokus' ? 'bg-amber-500 border-amber-400 text-slate-950 shadow animate-pulse' : 'bg-slate-900 border-slate-800 text-amber-300'}">
+              🔥 Fokus
+            </button>
+            <button type="button" onclick="setDraftItemStatus('${key}', 'tabu')" 
+              class="py-1 rounded-lg border transition-all ${current === 'tabu' ? 'bg-rose-600 border-rose-400 text-white shadow' : 'bg-slate-900 border-slate-800 text-rose-400'}">
+              🛑 Tabu
             </button>
           </div>
         </div>
@@ -1248,20 +1273,20 @@
 
       // SCHRITT 1: VERWÖHNEN & ROLLEN (EMPFANGEN & GEBEN)
       if (wizardCurrentStep === 1) {
-        modalTitle.innerText = "Schritt 1 von 2: Spielarten & Rollen";
-        modalSubtitle.innerText = "Standard ist 'Erlaubt' – setze nur Highlights & Tabus";
+        modalTitle.innerText = "Schritt 1 von 2";
+        modalSubtitle.innerText = "Verwöhnen & Spielarten heute";
 
         const recItems = practices.filter(p => isEr ? p.labelErRec : p.labelSieRec);
         const giveItems = practices.filter(p => isEr ? p.labelErGive : p.labelSieGive);
 
         let recHtml = recItems.map(p => {
           const label = isEr ? p.labelErRec : p.labelSieRec;
-          return render2SwitchCard(`rec_${p.id}`, label);
+          return renderItemCard(`rec_${p.id}`, label);
         }).join('');
 
         let giveHtml = giveItems.map(p => {
           const label = isEr ? p.labelErGive : p.labelSieGive;
-          return render2SwitchCard(`give_${p.id}`, label);
+          return renderItemCard(`give_${p.id}`, label);
         }).join('');
 
         content.innerHTML = `
@@ -1285,29 +1310,28 @@
         `;
       }
 
-      // SCHRITT 2: RAHMEN & ABSPRITZ-ORTE
+      // SCHRITT 2: ORGASMUS-WEGE & ABSPRITZ-ORTE
       else if (wizardCurrentStep === 2) {
-        modalTitle.innerText = "Schritt 2 von 2: Orgasmus-Rahmen & Finale";
-        modalSubtitle.innerText = "Druck rausnehmen & Abspritz-Zonen festlegen";
+        modalTitle.innerText = "Schritt 2 von 2";
+        modalSubtitle.innerText = "Orgasmus-Weg & Abspritz-Finale";
 
-        const focusFramework = state.kopfkino.focusFramework || defaultFocusFramework;
+        const orgCatalog = isEr ? (state.kopfkino.orgasmsCatalogEr || defaultOrgasmsEr) : (state.kopfkino.orgasmsCatalogSie || defaultOrgasmsSie);
         const cumList = state.kopfkino.cumCatalog || defaultCumLocations;
 
-        let frameHtml = focusFramework.map(f => {
-          const label = isEr ? f.labelEr : f.labelSie;
-          return render2SwitchCard(`frame_${f.id}`, label);
+        let orgHtml = orgCatalog.map(o => {
+          return renderItemCard(`org_${o.id}`, o.label);
         }).join('');
 
         let cumHtml = cumList.map(c => {
           const label = isEr ? c.labelEr : c.labelSie;
-          return render2SwitchCard(`cum_${c.id}`, label);
+          return renderItemCard(`cum_${c.id}`, label);
         }).join('');
 
         content.innerHTML = `
           <div class="space-y-3.5 max-h-72 overflow-y-auto pr-1 text-xs">
             <div class="space-y-1.5">
-              <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">🎯 Orgasmus-Modus für heute:</span>
-              ${frameHtml}
+              <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">🎯 Dein Orgasmus-Fokus & Stellungen:</span>
+              ${orgHtml}
             </div>
 
             <div class="space-y-1.5 pt-2 border-t border-slate-850">
@@ -1351,7 +1375,7 @@
       saveState();
 
       LiveStream.sendData({
-        type: 'kopfkino_2switch_sync',
+        type: 'kopfkino_vibe_sync',
         sender: state.currentUser,
         preferences: currentDraftPreferences,
         practicesCatalog: state.kopfkino.practicesCatalog
@@ -1396,8 +1420,9 @@
       const erP = state.kopfkino.erPreferences || {};
       const sieP = state.kopfkino.siePreferences || {};
       const practices = state.kopfkino.practicesCatalog || defaultPracticesCatalog;
-      const focusFramework = state.kopfkino.focusFramework || defaultFocusFramework;
       const cumList = state.kopfkino.cumCatalog || defaultCumLocations;
+      const orgSieList = state.kopfkino.orgasmsCatalogSie || defaultOrgasmsSie;
+      const orgErList = state.kopfkino.orgasmsCatalogEr || defaultOrgasmsEr;
 
       let highlights = [];
       let roleMatches = [];
@@ -1405,13 +1430,13 @@
       let blockedTaboos = [];
       currentMatchHighlightTitles = [];
 
-      // 1. PRAKTIKEN ABGLEICHEN (EMPFANGEN ↔ GEBEN)
+      // 1. PRAKTIKEN ABGLEICHEN
       practices.forEach(p => {
-        const erRec = (erP[`rec_${p.id}`] || {}).status || 'erlaubt';
-        const sieGive = (sieP[`give_${p.id}`] || {}).status || 'erlaubt';
+        const erRec = (erP[`rec_${p.id}`] || {}).status || 'none';
+        const sieGive = (sieP[`give_${p.id}`] || {}).status || 'none';
 
-        const sieRec = (sieP[`rec_${p.id}`] || {}).status || 'erlaubt';
-        const erGive = (erP[`give_${p.id}`] || {}).status || 'erlaubt';
+        const sieRec = (sieP[`rec_${p.id}`] || {}).status || 'none';
+        const erGive = (erP[`give_${p.id}`] || {}).status || 'none';
 
         // Tabu Prüfung
         if (erRec === 'tabu' || sieGive === 'tabu' || sieRec === 'tabu' || erGive === 'tabu') {
@@ -1419,8 +1444,8 @@
           return;
         }
 
-        const erGives_sieReceives = (erGive === 'erlaubt' || erGive === 'fokus') && (sieRec === 'erlaubt' || sieRec === 'fokus');
-        const sieGives_erReceives = (sieGive === 'erlaubt' || sieGive === 'fokus') && (erRec === 'erlaubt' || erRec === 'fokus');
+        const erGives_sieReceives = (erGive === 'lust' || erGive === 'fokus') && (sieRec === 'lust' || sieRec === 'fokus');
+        const sieGives_erReceives = (sieGive === 'lust' || sieGive === 'fokus') && (erRec === 'lust' || erRec === 'fokus');
 
         const hasFocus = erGive === 'fokus' || erRec === 'fokus' || sieGive === 'fokus' || sieRec === 'fokus';
         const doubleFocus = (erGive === 'fokus' && sieRec === 'fokus') || (sieGive === 'fokus' && erRec === 'fokus');
@@ -1431,7 +1456,7 @@
           if (hasFocus) {
             highlights.push(`🔥 <strong>Gegenseitig:</strong> ${label} ${doubleFocus ? '⭐ DOPPEL-FOKUS!' : ''}`);
           } else {
-            openPlayground.push(`Gegenseitig: ${label}`);
+            roleMatches.push(`👑 <strong>Gegenseitig:</strong> ${label}`);
           }
         } else if (erGives_sieReceives) {
           currentMatchHighlightTitles.push(p.labelSieRec);
@@ -1450,33 +1475,45 @@
         }
       });
 
-      // 2. ORGASMUS-RAHMEN ABGLEICHEN
-      focusFramework.forEach(f => {
-        const erF = (erP[`frame_${f.id}`] || {}).status || 'erlaubt';
-        const sieF = (sieP[`frame_${f.id}`] || {}).status || 'erlaubt';
+      // 2. ORGASMUS-WEGE ABGLEICHEN
+      orgSieList.forEach(o => {
+        const s = (sieP[`org_${o.id}`] || {}).status || 'none';
+        if (s === 'tabu') { blockedTaboos.push(o.label); return; }
+        if (s === 'fokus') {
+          highlights.push(`💖 <strong>Ihr Orgasmus-Fokus:</strong> ${o.label}`);
+          currentMatchHighlightTitles.push(o.label);
+        } else if (s === 'lust') {
+          openPlayground.push(`💖 Ihr Weg: ${o.label}`);
+        }
+      });
 
-        if (erF === 'fokus' || sieF === 'fokus') {
-          const label = erF === 'fokus' ? f.labelEr : f.labelSie;
-          highlights.push(`🎯 <strong>Orgasmus-Fokus:</strong> ${label} ${(erF === 'fokus' && sieF === 'fokus') ? '⭐ BEIDE!' : ''}`);
+      orgErList.forEach(o => {
+        const s = (erP[`org_${o.id}`] || {}).status || 'none';
+        if (s === 'tabu') { blockedTaboos.push(o.label); return; }
+        if (s === 'fokus') {
+          highlights.push(`🍆 <strong>Sein Orgasmus-Fokus:</strong> ${o.label}`);
+          currentMatchHighlightTitles.push(o.label);
+        } else if (s === 'lust') {
+          openPlayground.push(`🍆 Sein Weg: ${o.label}`);
         }
       });
 
       // 3. ABSPRITZ-ORTE ABGLEICHEN
       cumList.forEach(c => {
-        const erC = (erP[`cum_${c.id}`] || {}).status || 'erlaubt';
-        const sieC = (sieP[`cum_${c.id}`] || {}).status || 'erlaubt';
+        const erC = (erP[`cum_${c.id}`] || {}).status || 'none';
+        const sieC = (sieP[`cum_${c.id}`] || {}).status || 'none';
 
         if (erC === 'tabu' || sieC === 'tabu') {
           blockedTaboos.push(c.labelEr);
           return;
         }
 
-        if ((erC === 'erlaubt' || erC === 'fokus') && (sieC === 'erlaubt' || sieC === 'fokus')) {
+        if ((erC === 'lust' || erC === 'fokus') && (sieC === 'lust' || sieC === 'fokus')) {
           currentMatchHighlightTitles.push(c.labelEr);
           if (erC === 'fokus' || sieC === 'fokus') {
             highlights.push(`💦 <strong>Abspritz-Highlight:</strong> ${c.labelEr} ${(erC === 'fokus' && sieC === 'fokus') ? '⭐ BEIDE!' : ''}`);
           } else {
-            openPlayground.push(`💦 Abspritzen: ${c.labelEr}`);
+            openPlayground.push(`💦 Erlaubt: ${c.labelEr}`);
           }
         }
       });
@@ -1671,6 +1708,12 @@
           labelSieGive: '',
           labelErGive: label
         });
+      } else if (category === 'org_sie') {
+        if (!state.kopfkino.orgasmsCatalogSie) state.kopfkino.orgasmsCatalogSie = defaultOrgasmsSie;
+        state.kopfkino.orgasmsCatalogSie.push({ id: safeId, label: label });
+      } else if (category === 'org_er') {
+        if (!state.kopfkino.orgasmsCatalogEr) state.kopfkino.orgasmsCatalogEr = defaultOrgasmsEr;
+        state.kopfkino.orgasmsCatalogEr.push({ id: safeId, label: label });
       } else if (category === 'cum') {
         if (!state.kopfkino.cumCatalog) state.kopfkino.cumCatalog = defaultCumLocations;
         state.kopfkino.cumCatalog.push({ id: safeId, labelSie: label, labelEr: label });
@@ -2020,7 +2063,8 @@
       state.eveningReservation = null; 
       state.kopfkino = {
         practicesCatalog: defaultPracticesCatalog,
-        focusFramework: defaultFocusFramework,
+        orgasmsCatalogSie: defaultOrgasmsSie,
+        orgasmsCatalogEr: defaultOrgasmsEr,
         cumCatalog: defaultCumLocations,
         erPreferences: null,
         siePreferences: null,
