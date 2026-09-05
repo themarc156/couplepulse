@@ -30,7 +30,6 @@
     .glow-amber { box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.35); }
     .glow-indigo { box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.35); }
     .glow-purple { box-shadow: 0 0 25px -5px rgba(168, 85, 247, 0.35); }
-    .glow-emerald { box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.35); }
     
     @keyframes floatUp {
       0% { opacity: 1; transform: translateY(0) scale(0.9); }
@@ -710,7 +709,7 @@
           playSensualSound('chime');
         } 
         // KOPFKINO SYNC
-        else if (data.type === 'kopfkino_fahrplan_sync') {
+        else if (data.type === 'kopfkino_m1_sync') {
           if (data.sender === 'Er') state.kopfkino.erPreferences = data.preferences;
           if (data.sender === 'Sie') state.kopfkino.siePreferences = data.preferences;
           if (data.practicesCatalog) state.kopfkino.practicesCatalog = data.practicesCatalog;
@@ -891,12 +890,12 @@
     // STORAGE & PERSISTENZ
     // =========================================================================
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v118', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v117', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v118');
+      const saved = localStorage.getItem('couple_pulse_state_v117');
       if (saved) { 
         try { 
           const parsed = JSON.parse(saved);
@@ -1406,7 +1405,7 @@
       saveState();
 
       LiveStream.sendData({
-        type: 'kopfkino_fahrplan_sync',
+        type: 'kopfkino_m1_sync',
         sender: state.currentUser,
         preferences: currentDraftPreferences,
         practicesCatalog: state.kopfkino.practicesCatalog
@@ -1430,7 +1429,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // MATCH REVEAL SCREEN: DYNAMISCHER FAHRPLAN (VOLLTREFFER + ANGENOMMENES OBEN)
+    // MATCH REVEAL SCREEN: GETRENNTE WÜNSCHE/ANGEBOTE + LEUCHT-REAKTIONEN
     // -------------------------------------------------------------------------
     let currentMatchHighlightTitles = [];
 
@@ -1438,6 +1437,7 @@
       if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
       const current = state.kopfkino.itemReactions[itemKey];
 
+      // Toggle Reaction
       if (current && current.user === state.currentUser) {
         delete state.kopfkino.itemReactions[itemKey];
         LiveStream.sendData({
@@ -1461,6 +1461,7 @@
       renderKopfkinoMatchReveal();
     }
 
+    // Zeigt den Reaktionsbutton NUR dem adressierten Partner
     function renderTargetedReactionButton(itemKey, buttonLabel, isAllowedToReact) {
       const reactionObj = (state.kopfkino.itemReactions || {})[itemKey];
       const isConfirmed = Boolean(reactionObj);
@@ -1496,7 +1497,7 @@
       progressBox.classList.add('hidden');
       catalogBtn.classList.remove('hidden');
 
-      modalTitle.innerText = "✨ EUER ABEND-FAHRPLAN";
+      modalTitle.innerText = "✨ EUER ABEND-KOMPASS";
       modalSubtitle.innerText = "Gemeinsames Match & Flüsterbox";
 
       const isEr = state.currentUser === 'Er';
@@ -1504,17 +1505,14 @@
       const sieP = state.kopfkino.siePreferences || {};
       const practices = state.kopfkino.practicesCatalog || defaultPracticesCatalog;
       const cumList = state.kopfkino.cumCatalog || defaultCumLocations;
-      const reactions = state.kopfkino.itemReactions || {};
 
       let erVerwoehntSieMatches = [];
       let sieVerwoehntIhnMatches = [];
       let beidseitigMatches = [];
 
-      let acceptedItems = []; // Angenommene Wünsche & Angebote (wandern nach oben!)
-      let openWishes = [];    // Noch unbestätigte Wünsche
-      let openOffers = [];    // Noch unbestätigte Angebote
+      let personalWishes = [];
+      let partnerOffers = [];
       let blockedTaboos = [];
-      let cumFinaleHighlight = null;
       let allowedCumAlternativen = [];
       currentMatchHighlightTitles = [];
 
@@ -1535,80 +1533,62 @@
         const canErGive_SieRec = Boolean(p.labelErGive && p.labelSieRec);
         const canSieGive_ErRec = Boolean(p.labelSieGive && p.labelErRec);
 
-        // A) ECHTER VOLLTREFFER (BEIDE HABEN FOKUS)
+        // A) ECHTER VOLLTREFFER: Er gibt mit Fokus & Sie empfängt mit Fokus
         if (erGive === 'fokus' && sieRec === 'fokus' && canErGive_SieRec) {
           erVerwoehntSieMatches.push(`<strong>${title}</strong> : Er verwöhnt aktiv ↔ Sie genießt`);
           currentMatchHighlightTitles.push(title);
         }
+        // B) ECHTER VOLLTREFFER: Sie gibt mit Fokus & Er empfängt mit Fokus
         else if (sieGive === 'fokus' && erRec === 'fokus' && canSieGive_ErRec) {
           sieVerwoehntIhnMatches.push(`<strong>${title}</strong> : Sie verwöhnt aktiv ↔ Er genießt`);
           currentMatchHighlightTitles.push(title);
         }
+        // C) ECHTER VOLLTREFFER: Gegenseitig mit Fokus
         else if ((erRec === 'fokus' && sieRec === 'fokus') || (erGive === 'fokus' && sieGive === 'fokus')) {
           beidseitigMatches.push(`<strong>${title}</strong> : Gegenseitig`);
           currentMatchHighlightTitles.push(title);
         }
-        // B) EINSEITIGE IMPULSE
+        // D) SEPARATE WÜNSCHE & ANGEBOTE
         else {
-          // Er wünscht sich etwas
+          // Er wünscht sich etwas (Sie darf reagieren)
           if (erRec === 'fokus' && sieGive !== 'tabu') {
-            const key = `wish_er_${p.id}`;
+            personalWishes.push(`
+              <div>
+                <div>🧘 <strong>Wunsch von Er:</strong> ${p.labelErRec || title}</div>
+                ${renderTargetedReactionButton(`wish_er_${p.id}`, '✨ Sehr gerne!', !isEr)}
+              </div>
+            `);
             currentMatchHighlightTitles.push(title);
-            if (reactions[key]) {
-              acceptedItems.push(`🧘 <strong>Sein Wunsch bestätigt:</strong> ${p.labelErRec || title} ✨`);
-            } else {
-              openWishes.push(`
-                <div>
-                  <div>🧘 <strong>Wunsch von Er:</strong> ${p.labelErRec || title}</div>
-                  ${renderTargetedReactionButton(key, '✨ Sehr gerne!', !isEr)}
-                </div>
-              `);
-            }
           }
-          // Sie wünscht sich etwas
+          // Sie wünscht sich etwas (Er darf reagieren)
           if (sieRec === 'fokus' && erGive !== 'tabu') {
-            const key = `wish_sie_${p.id}`;
+            personalWishes.push(`
+              <div>
+                <div>🧘 <strong>Wunsch von Sie:</strong> ${p.labelSieRec || title}</div>
+                ${renderTargetedReactionButton(`wish_sie_${p.id}`, '✨ Sehr gerne!', isEr)}
+              </div>
+            `);
             currentMatchHighlightTitles.push(title);
-            if (reactions[key]) {
-              acceptedItems.push(`🧘 <strong>Ihr Wunsch bestätigt:</strong> ${p.labelSieRec || title} ✨`);
-            } else {
-              openWishes.push(`
-                <div>
-                  <div>🧘 <strong>Wunsch von Sie:</strong> ${p.labelSieRec || title}</div>
-                  ${renderTargetedReactionButton(key, '✨ Sehr gerne!', isEr)}
-                </div>
-              `);
-            }
           }
-          // Er bietet an zu verwöhnen
+          // Er bietet an zu verwöhnen (Sie darf reagieren)
           if (erGive === 'fokus' && sieRec !== 'tabu') {
-            const key = `offer_er_${p.id}`;
+            partnerOffers.push(`
+              <div>
+                <div>🎁 <strong>Angebot von Er:</strong> ${p.labelErGive || title}</div>
+                ${renderTargetedReactionButton(`offer_er_${p.id}`, '🔥 Ooh ja!', !isEr)}
+              </div>
+            `);
             currentMatchHighlightTitles.push(title);
-            if (reactions[key]) {
-              acceptedItems.push(`🎁 <strong>Sein Angebot angenommen:</strong> ${p.labelErGive || title} 🔥`);
-            } else {
-              openOffers.push(`
-                <div>
-                  <div>🎁 <strong>Angebot von Er:</strong> ${p.labelErGive || title}</div>
-                  ${renderTargetedReactionButton(key, '🔥 Ooh ja!', !isEr)}
-                </div>
-              `);
-            }
           }
-          // Sie bietet an zu verwöhnen
+          // Sie bietet an zu verwöhnen (Er darf reagieren)
           if (sieGive === 'fokus' && erRec !== 'tabu') {
-            const key = `offer_sie_${p.id}`;
+            partnerOffers.push(`
+              <div>
+                <div>🎁 <strong>Angebot von Sie:</strong> ${p.labelSieGive || title}</div>
+                ${renderTargetedReactionButton(`offer_sie_${p.id}`, '🔥 Ooh ja!', isEr)}
+              </div>
+            `);
             currentMatchHighlightTitles.push(title);
-            if (reactions[key]) {
-              acceptedItems.push(`🎁 <strong>Ihr Angebot angenommen:</strong> ${p.labelSieGive || title} 🔥`);
-            } else {
-              openOffers.push(`
-                <div>
-                  <div>🎁 <strong>Angebot von Sie:</strong> ${p.labelSieGive || title}</div>
-                  ${renderTargetedReactionButton(key, '🔥 Ooh ja!', isEr)}
-                </div>
-              `);
-            }
           }
         }
       });
@@ -1627,7 +1607,7 @@
         const isSieAllowed = sieC !== 'tabu';
 
         if (isErFokus && isSieAllowed) {
-          cumFinaleHighlight = `💦 <strong>${c.title}</strong> : 100% MATCH! (Sein Favorit & von ihr freigegeben!) ⭐`;
+          beidseitigMatches.push(`💦 <strong>Abspritzen: ${c.title}</strong> : 100% MATCH! (Sein Favorit & von ihr freigegeben!) ⭐`);
           currentMatchHighlightTitles.push(c.title);
         } else if (isSieAllowed) {
           allowedCumAlternativen.push(c.title);
@@ -1639,7 +1619,7 @@
       content.innerHTML = `
         <div class="space-y-3.5 text-xs">
           
-          <!-- SÄULE 1: 100% ECHTE VOLLTREFFER -->
+          <!-- SÄULE 1: 100% ECHTE VOLLTREFFER (STRUKTURIERT) -->
           ${hasAnyVolltreffer ? `
             <div class="bg-gradient-to-br from-amber-950/90 to-slate-900 border border-amber-500/70 rounded-2xl p-3.5 glow-amber space-y-2.5">
               <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider block">🎯 100% ECHTE VOLLTREFFER:</span>
@@ -1660,65 +1640,48 @@
 
               ${beidseitigMatches.length > 0 ? `
                 <div class="space-y-1 pt-1">
-                  <span class="text-[10px] font-bold text-amber-300 block">🔄 GEMEINSAM & BEIDSEITIG:</span>
+                  <span class="text-[10px] font-bold text-amber-300 block">🔄 GEMEINSAM & ABSPRITZEN:</span>
                   ${beidseitigMatches.map(m => `<div class="bg-slate-950/70 p-2 rounded-xl border border-amber-900/60">${m}</div>`).join('')}
                 </div>
               ` : ''}
             </div>
-          ` : ''}
+          ` : `
+            <div class="bg-slate-950/60 border border-slate-855 p-3 rounded-2xl text-[11px] text-slate-400 italic text-center">
+              Kein direkter Doppel-Fokus – schaut in die Wünsche & Angebote oder sprecht euch in der Flüsterbox ab! ✨
+            </div>
+          `}
 
-          <!-- SÄULE 2: GEMEINSAM VEREINBART (ANGENOMMENE WÜNSCHE & ANGEBOTE) -->
-          ${acceptedItems.length > 0 ? `
-            <div class="bg-gradient-to-br from-emerald-950/90 to-slate-900 border border-emerald-500/70 rounded-2xl p-3.5 glow-emerald space-y-2">
-              <span class="text-[9px] font-bold text-emerald-300 uppercase tracking-wider block">💖 GEMEINSAM VEREINBART:</span>
-              <div class="text-[11px] text-slate-100 space-y-1.5">
-                ${acceptedItems.map(item => `<div class="bg-slate-950/70 p-2 rounded-xl border border-emerald-900/60">${item}</div>`).join('')}
+          <!-- SÄULE 2: PERSÖNLICHE WÜNSCHE (EMPFANGEN) -->
+          ${personalWishes.length > 0 ? `
+            <div class="bg-gradient-to-br from-purple-950/80 to-slate-900 border border-purple-500/50 rounded-2xl p-3.5 glow-purple space-y-2">
+              <span class="text-[9px] font-bold text-purple-300 uppercase tracking-wider block">🧘 OFFENE WÜNSCHE (EMPFANGEN WOLLEN):</span>
+              <div class="text-[11px] text-slate-200 space-y-2">
+                ${personalWishes.map(w => `<div class="bg-slate-950/60 p-2.5 rounded-xl border border-purple-900/40">${w}</div>`).join('')}
               </div>
             </div>
           ` : ''}
 
-          <!-- SÄULE 3: DAS FINALE & ABSPRITZ-ZONEN (GEBÜNDELT) -->
-          <div class="bg-slate-950 border border-purple-500/40 rounded-2xl p-3.5 space-y-2">
-            <span class="text-[9px] font-bold text-purple-300 uppercase tracking-wider block">💦 DAS FINALE & ABSPRITZ-ZONEN:</span>
-            
-            ${cumFinaleHighlight ? `
-              <div class="bg-amber-950/60 border border-amber-500/60 p-2 rounded-xl text-amber-100 font-bold text-[11px]">
-                ${cumFinaleHighlight}
+          <!-- SÄULE 3: VERWÖHN-ANGEBOTE (GEBEN WOLLEN) -->
+          ${partnerOffers.length > 0 ? `
+            <div class="bg-gradient-to-br from-rose-950/80 to-slate-900 border border-rose-500/50 rounded-2xl p-3.5 glow-rose space-y-2">
+              <span class="text-[9px] font-bold text-rose-300 uppercase tracking-wider block">🎁 VERWÖHN-ANGEBOTE (GEBEN WOLLEN):</span>
+              <div class="text-[11px] text-slate-200 space-y-2">
+                ${partnerOffers.map(o => `<div class="bg-slate-950/60 p-2.5 rounded-xl border border-rose-900/40">${o}</div>`).join('')}
               </div>
-            ` : ''}
-
-            ${allowedCumAlternativen.length > 0 ? `
-              <div class="pt-0.5">
-                <span class="text-[10px] text-slate-400 block pb-1">Weitere freigegebene Zonen:</span>
-                <div class="flex flex-wrap gap-1">
-                  ${allowedCumAlternativen.map(a => `<span class="bg-slate-900 border border-purple-800/40 text-purple-200 text-[10px] px-2 py-0.5 rounded-lg">${a}</span>`).join('')}
-                </div>
-              </div>
-            ` : ''}
-          </div>
-
-          <!-- SÄULE 4: NOCH OFFENE WÜNSCHE & ANGEBOTE -->
-          ${(openWishes.length > 0 || openOffers.length > 0) ? `
-            <div class="bg-slate-950/90 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
-              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">💭 NOCH OFFENE IMPULSE:</span>
-              
-              ${openWishes.length > 0 ? `
-                <div class="space-y-1.5">
-                  <span class="text-[10px] font-bold text-purple-400 block">Wünsche (Empfangen):</span>
-                  <div class="space-y-1.5">${openWishes.map(w => `<div class="bg-slate-900/90 p-2 rounded-xl border border-slate-850">${w}</div>`).join('')}</div>
-                </div>
-              ` : ''}
-
-              ${openOffers.length > 0 ? `
-                <div class="space-y-1.5 pt-1">
-                  <span class="text-[10px] font-bold text-rose-400 block">Angebote (Geben):</span>
-                  <div class="space-y-1.5">${openOffers.map(o => `<div class="bg-slate-900/90 p-2 rounded-xl border border-slate-850">${o}</div>`).join('')}</div>
-                </div>
-              ` : ''}
             </div>
           ` : ''}
 
-          <!-- SÄULE 5: DISKRET AUSGESCHLOSSEN (TABUS) -->
+          <!-- FREIGEGEBENE ALTERNATIVEN BEIM ABSPRITZEN -->
+          ${allowedCumAlternativen.length > 0 ? `
+            <div class="bg-slate-950 border border-emerald-500/40 rounded-2xl p-3 space-y-1">
+              <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider block">💦 Weitere freigegebene Abspritz-Zonen:</span>
+              <div class="flex flex-wrap gap-1 pt-0.5">
+                ${allowedCumAlternativen.map(a => `<span class="bg-slate-900 border border-emerald-800/40 text-slate-300 text-[10px] px-2 py-0.5 rounded-lg">${a}</span>`).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- SÄULE 4: DISKRET AUSGESCHLOSSEN (TABUS) -->
           ${blockedTaboos.length > 0 ? `
             <div class="bg-slate-950/80 border border-rose-900/50 rounded-2xl p-2.5 text-[11px] text-slate-400 flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0"></span>
