@@ -259,7 +259,7 @@
       </div>
     </div>
 
-    <!-- MODAL: KATALOG EDITIEREN & ERWEITERN (ROLLEN-TYP WÄHLBAR) -->
+    <!-- MODAL: KATALOG EDITIEREN & ERWEITERN -->
     <div id="catalog-edit-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl max-h-[85vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -524,7 +524,6 @@
         cumCatalog: defaultCumLocations,
         erPreferences: null,
         siePreferences: null,
-        itemReactions: {}, // { itemKey: { user: 'Er'|'Sie', emoji: '❤️'|'🔥'|'😈' } }
         isUnlocked: false
       },
       shoutboxMessages: [
@@ -710,7 +709,7 @@
           playSensualSound('chime');
         } 
         // KOPFKINO SYNC
-        else if (data.type === 'kopfkino_v7_sync') {
+        else if (data.type === 'kopfkino_v6_sync') {
           if (data.sender === 'Er') state.kopfkino.erPreferences = data.preferences;
           if (data.sender === 'Sie') state.kopfkino.siePreferences = data.preferences;
           if (data.practicesCatalog) state.kopfkino.practicesCatalog = data.practicesCatalog;
@@ -723,16 +722,6 @@
             showFeedbackBanner(`✨ Beide haben gewählt: Euer Abend-Match ist jetzt freigeschaltet!`);
           } else {
             showFeedbackBanner(`🧠 ${data.sender} hat Vorlieben eingeloggt. Mach jetzt mit!`);
-          }
-        }
-        // REAKTIONS-EMOJI SYNC
-        else if (data.type === 'item_reaction_sync') {
-          if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
-          state.kopfkino.itemReactions[data.itemKey] = { user: data.sender, emoji: data.emoji };
-          saveState();
-          playSensualSound('heartbeat');
-          if (document.getElementById('kopfkino-modal') && !document.getElementById('kopfkino-modal').classList.contains('hidden')) {
-            renderKopfkinoMatchReveal();
           }
         }
         // SHOUTBOX SYNC
@@ -887,12 +876,12 @@
     // STORAGE & PERSISTENZ
     // =========================================================================
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v115', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v114', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v115');
+      const saved = localStorage.getItem('couple_pulse_state_v114');
       if (saved) { 
         try { 
           const parsed = JSON.parse(saved);
@@ -908,13 +897,11 @@
           cumCatalog: defaultCumLocations,
           erPreferences: null,
           siePreferences: null,
-          itemReactions: {},
           isUnlocked: false
         };
       }
       if (!state.kopfkino.practicesCatalog) state.kopfkino.practicesCatalog = defaultPracticesCatalog;
       if (!state.kopfkino.cumCatalog) state.kopfkino.cumCatalog = defaultCumLocations;
-      if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
 
       if (!state.shoutboxMessages) state.shoutboxMessages = [];
       checkKopfkinoUnlock();
@@ -1179,7 +1166,6 @@
       document.getElementById('kopfkino-modal').classList.add('hidden');
     }
 
-    // Scroll-Safe Toggle: Merkt sich scrollTop vor dem Re-Render
     function toggleDraftItemStatus(key, status) {
       const scrollEl = document.getElementById('wizard-scroll-container');
       const savedScroll = scrollEl ? scrollEl.scrollTop : 0;
@@ -1353,7 +1339,7 @@
       saveState();
 
       LiveStream.sendData({
-        type: 'kopfkino_v7_sync',
+        type: 'kopfkino_v6_sync',
         sender: state.currentUser,
         preferences: currentDraftPreferences,
         practicesCatalog: state.kopfkino.practicesCatalog
@@ -1377,47 +1363,9 @@
     }
 
     // -------------------------------------------------------------------------
-    // MATCH REVEAL SCREEN: GETRENNTE WÜNSCHE & ANGEBOTE MIT REAKTIONS-BADGES
+    // MATCH REVEAL SCREEN: ECHTE VOLLTREFFER VS. WÜNSCHE & ANGEBOTE
     // -------------------------------------------------------------------------
     let currentMatchHighlightTitles = [];
-
-    function setItemReaction(itemKey, emoji) {
-      if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
-      const current = state.kopfkino.itemReactions[itemKey];
-
-      // Toggle emoji
-      if (current && current.emoji === emoji) {
-        delete state.kopfkino.itemReactions[itemKey];
-      } else {
-        state.kopfkino.itemReactions[itemKey] = { user: state.currentUser, emoji: emoji };
-      }
-
-      LiveStream.sendData({
-        type: 'item_reaction_sync',
-        sender: state.currentUser,
-        itemKey: itemKey,
-        emoji: emoji
-      });
-
-      playSensualSound('heartbeat');
-      saveState();
-      renderKopfkinoMatchReveal();
-    }
-
-    function renderReactionControls(itemKey) {
-      const reactionObj = (state.kopfkino.itemReactions || {})[itemKey];
-      const activeEmoji = reactionObj ? reactionObj.emoji : null;
-
-      return `
-        <div class="flex items-center gap-1 mt-1.5 pt-1 border-t border-slate-800/60" onclick="event.stopPropagation()">
-          <span class="text-[9px] text-slate-400 mr-1">Reaktion:</span>
-          <button onclick="setItemReaction('${itemKey}', '❤️')" class="px-1.5 py-0.5 rounded-lg text-[10px] border transition-all ${activeEmoji === '❤️' ? 'bg-rose-600 border-rose-400 text-white shadow font-bold' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'}">❤️ Ja!</button>
-          <button onclick="setItemReaction('${itemKey}', '🔥')" class="px-1.5 py-0.5 rounded-lg text-[10px] border transition-all ${activeEmoji === '🔥' ? 'bg-amber-600 border-amber-400 text-white shadow font-bold' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'}">🔥 Heiß</button>
-          <button onclick="setItemReaction('${itemKey}', '😈')" class="px-1.5 py-0.5 rounded-lg text-[10px] border transition-all ${activeEmoji === '😈' ? 'bg-purple-600 border-purple-400 text-white shadow font-bold' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'}">😈 Ooh ja</button>
-          ${reactionObj ? `<span class="text-[9px] text-rose-300 ml-auto font-bold animate-pulse">Von ${reactionObj.user} ${reactionObj.emoji}</span>` : ''}
-        </div>
-      `;
-    }
 
     function renderKopfkinoMatchReveal() {
       const modalTitle = document.getElementById('kopfkino-modal-title');
@@ -1440,11 +1388,10 @@
 
       let perfectMatches = [];
       let personalWishes = [];
-      let partnerOffers = [];
       let blockedTaboos = [];
       currentMatchHighlightTitles = [];
 
-      // 1. PRAKTIKEN AUSWERTEN (VOLLTREFFER, WÜNSCHE & ANGEBOTE GETRENNT)
+      // 1. PRAKTIKEN AUSWERTEN
       practices.forEach(p => {
         const erRec = (erP[`rec_${p.id}`] || {}).status || 'erlaubt';
         const erGive = (erP[`give_${p.id}`] || {}).status || 'erlaubt';
@@ -1462,76 +1409,41 @@
         const canErGive_SieRec = Boolean(p.labelErGive && p.labelSieRec);
         const canSieGive_ErRec = Boolean(p.labelSieGive && p.labelErRec);
 
-        // A) ECHTER VOLLTREFFER: Er gibt mit Fokus & Sie empfängt mit Fokus
+        // A) ECHTE VOLLTREFFER: Er will geben (Fokus) & Sie will empfangen (Fokus)
         if (erGive === 'fokus' && sieRec === 'fokus' && canErGive_SieRec) {
-          perfectMatches.push(`
-            <div>
-              <div>🔥 <strong>${title}</strong> : DOPPELTER VOLLTREFFER! (Er verwöhnt aktiv ↔ Sie genießt passiv)</div>
-              ${renderReactionControls(`match_${p.id}_er_gives`)}
-            </div>
-          `);
+          perfectMatches.push(`🔥 <strong>${title}</strong> : DOPPELTER VOLLTREFFER! (Er verwöhnt aktiv ↔ Sie genießt passiv)`);
           currentMatchHighlightTitles.push(title);
         }
-        // B) ECHTER VOLLTREFFER: Sie gibt mit Fokus & Er empfängt mit Fokus
+        // B) ECHTE VOLLTREFFER: Sie will geben (Fokus) & Er will empfangen (Fokus)
         else if (sieGive === 'fokus' && erRec === 'fokus' && canSieGive_ErRec) {
-          perfectMatches.push(`
-            <div>
-              <div>🔥 <strong>${title}</strong> : DOPPELTER VOLLTREFFER! (Sie verwöhnt aktiv ↔ Er genießt passiv)</div>
-              ${renderReactionControls(`match_${p.id}_sie_gives`)}
-            </div>
-          `);
+          perfectMatches.push(`🔥 <strong>${title}</strong> : DOPPELTER VOLLTREFFER! (Sie verwöhnt aktiv ↔ Er genießt passiv)`);
           currentMatchHighlightTitles.push(title);
         }
-        // C) ECHTER VOLLTREFFER: Gegenseitig mit Fokus
+        // C) ECHTE VOLLTREFFER: Beide wollen es gegenseitig mit Fokus
         else if ((erRec === 'fokus' && sieRec === 'fokus') || (erGive === 'fokus' && sieGive === 'fokus')) {
-          perfectMatches.push(`
-            <div>
-              <div>🔥 <strong>${title}</strong> : BEIDSEITIGER VOLLTREFFER! (Gegenseitig)</div>
-              ${renderReactionControls(`match_${p.id}_both`)}
-            </div>
-          `);
+          perfectMatches.push(`🔥 <strong>${title}</strong> : BEIDSEITIGER VOLLTREFFER! (Gegenseitig)`);
           currentMatchHighlightTitles.push(title);
         }
-        // D) SEPARATE WÜNSCHE & ANGEBOTE
+        // D) EINSEITIGE WÜNSCHE & ANGEBOTE
         else {
           // Er wünscht sich etwas
           if (erRec === 'fokus' && sieGive !== 'tabu') {
-            personalWishes.push(`
-              <div>
-                <div>🧘 <strong>Sein Wunsch:</strong> ${p.labelErRec || title}</div>
-                ${renderReactionControls(`wish_er_${p.id}`)}
-              </div>
-            `);
+            personalWishes.push(`🧘 <strong>Sein Wunsch:</strong> ${p.labelErRec || title}`);
             currentMatchHighlightTitles.push(title);
           }
           // Sie wünscht sich etwas
           if (sieRec === 'fokus' && erGive !== 'tabu') {
-            personalWishes.push(`
-              <div>
-                <div>🧘 <strong>Ihr Wunsch:</strong> ${p.labelSieRec || title}</div>
-                ${renderReactionControls(`wish_sie_${p.id}`)}
-              </div>
-            `);
+            personalWishes.push(`🧘 <strong>Ihr Wunsch:</strong> ${p.labelSieRec || title}`);
             currentMatchHighlightTitles.push(title);
           }
-          // Er bietet an zu verwöhnen
+          // Er bietet an, sie zu verwöhnen
           if (erGive === 'fokus' && sieRec !== 'tabu') {
-            partnerOffers.push(`
-              <div>
-                <div>🎁 <strong>Sein Verwöhn-Angebot:</strong> ${p.labelErGive || title}</div>
-                ${renderReactionControls(`offer_er_${p.id}`)}
-              </div>
-            `);
+            personalWishes.push(`🎁 <strong>Sein Verwöhn-Angebot:</strong> ${p.labelErGive || title}`);
             currentMatchHighlightTitles.push(title);
           }
-          // Sie bietet an zu verwöhnen
+          // Sie bietet an, ihn zu verwöhnen (z. B. Titjob, Eier lecken, Oral)
           if (sieGive === 'fokus' && erRec !== 'tabu') {
-            partnerOffers.push(`
-              <div>
-                <div>🎁 <strong>Ihr Verwöhn-Angebot:</strong> ${p.labelSieGive || title}</div>
-                ${renderReactionControls(`offer_sie_${p.id}`)}
-              </div>
-            `);
+            personalWishes.push(`🎁 <strong>Ihr Verwöhn-Angebot:</strong> ${p.labelSieGive || title}`);
             currentMatchHighlightTitles.push(title);
           }
         }
@@ -1548,28 +1460,13 @@
         }
 
         if (erC === 'fokus' && sieC === 'fokus') {
-          perfectMatches.push(`
-            <div>
-              <div>💦 <strong>Abspritzen: ${c.title}</strong> : 100% MATCH! Beide wollen es genau hier! ⭐</div>
-              ${renderReactionControls(`cum_match_${c.id}`)}
-            </div>
-          `);
+          perfectMatches.push(`💦 <strong>Abspritzen: ${c.title}</strong> : 100% MATCH! Beide wollen es genau hier! ⭐`);
           currentMatchHighlightTitles.push(c.title);
         } else if (erC === 'fokus' && sieC === 'erlaubt') {
-          personalWishes.push(`
-            <div>
-              <div>💦 <strong>Sein Abspritz-Wunsch:</strong> ${c.title} (von ihr erlaubt)</div>
-              ${renderReactionControls(`cum_wish_er_${c.id}`)}
-            </div>
-          `);
+          personalWishes.push(`💦 <strong>Sein Abspritz-Wunsch:</strong> ${c.title} (von ihr freigegeben)`);
           currentMatchHighlightTitles.push(c.title);
         } else if (sieC === 'fokus' && erC === 'erlaubt') {
-          personalWishes.push(`
-            <div>
-              <div>💦 <strong>Ihr Abspritz-Wunsch:</strong> ${c.title} (von ihm erlaubt)</div>
-              ${renderReactionControls(`cum_wish_sie_${c.id}`)}
-            </div>
-          `);
+          personalWishes.push(`💦 <strong>Ihr Abspritz-Wunsch:</strong> ${c.title} (von ihm freigegeben)`);
           currentMatchHighlightTitles.push(c.title);
         }
       });
@@ -1581,8 +1478,8 @@
           ${perfectMatches.length > 0 ? `
             <div class="bg-gradient-to-br from-amber-950/90 to-slate-900 border border-amber-500/70 rounded-2xl p-3.5 glow-amber space-y-2">
               <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider block">🎯 100% ECHTE VOLLTREFFER (BEIDE WOLLEN ES!):</span>
-              <div class="text-[11px] text-slate-100 space-y-2">
-                ${perfectMatches.map(m => `<div class="bg-slate-950/70 p-2.5 rounded-xl border border-amber-900/60">${m}</div>`).join('')}
+              <div class="text-[11px] text-slate-100 space-y-1.5">
+                ${perfectMatches.map(m => `<div class="bg-slate-950/70 p-2 rounded-xl border border-amber-900/60">${m}</div>`).join('')}
               </div>
             </div>
           ` : `
@@ -1591,27 +1488,17 @@
             </div>
           `}
 
-          <!-- SÄULE 2: PERSÖNLICHE WÜNSCHE (EMPFANGEN) -->
+          <!-- SÄULE 2: EINSEITIGE WÜNSCHE & ANGEBOTE -->
           ${personalWishes.length > 0 ? `
             <div class="bg-gradient-to-br from-purple-950/80 to-slate-900 border border-purple-500/50 rounded-2xl p-3.5 glow-purple space-y-2">
-              <span class="text-[9px] font-bold text-purple-300 uppercase tracking-wider block">🧘 OFFENE WÜNSCHE (EMPFANGEN WOLLEN):</span>
-              <div class="text-[11px] text-slate-200 space-y-2">
-                ${personalWishes.map(w => `<div class="bg-slate-950/60 p-2.5 rounded-xl border border-purple-900/40">${w}</div>`).join('')}
+              <span class="text-[9px] font-bold text-purple-300 uppercase tracking-wider block">✨ PERSÖNLICHE WÜNSCHE & ANGEBOTE:</span>
+              <div class="text-[11px] text-slate-200 space-y-1.5">
+                ${personalWishes.map(w => `<div class="bg-slate-950/60 p-2 rounded-xl border border-purple-900/40">${w}</div>`).join('')}
               </div>
             </div>
           ` : ''}
 
-          <!-- SÄULE 3: VERWÖHN-ANGEBOTE (GEBEN WOLLEN) -->
-          ${partnerOffers.length > 0 ? `
-            <div class="bg-gradient-to-br from-rose-950/80 to-slate-900 border border-rose-500/50 rounded-2xl p-3.5 glow-rose space-y-2">
-              <span class="text-[9px] font-bold text-rose-300 uppercase tracking-wider block">🎁 VERWÖHN-ANGEBOTE (GEBEN WOLLEN):</span>
-              <div class="text-[11px] text-slate-200 space-y-2">
-                ${partnerOffers.map(o => `<div class="bg-slate-950/60 p-2.5 rounded-xl border border-rose-900/40">${o}</div>`).join('')}
-              </div>
-            </div>
-          ` : ''}
-
-          <!-- SÄULE 4: DISKRET AUSGESCHLOSSEN (TABUS) -->
+          <!-- SÄULE 3: DISKRET AUSGESCHLOSSEN (TABUS) -->
           ${blockedTaboos.length > 0 ? `
             <div class="bg-slate-950/80 border border-rose-900/50 rounded-2xl p-2.5 text-[11px] text-slate-400 flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0"></span>
@@ -2122,7 +2009,6 @@
         cumCatalog: defaultCumLocations,
         erPreferences: null,
         siePreferences: null,
-        itemReactions: {},
         isUnlocked: false
       };
       state.shoutboxMessages = [
