@@ -227,7 +227,7 @@
     </main>
 
     <!-- ================================================================= -->
-    <!-- KOPFKINO MODAL: 3-SCHRITTE EINGABE & MATCH SCREEN -->
+    <!-- KOPFKINO MODAL: 3-SCHRITTE EINGABE & 3-SÄULEN REVEAL SCREEN -->
     <!-- ================================================================= -->
     <div id="kopfkino-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl glow-purple max-h-[90vh] overflow-y-auto flex flex-col justify-between">
@@ -246,6 +246,7 @@
               <button onclick="closeKopfkinoModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-1">✕</button>
             </div>
           </div>
+          <!-- Progress Bar für 3 Schritte -->
           <div id="kopfkino-wizard-progress" class="w-full bg-slate-950 h-1.5 rounded-full mt-2 overflow-hidden border border-slate-800">
             <div id="kopfkino-progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-rose-500 transition-all duration-300 w-1/3"></div>
           </div>
@@ -258,7 +259,7 @@
       </div>
     </div>
 
-    <!-- MODAL: KATALOG EDITIEREN & ERWEITERN -->
+    <!-- MODAL: KATALOG EDITIEREN & ERWEITERN (ROLLEN-TYP WÄHLBAR) -->
     <div id="catalog-edit-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl max-h-[85vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -500,7 +501,7 @@
     ];
 
     const defaultCumLocations = [
-      { id: 'cum_vag', title: 'In die Fotze (drinnen) 📥', labelSie: 'In die Fotze (drinnen) 📥', labelEr: 'In die Fotze (tief rein) 📥' },
+      { id: 'cum_vag', title: 'In die Fotze (tief rein) 📥', labelSie: 'In die Fotze (drinnen) 📥', labelEr: 'In die Fotze (tief rein) 📥' },
       { id: 'cum_mouth', title: 'In den Mund / schlucken 👄', labelSie: 'In den Mund / schlucken 👄', labelEr: 'In ihren Mund / schlucken 👄' },
       { id: 'cum_tits', title: 'Auf die Brüste / Dekolleté 🍒', labelSie: 'Auf die Brüste / Dekolleté 🍒', labelEr: 'Auf ihre Brüste / Dekolleté 🍒' },
       { id: 'cum_ass_in', title: 'Tief ins Arschloch 🍑', labelSie: 'Tief ins Arschloch 🍑', labelEr: 'Tief in ihren Arsch 🍑' },
@@ -523,7 +524,7 @@
         cumCatalog: defaultCumLocations,
         erPreferences: null,
         siePreferences: null,
-        itemReactions: {}, // { itemKey: { user: 'Er'|'Sie', text: 'Sehr gerne!'|'Ooh ja!' } }
+        itemReactions: {}, // { itemKey: { user: 'Er'|'Sie', emoji: '❤️'|'🔥'|'😈' } }
         isUnlocked: false
       },
       shoutboxMessages: [
@@ -709,7 +710,7 @@
           playSensualSound('chime');
         } 
         // KOPFKINO SYNC
-        else if (data.type === 'kopfkino_m1_sync') {
+        else if (data.type === 'kopfkino_v7_sync') {
           if (data.sender === 'Er') state.kopfkino.erPreferences = data.preferences;
           if (data.sender === 'Sie') state.kopfkino.siePreferences = data.preferences;
           if (data.practicesCatalog) state.kopfkino.practicesCatalog = data.practicesCatalog;
@@ -724,14 +725,10 @@
             showFeedbackBanner(`🧠 ${data.sender} hat Vorlieben eingeloggt. Mach jetzt mit!`);
           }
         }
-        // REAKTIONS-SYNC
-        else if (data.type === 'item_single_reaction_sync') {
+        // REAKTIONS-EMOJI SYNC
+        else if (data.type === 'item_reaction_sync') {
           if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
-          if (data.text) {
-            state.kopfkino.itemReactions[data.itemKey] = { user: data.sender, text: data.text };
-          } else {
-            delete state.kopfkino.itemReactions[data.itemKey];
-          }
+          state.kopfkino.itemReactions[data.itemKey] = { user: data.sender, emoji: data.emoji };
           saveState();
           playSensualSound('heartbeat');
           if (document.getElementById('kopfkino-modal') && !document.getElementById('kopfkino-modal').classList.contains('hidden')) {
@@ -890,12 +887,12 @@
     // STORAGE & PERSISTENZ
     // =========================================================================
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v116', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v115', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v116');
+      const saved = localStorage.getItem('couple_pulse_state_v115');
       if (saved) { 
         try { 
           const parsed = JSON.parse(saved);
@@ -1161,7 +1158,7 @@
     }
 
     // =========================================================================
-    // KOPFKINO ENGINE: 3-SCHRITTE-WIZARD & MODELL 1 FINALE
+    // KOPFKINO ENGINE: 3-SCHRITTE-WIZARD & SCROLL-SAFE RENDERING
     // =========================================================================
     function openKopfkinoModal() {
       checkKopfkinoUnlock();
@@ -1182,6 +1179,7 @@
       document.getElementById('kopfkino-modal').classList.add('hidden');
     }
 
+    // Scroll-Safe Toggle: Merkt sich scrollTop vor dem Re-Render
     function toggleDraftItemStatus(key, status) {
       const scrollEl = document.getElementById('wizard-scroll-container');
       const savedScroll = scrollEl ? scrollEl.scrollTop : 0;
@@ -1226,63 +1224,8 @@
       `;
     }
 
-    // Speziell für Schritt 3 (Modell 1):
-    // Für SIE: Freigabe-Toggle (Erlaubt / Tabu)
-    // Für IHN: Fokus-Wahl (Fokus / Erlaubt / Tabu)
-    function renderModel1FinaleCard(key, label, isEr) {
-      const current = (currentDraftPreferences[key] && currentDraftPreferences[key].status) ? currentDraftPreferences[key].status : 'erlaubt';
-      const isFokus = current === 'fokus';
-      const isTabu = current === 'tabu';
-
-      if (!isEr) {
-        // SIE wählt Freigabe / Tabu
-        return `
-          <div class="bg-slate-950/85 border ${isTabu ? 'border-rose-600/70' : 'border-emerald-500/50'} rounded-2xl p-2.5 space-y-2 transition-all">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-slate-200 truncate max-w-[170px]">${label}</span>
-              <span class="text-[9px] font-bold ${isTabu ? 'text-rose-400' : 'text-emerald-400'}">
-                ${isTabu ? '🛑 Tabu' : '✓ Erlaubt'}
-              </span>
-            </div>
-            <div class="grid grid-cols-2 gap-1.5 text-[9px] font-bold">
-              <button type="button" onclick="toggleDraftItemStatus('${key}', 'erlaubt')" 
-                class="py-1.5 rounded-xl border transition-all ${!isTabu ? 'bg-emerald-600 border-emerald-400 text-white shadow' : 'bg-slate-900 border-slate-800 text-slate-400'}">
-                ✓ Freigegeben
-              </button>
-              <button type="button" onclick="toggleDraftItemStatus('${key}', 'tabu')" 
-                class="py-1.5 rounded-xl border transition-all ${isTabu ? 'bg-rose-600 border-rose-400 text-white shadow' : 'bg-slate-900 border-slate-800 text-rose-400/80 hover:border-rose-500'}">
-                🛑 Heute Tabu
-              </button>
-            </div>
-          </div>
-        `;
-      } else {
-        // ER wählt seinen Haupt-Fokus
-        return `
-          <div class="bg-slate-950/85 border ${isFokus ? 'border-amber-500/80 glow-amber' : isTabu ? 'border-rose-600/70' : 'border-slate-800'} rounded-2xl p-2.5 space-y-2 transition-all">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-slate-200 truncate max-w-[170px]">${label}</span>
-              <span class="text-[9px] font-bold ${isFokus ? 'text-amber-400' : isTabu ? 'text-rose-400' : 'text-slate-400'}">
-                ${isFokus ? '🔥 Mein Wunsch' : isTabu ? '🛑 Tabu' : 'Offen'}
-              </span>
-            </div>
-            <div class="grid grid-cols-2 gap-1.5 text-[9px] font-bold">
-              <button type="button" onclick="toggleDraftItemStatus('${key}', 'fokus')" 
-                class="py-1.5 rounded-xl border transition-all ${isFokus ? 'bg-amber-500 border-amber-400 text-slate-950 shadow animate-pulse' : 'bg-slate-900 border-slate-800 text-amber-300/80 hover:border-amber-500'}">
-                🔥 Mein Favorit
-              </button>
-              <button type="button" onclick="toggleDraftItemStatus('${key}', 'tabu')" 
-                class="py-1.5 rounded-xl border transition-all ${isTabu ? 'bg-rose-600 border-rose-400 text-white shadow' : 'bg-slate-900 border-slate-800 text-rose-400/80 hover:border-rose-500'}">
-                🛑 Tabu
-              </button>
-            </div>
-          </div>
-        `;
-      }
-    }
-
     // -------------------------------------------------------------------------
-    // WIZARD SCHRITTE 1, 2 & 3 (ANGENEHM AUFGETEILT)
+    // WIZARD SCHRITTE 1, 2 & 3
     // -------------------------------------------------------------------------
     function renderKopfkinoWizard(restoreScrollTop = 0) {
       const modalTitle = document.getElementById('kopfkino-modal-title');
@@ -1351,20 +1294,20 @@
         `;
       }
 
-      // SCHRITT 3: DAS ABSPRITZ-FINALE (MODELL 1)
+      // SCHRITT 3: DAS ABSPRITZ-FINALE
       else if (wizardCurrentStep === 3) {
         modalTitle.innerText = "Schritt 3 von 3: Das Finale";
-        modalSubtitle.innerText = isEr ? "Wähle deinen Favoriten / Hauptwunsch" : "Wähle alle Zonen, die für dich heute freigegeben sind";
+        modalSubtitle.innerText = isEr ? "Wohin willst du heute abspritzen?" : "Wohin darf er heute seinen Saft spritzen?";
 
         const cumList = state.kopfkino.cumCatalog || defaultCumLocations;
         let cumHtml = cumList.map(c => {
           const label = isEr ? c.labelEr : c.labelSie;
-          return renderModel1FinaleCard(`cum_${c.id}`, label, isEr);
+          return render2SwitchCard(`cum_${c.id}`, label);
         }).join('');
 
         content.innerHTML = `
           <div id="wizard-scroll-container" class="space-y-2 max-h-72 overflow-y-auto pr-1 text-xs">
-            <p class="text-[11px] text-slate-400 pb-1">${isEr ? 'Wo möchtest du heute am liebsten abspritzen?' : 'Wohin darf er heute seinen Saft spritzen?'}</p>
+            <p class="text-[11px] text-slate-400 pb-1">Setze Highlights & No-Gos für das Finale:</p>
             ${cumHtml}
           </div>
         `;
@@ -1410,7 +1353,7 @@
       saveState();
 
       LiveStream.sendData({
-        type: 'kopfkino_m1_sync',
+        type: 'kopfkino_v7_sync',
         sender: state.currentUser,
         preferences: currentDraftPreferences,
         practicesCatalog: state.kopfkino.practicesCatalog
@@ -1434,49 +1377,44 @@
     }
 
     // -------------------------------------------------------------------------
-    // MATCH REVEAL SCREEN: GETRENNTE WÜNSCHE/ANGEBOTE + KONTEXT-REAKTIONEN
+    // MATCH REVEAL SCREEN: GETRENNTE WÜNSCHE & ANGEBOTE MIT REAKTIONS-BADGES
     // -------------------------------------------------------------------------
     let currentMatchHighlightTitles = [];
 
-    function setSingleReaction(itemKey, text) {
+    function setItemReaction(itemKey, emoji) {
       if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
       const current = state.kopfkino.itemReactions[itemKey];
 
-      if (current && current.user === state.currentUser) {
+      // Toggle emoji
+      if (current && current.emoji === emoji) {
         delete state.kopfkino.itemReactions[itemKey];
-        LiveStream.sendData({
-          type: 'item_single_reaction_sync',
-          sender: state.currentUser,
-          itemKey: itemKey,
-          text: null
-        });
       } else {
-        state.kopfkino.itemReactions[itemKey] = { user: state.currentUser, text: text };
-        LiveStream.sendData({
-          type: 'item_single_reaction_sync',
-          sender: state.currentUser,
-          itemKey: itemKey,
-          text: text
-        });
+        state.kopfkino.itemReactions[itemKey] = { user: state.currentUser, emoji: emoji };
       }
+
+      LiveStream.sendData({
+        type: 'item_reaction_sync',
+        sender: state.currentUser,
+        itemKey: itemKey,
+        emoji: emoji
+      });
 
       playSensualSound('heartbeat');
       saveState();
       renderKopfkinoMatchReveal();
     }
 
-    function renderSingleReactionButton(itemKey, buttonLabel) {
+    function renderReactionControls(itemKey) {
       const reactionObj = (state.kopfkino.itemReactions || {})[itemKey];
-      const isConfirmedByMe = reactionObj && reactionObj.user === state.currentUser;
-      const isConfirmedByPartner = reactionObj && reactionObj.user !== state.currentUser;
+      const activeEmoji = reactionObj ? reactionObj.emoji : null;
 
       return `
-        <div class="flex items-center justify-between mt-1.5 pt-1.5 border-t border-slate-800/60" onclick="event.stopPropagation()">
-          <button onclick="setSingleReaction('${itemKey}', '${buttonLabel}')" 
-            class="px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-all ${isConfirmedByMe ? 'bg-gradient-to-r from-emerald-600 to-teal-600 border-emerald-400 text-white shadow' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-purple-500'}">
-            ${isConfirmedByMe ? '✓ Bestätigt' : buttonLabel}
-          </button>
-          ${isConfirmedByPartner ? `<span class="text-[9px] text-emerald-400 font-bold animate-pulse">Partner freut sich drauf! ✨</span>` : ''}
+        <div class="flex items-center gap-1 mt-1.5 pt-1 border-t border-slate-800/60" onclick="event.stopPropagation()">
+          <span class="text-[9px] text-slate-400 mr-1">Reaktion:</span>
+          <button onclick="setItemReaction('${itemKey}', '❤️')" class="px-1.5 py-0.5 rounded-lg text-[10px] border transition-all ${activeEmoji === '❤️' ? 'bg-rose-600 border-rose-400 text-white shadow font-bold' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'}">❤️ Ja!</button>
+          <button onclick="setItemReaction('${itemKey}', '🔥')" class="px-1.5 py-0.5 rounded-lg text-[10px] border transition-all ${activeEmoji === '🔥' ? 'bg-amber-600 border-amber-400 text-white shadow font-bold' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'}">🔥 Heiß</button>
+          <button onclick="setItemReaction('${itemKey}', '😈')" class="px-1.5 py-0.5 rounded-lg text-[10px] border transition-all ${activeEmoji === '😈' ? 'bg-purple-600 border-purple-400 text-white shadow font-bold' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'}">😈 Ooh ja</button>
+          ${reactionObj ? `<span class="text-[9px] text-rose-300 ml-auto font-bold animate-pulse">Von ${reactionObj.user} ${reactionObj.emoji}</span>` : ''}
         </div>
       `;
     }
@@ -1504,10 +1442,9 @@
       let personalWishes = [];
       let partnerOffers = [];
       let blockedTaboos = [];
-      let allowedCumAlternativen = [];
       currentMatchHighlightTitles = [];
 
-      // 1. PRAKTIKEN AUSWERTEN
+      // 1. PRAKTIKEN AUSWERTEN (VOLLTREFFER, WÜNSCHE & ANGEBOTE GETRENNT)
       practices.forEach(p => {
         const erRec = (erP[`rec_${p.id}`] || {}).status || 'erlaubt';
         const erGive = (erP[`give_${p.id}`] || {}).status || 'erlaubt';
@@ -1516,6 +1453,7 @@
 
         const title = p.title || p.labelSieRec || p.labelErRec;
 
+        // Tabu Prüfung
         if (erRec === 'tabu' || erGive === 'tabu' || sieRec === 'tabu' || sieGive === 'tabu') {
           blockedTaboos.push(title);
           return;
@@ -1524,61 +1462,74 @@
         const canErGive_SieRec = Boolean(p.labelErGive && p.labelSieRec);
         const canSieGive_ErRec = Boolean(p.labelSieGive && p.labelErRec);
 
-        // A) ECHTE VOLLTREFFER: Er gibt mit Fokus & Sie empfängt mit Fokus
+        // A) ECHTER VOLLTREFFER: Er gibt mit Fokus & Sie empfängt mit Fokus
         if (erGive === 'fokus' && sieRec === 'fokus' && canErGive_SieRec) {
           perfectMatches.push(`
-            <div>🔥 <strong>${title}</strong> : DOPPELTER VOLLTREFFER! (Er verwöhnt aktiv ↔ Sie genießt passiv)</div>
+            <div>
+              <div>🔥 <strong>${title}</strong> : DOPPELTER VOLLTREFFER! (Er verwöhnt aktiv ↔ Sie genießt passiv)</div>
+              ${renderReactionControls(`match_${p.id}_er_gives`)}
+            </div>
           `);
           currentMatchHighlightTitles.push(title);
         }
-        // B) ECHTE VOLLTREFFER: Sie gibt mit Fokus & Er empfängt mit Fokus
+        // B) ECHTER VOLLTREFFER: Sie gibt mit Fokus & Er empfängt mit Fokus
         else if (sieGive === 'fokus' && erRec === 'fokus' && canSieGive_ErRec) {
           perfectMatches.push(`
-            <div>🔥 <strong>${title}</strong> : DOPPELTER VOLLTREFFER! (Sie verwöhnt aktiv ↔ Er genießt passiv)</div>
+            <div>
+              <div>🔥 <strong>${title}</strong> : DOPPELTER VOLLTREFFER! (Sie verwöhnt aktiv ↔ Er genießt passiv)</div>
+              ${renderReactionControls(`match_${p.id}_sie_gives`)}
+            </div>
           `);
           currentMatchHighlightTitles.push(title);
         }
-        // C) ECHTE VOLLTREFFER: Gegenseitig mit Fokus
+        // C) ECHTER VOLLTREFFER: Gegenseitig mit Fokus
         else if ((erRec === 'fokus' && sieRec === 'fokus') || (erGive === 'fokus' && sieGive === 'fokus')) {
           perfectMatches.push(`
-            <div>🔥 <strong>${title}</strong> : BEIDSEITIGER VOLLTREFFER! (Gegenseitig)</div>
+            <div>
+              <div>🔥 <strong>${title}</strong> : BEIDSEITIGER VOLLTREFFER! (Gegenseitig)</div>
+              ${renderReactionControls(`match_${p.id}_both`)}
+            </div>
           `);
           currentMatchHighlightTitles.push(title);
         }
         // D) SEPARATE WÜNSCHE & ANGEBOTE
         else {
+          // Er wünscht sich etwas
           if (erRec === 'fokus' && sieGive !== 'tabu') {
             personalWishes.push(`
               <div>
-                <div>🧘 <strong>Wunsch von Er:</strong> ${p.labelErRec || title}</div>
-                ${renderSingleReactionButton(`wish_er_${p.id}`, '✨ Sehr gerne!')}
+                <div>🧘 <strong>Sein Wunsch:</strong> ${p.labelErRec || title}</div>
+                ${renderReactionControls(`wish_er_${p.id}`)}
               </div>
             `);
             currentMatchHighlightTitles.push(title);
           }
+          // Sie wünscht sich etwas
           if (sieRec === 'fokus' && erGive !== 'tabu') {
             personalWishes.push(`
               <div>
-                <div>🧘 <strong>Wunsch von Sie:</strong> ${p.labelSieRec || title}</div>
-                ${renderSingleReactionButton(`wish_sie_${p.id}`, '✨ Sehr gerne!')}
+                <div>🧘 <strong>Ihr Wunsch:</strong> ${p.labelSieRec || title}</div>
+                ${renderReactionControls(`wish_sie_${p.id}`)}
               </div>
             `);
             currentMatchHighlightTitles.push(title);
           }
+          // Er bietet an zu verwöhnen
           if (erGive === 'fokus' && sieRec !== 'tabu') {
             partnerOffers.push(`
               <div>
-                <div>🎁 <strong>Angebot von Er:</strong> ${p.labelErGive || title}</div>
-                ${renderSingleReactionButton(`offer_er_${p.id}`, '🔥 Ooh ja!')}
+                <div>🎁 <strong>Sein Verwöhn-Angebot:</strong> ${p.labelErGive || title}</div>
+                ${renderReactionControls(`offer_er_${p.id}`)}
               </div>
             `);
             currentMatchHighlightTitles.push(title);
           }
+          // Sie bietet an zu verwöhnen
           if (sieGive === 'fokus' && erRec !== 'tabu') {
             partnerOffers.push(`
               <div>
-                <div>🎁 <strong>Angebot von Sie:</strong> ${p.labelSieGive || title}</div>
-                ${renderSingleReactionButton(`offer_sie_${p.id}`, '🔥 Ooh ja!')}
+                <div>🎁 <strong>Ihr Verwöhn-Angebot:</strong> ${p.labelSieGive || title}</div>
+                ${renderReactionControls(`offer_sie_${p.id}`)}
               </div>
             `);
             currentMatchHighlightTitles.push(title);
@@ -1586,7 +1537,7 @@
         }
       });
 
-      // 2. ABSPRITZ-ORTE NACH MODELL 1 AUSWERTEN
+      // 2. ABSPRITZ-ORTE AUSWERTEN
       cumList.forEach(c => {
         const erC = (erP[`cum_${c.id}`] || {}).status || 'erlaubt';
         const sieC = (sieP[`cum_${c.id}`] || {}).status || 'erlaubt';
@@ -1596,18 +1547,30 @@
           return;
         }
 
-        const isErFokus = erC === 'fokus';
-        const isSieAllowed = sieC !== 'tabu';
-
-        if (isErFokus && isSieAllowed) {
+        if (erC === 'fokus' && sieC === 'fokus') {
           perfectMatches.push(`
             <div>
-              <div>💦 <strong>Abspritzen: ${c.title}</strong> : 100% MATCH! (Sein Favorit & von ihr freigegeben!) ⭐</div>
+              <div>💦 <strong>Abspritzen: ${c.title}</strong> : 100% MATCH! Beide wollen es genau hier! ⭐</div>
+              ${renderReactionControls(`cum_match_${c.id}`)}
             </div>
           `);
           currentMatchHighlightTitles.push(c.title);
-        } else if (isSieAllowed) {
-          allowedCumAlternativen.push(c.title);
+        } else if (erC === 'fokus' && sieC === 'erlaubt') {
+          personalWishes.push(`
+            <div>
+              <div>💦 <strong>Sein Abspritz-Wunsch:</strong> ${c.title} (von ihr erlaubt)</div>
+              ${renderReactionControls(`cum_wish_er_${c.id}`)}
+            </div>
+          `);
+          currentMatchHighlightTitles.push(c.title);
+        } else if (sieC === 'fokus' && erC === 'erlaubt') {
+          personalWishes.push(`
+            <div>
+              <div>💦 <strong>Ihr Abspritz-Wunsch:</strong> ${c.title} (von ihm erlaubt)</div>
+              ${renderReactionControls(`cum_wish_sie_${c.id}`)}
+            </div>
+          `);
+          currentMatchHighlightTitles.push(c.title);
         }
       });
 
@@ -1617,7 +1580,7 @@
           <!-- SÄULE 1: 100% ECHTE VOLLTREFFER -->
           ${perfectMatches.length > 0 ? `
             <div class="bg-gradient-to-br from-amber-950/90 to-slate-900 border border-amber-500/70 rounded-2xl p-3.5 glow-amber space-y-2">
-              <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider block">🎯 100% ECHTE VOLLTREFFER:</span>
+              <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider block">🎯 100% ECHTE VOLLTREFFER (BEIDE WOLLEN ES!):</span>
               <div class="text-[11px] text-slate-100 space-y-2">
                 ${perfectMatches.map(m => `<div class="bg-slate-950/70 p-2.5 rounded-xl border border-amber-900/60">${m}</div>`).join('')}
               </div>
@@ -1644,16 +1607,6 @@
               <span class="text-[9px] font-bold text-rose-300 uppercase tracking-wider block">🎁 VERWÖHN-ANGEBOTE (GEBEN WOLLEN):</span>
               <div class="text-[11px] text-slate-200 space-y-2">
                 ${partnerOffers.map(o => `<div class="bg-slate-950/60 p-2.5 rounded-xl border border-rose-900/40">${o}</div>`).join('')}
-              </div>
-            </div>
-          ` : ''}
-
-          <!-- FREIGEGEBENE ALTERNATIVEN BEIM ABSPRITZEN -->
-          ${allowedCumAlternativen.length > 0 ? `
-            <div class="bg-slate-950 border border-emerald-500/40 rounded-2xl p-3 space-y-1">
-              <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider block">💦 Weitere freigegebene Abspritz-Zonen:</span>
-              <div class="flex flex-wrap gap-1 pt-0.5">
-                ${allowedCumAlternativen.map(a => `<span class="bg-slate-900 border border-emerald-800/40 text-slate-300 text-[10px] px-2 py-0.5 rounded-lg">${a}</span>`).join('')}
               </div>
             </div>
           ` : ''}
@@ -1703,6 +1656,7 @@
       renderAllShoutboxes();
     }
 
+    // Beim Neustarten / Anpassen der Vorlieben bleiben die bisherigen Einstellungen vorausgewählt
     function openKopfkinoRestart() {
       wizardCurrentStep = 1;
       const mySavedPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
