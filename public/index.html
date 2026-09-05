@@ -238,7 +238,7 @@
               <span class="text-lg">🧠</span>
               <div>
                 <h3 id="kopfkino-modal-title" class="font-bold text-xs text-purple-200 uppercase tracking-wider">Kopfkino-Abstimmung</h3>
-                <p id="kopfkino-modal-subtitle" class="text-[10px] text-slate-400">Schritt 1 von 2: Spielarten & Rollen</p>
+                <p id="kopfkino-modal-subtitle" class="text-[10px] text-slate-400">Schritt 1 von 2: Verwöhnen & Rollen</p>
               </div>
             </div>
             <div class="flex items-center gap-2">
@@ -246,6 +246,7 @@
               <button onclick="closeKopfkinoModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-1">✕</button>
             </div>
           </div>
+          <!-- Progress Bar für 2 Schritte -->
           <div id="kopfkino-wizard-progress" class="w-full bg-slate-950 h-1.5 rounded-full mt-2 overflow-hidden border border-slate-800">
             <div id="kopfkino-progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-rose-500 transition-all duration-300 w-1/2"></div>
           </div>
@@ -258,7 +259,7 @@
       </div>
     </div>
 
-    <!-- MODAL: KATALOG EDITIEREN & ERWEITERN -->
+    <!-- MODAL: KATALOG EDITIEREN & ERWEITERN (ROLLEN-TYP WÄHLBAR) -->
     <div id="catalog-edit-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl max-h-[85vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -708,7 +709,7 @@
           playSensualSound('chime');
         } 
         // KOPFKINO SYNC
-        else if (data.type === 'kopfkino_sync_v3') {
+        else if (data.type === 'kopfkino_sync_v4') {
           if (data.sender === 'Er') state.kopfkino.erPreferences = data.preferences;
           if (data.sender === 'Sie') state.kopfkino.siePreferences = data.preferences;
           if (data.practicesCatalog) state.kopfkino.practicesCatalog = data.practicesCatalog;
@@ -875,12 +876,12 @@
     // STORAGE & PERSISTENZ
     // =========================================================================
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v111', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v112', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v111');
+      const saved = localStorage.getItem('couple_pulse_state_v112');
       if (saved) { 
         try { 
           const parsed = JSON.parse(saved);
@@ -1319,7 +1320,7 @@
       saveState();
 
       LiveStream.sendData({
-        type: 'kopfkino_sync_v3',
+        type: 'kopfkino_sync_v4',
         sender: state.currentUser,
         preferences: currentDraftPreferences,
         practicesCatalog: state.kopfkino.practicesCatalog
@@ -1343,7 +1344,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // MATCH REVEAL SCREEN: SYNTHESE ZU DEN 3 KLAR STRUKTURIERTEN SÄULEN
+    // KORREKTER MATHEMATISCHER ABGLEICH & REVEAL (KEINE DOPPELNENNUNGEN)
     // -------------------------------------------------------------------------
     let currentMatchHighlightTitles = [];
 
@@ -1372,63 +1373,99 @@
       let blockedTaboos = [];
       currentMatchHighlightTitles = [];
 
-      // PRAKTIKEN SYNTHETISIEREN (KEINE DOPPELNENNUNGEN)
       practices.forEach(p => {
         const erRec = (erP[`rec_${p.id}`] || {}).status || 'erlaubt';
         const erGive = (erP[`give_${p.id}`] || {}).status || 'erlaubt';
         const sieRec = (sieP[`rec_${p.id}`] || {}).status || 'erlaubt';
         const sieGive = (sieP[`give_${p.id}`] || {}).status || 'erlaubt';
 
-        // 1. TABU-PRÜFUNG
+        const title = p.title || p.labelSieRec || p.labelErRec;
+
+        // 1. TABU-PRÜFUNG: Wenn irgendeine Seite tabu gesetzt hat
         if (erRec === 'tabu' || erGive === 'tabu' || sieRec === 'tabu' || sieGive === 'tabu') {
-          blockedTaboos.push(p.title || p.labelSieRec || p.labelErRec);
+          blockedTaboos.push(title);
           return;
         }
 
-        const title = p.title || p.labelSieRec || p.labelErRec;
-        const erGives_sieReceives = (erGive === 'erlaubt' || erGive === 'fokus') && (sieRec === 'erlaubt' || sieRec === 'fokus') && p.labelErGive && p.labelSieRec;
-        const sieGives_erReceives = (sieGive === 'erlaubt' || sieGive === 'fokus') && (erRec === 'erlaubt' || erRec === 'fokus') && p.labelSieGive && p.labelErRec;
+        // Richtungs-Möglichkeiten
+        const canErGive_SieRec = Boolean(p.labelErGive && p.labelSieRec);
+        const canSieGive_ErRec = Boolean(p.labelSieGive && p.labelErRec);
 
-        const hasFocus = erGive === 'fokus' || erRec === 'fokus' || sieGive === 'fokus' || sieRec === 'fokus';
-        const doubleFocus = (erGive === 'fokus' && sieRec === 'fokus') || (sieGive === 'fokus' && erRec === 'fokus') || (erRec === 'fokus' && sieRec === 'fokus');
+        const erGives_sieReceives = canErGive_SieRec && (erGive !== 'tabu') && (sieRec !== 'tabu');
+        const sieGives_erReceives = canSieGive_ErRec && (sieGive !== 'tabu') && (erRec !== 'tabu');
+
+        // Fokus-Prüfung
+        const erGiveFocus = erGive === 'fokus';
+        const erRecFocus = erRec === 'fokus';
+        const sieGiveFocus = sieGive === 'fokus';
+        const sieRecFocus = sieRec === 'fokus';
+
+        // Wurde hier überhaupt aktiv geklickt?
+        const isActivelyTouched = (erGive === 'fokus' || erRec === 'fokus' || sieGive === 'fokus' || sieRec === 'fokus');
 
         currentMatchHighlightTitles.push(title);
 
-        // A) HIGHLIGHT & VOLLTREFFER (FOKUS)
-        if (hasFocus) {
-          let roleSubtext = 'Völlig frei & beidseitig flexibel';
-          if (erGives_sieReceives && sieGives_erReceives) {
-            roleSubtext = 'Gegenseitig';
-          } else if (erGives_sieReceives) {
-            roleSubtext = 'Er verwöhnt aktiv ↔ Sie genießt passiv';
-          } else if (sieGives_erReceives) {
-            roleSubtext = 'Sie verwöhnt aktiv ↔ Er genießt passiv';
+        // A) HIGHLIGHT / FOKUS-MATCHES
+        if (isActivelyTouched) {
+          // Fall 1: Er will geben (Fokus) & Sie will empfangen (Fokus)
+          if (erGiveFocus && sieRecFocus && canErGive_SieRec) {
+            highlights.push(`
+              <div class="space-y-0.5">
+                <div>🔥 <strong>${title}</strong> : DOPPELTER VOLLTREFFER! Beide haben Fokus gesetzt!</div>
+                <div class="text-[10px] text-amber-200/80">(Er verwöhnt aktiv ↔ Sie genießt passiv)</div>
+              </div>
+            `);
           }
-
-          highlights.push(`
-            <div class="space-y-0.5">
-              <div>🔥 <strong>${title}</strong> : ${doubleFocus ? 'DOPPELTER VOLLTREFFER! Beide haben Fokus gesetzt!' : 'VOLLTREFFER!'}</div>
-              <div class="text-[10px] text-amber-200/80">(${roleSubtext})</div>
-            </div>
-          `);
+          // Fall 2: Sie will geben (Fokus) & Er will empfangen (Fokus)
+          else if (sieGiveFocus && erRecFocus && canSieGive_ErRec) {
+            highlights.push(`
+              <div class="space-y-0.5">
+                <div>🔥 <strong>${title}</strong> : DOPPELTER VOLLTREFFER! Beide haben Fokus gesetzt!</div>
+                <div class="text-[10px] text-amber-200/80">(Sie verwöhnt aktiv ↔ Er genießt passiv)</div>
+              </div>
+            `);
+          }
+          // Fall 3: Beide wollen empfangen & geben (Fokus beidseitig)
+          else if ((erRecFocus && sieRecFocus) || (erGiveFocus && sieGiveFocus)) {
+            highlights.push(`
+              <div class="space-y-0.5">
+                <div>🔥 <strong>${title}</strong> : VOLLTREFFER!</div>
+                <div class="text-[10px] text-amber-200/80">(Gegenseitig)</div>
+              </div>
+            `);
+          }
+          // Fall 4: Einseitiger Fokus (vom Partner erlaubt)
+          else if (erGiveFocus || sieRecFocus) {
+            highlights.push(`
+              <div class="space-y-0.5">
+                <div>🔥 <strong>${title}</strong> : VOLLTREFFER!</div>
+                <div class="text-[10px] text-amber-200/80">(Er verwöhnt aktiv ↔ Sie genießt passiv)</div>
+              </div>
+            `);
+          }
+          else if (sieGiveFocus || erRecFocus) {
+            highlights.push(`
+              <div class="space-y-0.5">
+                <div>🔥 <strong>${title}</strong> : VOLLTREFFER!</div>
+                <div class="text-[10px] text-amber-200/80">(Sie verwöhnt aktiv ↔ Er genießt passiv)</div>
+              </div>
+            `);
+          }
         }
-        // B) KLARE ROLLENVERTEILUNG
-        else if (erGives_sieReceives && !sieGives_erReceives) {
+        // B) KLARE ROLLENVERTEILUNG (nur wenn explizit asymmetrisch UND nicht unberührt Standard)
+        else if (canErGive_SieRec && !canSieGive_ErRec && isActivelyTouched) {
           roleMatches.push(`👑 <strong>${title}</strong> : Er verwöhnt aktiv ↔ Sie genießt passiv`);
-        } else if (sieGives_erReceives && !erGives_sieReceives) {
+        } else if (canSieGive_ErRec && !canErGive_SieRec && isActivelyTouched) {
           roleMatches.push(`👑 <strong>${title}</strong> : Sie verwöhnt aktiv ↔ Er genießt passiv`);
         }
-        // C) FREIGEGEBENE SPIELWIESE (KACHEL-DESIGN)
+        // C) FREIGEGEBENE SPIELWIESE (Kachel-Design)
         else {
           let roleText = 'Völlig frei & beidseitig flexibel';
-          if (erGives_sieReceives && sieGives_erReceives) {
-            roleText = 'Völlig frei & beidseitig flexibel';
-          } else if (erRec === 'erlaubt' && sieRec !== 'erlaubt') {
-            roleText = 'Er lässt sich verwöhnen ↔ Sie ist offen für beides';
-          } else if (sieRec === 'erlaubt' && erRec !== 'erlaubt') {
-            roleText = 'Sie lässt sich verwöhnen ↔ Er ist offen für beides';
+          if (canErGive_SieRec && !canSieGive_ErRec) {
+            roleText = 'Er verwöhnt aktiv ↔ Sie ist offen';
+          } else if (canSieGive_ErRec && !canErGive_SieRec) {
+            roleText = 'Sie verwöhnt aktiv ↔ Er ist offen';
           }
-
           openPlayground.push({ title: title, roleText: roleText });
         }
       });
@@ -1443,16 +1480,22 @@
           return;
         }
 
-        if ((erC === 'erlaubt' || erC === 'fokus') && (sieC === 'erlaubt' || sieC === 'fokus')) {
-          if (erC === 'fokus' || sieC === 'fokus') {
-            highlights.push(`
-              <div class="space-y-0.5">
-                <div>💦 <strong>Abspritzen: ${c.title}</strong> : ${(erC === 'fokus' && sieC === 'fokus') ? 'DOPPELTER ABSPRITZ-FOKUS! ⭐' : 'Abspritz-Wunsch freigegeben!'}</div>
-              </div>
-            `);
-          } else {
-            openPlayground.push({ title: `💦 ${c.title}`, roleText: 'Beidseitig freigegeben' });
-          }
+        const isCumTouched = (erC === 'fokus' || sieC === 'fokus');
+
+        if (erC === 'fokus' && sieC === 'fokus') {
+          highlights.push(`
+            <div class="space-y-0.5">
+              <div>💦 <strong>Abspritzen: ${c.title}</strong> : DOPPELTER ABSPRITZ-FOKUS! ⭐</div>
+            </div>
+          `);
+        } else if (isCumTouched) {
+          highlights.push(`
+            <div class="space-y-0.5">
+              <div>💦 <strong>Abspritzen: ${c.title}</strong> : Abspritz-Wunsch freigegeben!</div>
+            </div>
+          `);
+        } else {
+          openPlayground.push({ title: `💦 ${c.title}`, roleText: 'Beidseitig freigegeben' });
         }
       });
 
@@ -1479,7 +1522,7 @@
             </div>
           ` : ''}
 
-          <!-- SÄULE 3: FREIGESCHALTETE SPIELWIESE (ORIGINAL KACHEL-DESIGN) -->
+          <!-- SÄULE 3: FREIGESCHALTETE SPIELWIESE -->
           ${openPlayground.length > 0 ? `
             <div class="bg-slate-950/90 border border-emerald-500/40 rounded-2xl p-3.5 space-y-2">
               <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider block">🌿 FREIGESCHALTETE SPIELWIESE:</span>
@@ -1575,7 +1618,7 @@
     }
 
     // =========================================================================
-    // DYNAMISCHER KATALOG-EDITOR (TYPISIERTE PRAKTIKEN & OPTIONEN)
+    // DYNAMISCHER KATALOG-EDITOR
     // =========================================================================
     function openCatalogEditModal() {
       renderCatalogItemsList();
