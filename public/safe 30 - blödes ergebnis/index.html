@@ -238,7 +238,7 @@
               <span class="text-lg">🧠</span>
               <div>
                 <h3 id="kopfkino-modal-title" class="font-bold text-xs text-purple-200 uppercase tracking-wider">Kopfkino-Abstimmung</h3>
-                <p id="kopfkino-modal-subtitle" class="text-[10px] text-slate-400">Schritt 1 von 2: Spielarten & Rollen</p>
+                <p id="kopfkino-modal-subtitle" class="text-[10px] text-slate-400">Schritt 1 von 2: Verwöhnen & Rollen</p>
               </div>
             </div>
             <div class="flex items-center gap-2">
@@ -246,6 +246,7 @@
               <button onclick="closeKopfkinoModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-1">✕</button>
             </div>
           </div>
+          <!-- Progress Bar für 2 Schritte -->
           <div id="kopfkino-wizard-progress" class="w-full bg-slate-950 h-1.5 rounded-full mt-2 overflow-hidden border border-slate-800">
             <div id="kopfkino-progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-rose-500 transition-all duration-300 w-1/2"></div>
           </div>
@@ -258,7 +259,7 @@
       </div>
     </div>
 
-    <!-- MODAL: KATALOG EDITIEREN & ERWEITERN -->
+    <!-- MODAL: KATALOG EDITIEREN & ERWEITERN (ROLLEN-TYP WÄHLBAR) -->
     <div id="catalog-edit-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl max-h-[85vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -484,28 +485,42 @@
       beide: ['Zungenkuss-Marathon 💋', 'Hände unters Shirt ✨', 'An die Wand gedrückt 🧱', 'Knutschen im Stehen ⚡']
     };
 
-    // DYNAMISCHE MATRIX FÜR DIE THEMEN-KARTEN
+    // DYNAMISCHE MATRIX FÜR VERWÖHNEN & ROLLEN (BEREICH 1 & 2)
     const defaultPracticesCatalog = [
-      { id: 'fesseln', title: 'Fesseln & Fixieren 🔗', type: 'both', labelSieRec: 'Fesseln & Fixieren 🔗 (Empfangen)', labelErRec: 'Fesseln & Fixieren 🔗 (Empfangen)', labelSieGive: 'Fesseln & Fixieren 🔗 (Geben)', labelErGive: 'Fesseln & Fixieren 🔗 (Geben)' },
-      { id: 'spanking', title: 'Spanking & Schläge 👋', type: 'both', labelSieRec: 'Spanking & Schläge 👋 (Empfangen)', labelErRec: 'Spanking & Schläge 👋 (Empfangen)', labelSieGive: 'Spanking & Schläge 👋 (Geben)', labelErGive: 'Spanking & Schläge 👋 (Geben)' },
-      { id: 'oral', title: 'Oralverkehr & Deep 💋', type: 'both', labelSieRec: 'Zunge & Mund am Kitzler 👅', labelErRec: 'Oral (Blowjob / Mund & Zunge) 💋', labelSieGive: 'Mit Mund & Zunge (Blowjob) 💋', labelErGive: 'Ihre Fotze & Kitzler lecken 👅' },
-      { id: 'toys', title: 'Intensive Toys & Plugs 🔌', type: 'both', labelSieRec: 'Spielzeug (Vibrator / Dildo) 🔌', labelErRec: 'Toy / Masturbator / Plug 🔌', labelSieGive: 'Toy bei ihm einsetzen 🔌', labelErGive: 'Vibrator / Toy an ihr bedienen 🔌' },
-      { id: 'dirtytalk', title: 'Dominanter Dirty Talk 🗣️', type: 'both', labelSieRec: 'Dominanter Dirty Talk 🗣️ (Empfangen)', labelErRec: 'Dominanter Dirty Talk 🗣️ (Empfangen)', labelSieGive: 'Dominanten Dirty Talk führen 🗣️', labelErGive: 'Dominanten Dirty Talk führen 🗣️' },
-      { id: 'anal', title: 'Anale Spielarten 🍑', type: 'both', labelSieRec: 'Anale Spielarten & Finger 🍑', labelErRec: 'Prostatamassage & Finger anal 🎯', labelSieGive: 'Seine Prostata massieren 🎯', labelErGive: 'Anale Spielarten bei ihr 🍑' },
-      { id: 'titjob', title: 'Mit den Brüsten (Titjob) 🍒', type: 'sie_gives', labelSieRec: '', labelErRec: 'Mit ihren Brüsten (Titjob) 🍒', labelSieGive: 'Mit meinen Brüsten (Titjob) 🍒', labelErGive: '' },
-      { id: 'balls_lick', title: 'Eier lecken & kraulen 🥚', type: 'sie_gives', labelSieRec: '', labelErRec: 'Eier lecken & kraulen 🥚', labelSieGive: 'Seine Eier lecken & kraulen 🥚', labelErGive: '' },
-      { id: 'ride_pos', title: 'Reiten (sie oben / bestimmt) 🤠', type: 'both', labelSieRec: 'Beim Reiten (ich oben / bestimme) 🤠', labelErRec: 'Während sie mich reitet 🤠', labelSieGive: 'Ihn reiten & führen 🤠', labelErGive: 'Mich reiten lassen 🤠' },
-      { id: 'doggy_pos', title: 'Von hinten (Doggy) 🧱', type: 'both', labelSieRec: 'Von hinten genommen werden (Doggy) 🧱', labelErRec: 'Von hinten stoßend (Doggy) 🧱', labelSieGive: 'Ihn von hinten verführen 🧱', labelErGive: 'Sie von hinten nehmen (Doggy) 🧱' },
-      { id: 'edging_game', title: 'Quälen & Hinauszögern (Edging) ⏳', type: 'both', labelSieRec: 'Orgasmus rauszögern / quälen ⏳', labelErRec: 'Mich quälen & rauszögern (Edging) ⏳', labelSieGive: 'Ihn quälen & rauszögern ⏳', labelErGive: 'Sie quälen & rauszögern ⏳' }
+      { id: 'oral_clit_penis', type: 'both', labelSieRec: 'Zunge & Mund am Kitzler 👅', labelErRec: 'Oral (Blowjob / Mund & Zunge) 💋', labelSieGive: 'Mit Mund & Zunge (Blowjob) 💋', labelErGive: 'Ihre Fotze & Kitzler lecken 👅' },
+      { id: 'hand_clit_penis', type: 'both', labelSieRec: 'Kitzler gerieben bekommen ✨', labelErRec: 'Handjob / Schwanzmassage 🪶', labelSieGive: 'Schwanzmassage mit der Hand 🪶', labelErGive: 'Ihren Kitzler reiben / streicheln ✨' },
+      { id: 'titjob', type: 'sie_gives', labelSieRec: '', labelErRec: 'Mit ihren Brüsten (Titjob) 🍒', labelSieGive: 'Mit meinen Brüsten (Titjob) 🍒', labelErGive: '' },
+      { id: 'balls_lick', type: 'sie_gives', labelSieRec: '', labelErRec: 'Eier lecken & kraulen 🥚', labelSieGive: 'Seine Eier lecken & kraulen 🥚', labelErGive: '' },
+      { id: 'vag_finger', type: 'er_gives', labelSieRec: 'Finger in mir / gefingert werden 🪶', labelErRec: '', labelSieGive: '', labelErGive: 'Sie mit den Fingern ficken 🪶' },
+      { id: 'vag_penis', type: 'er_gives', labelSieRec: 'Schwanz in mir spüren 🍆', labelErRec: '', labelSieGive: '', labelErGive: 'Mit dem Schwanz tief stoßen 🍆' },
+      { id: 'ride_pos', type: 'both', labelSieRec: 'Beim Reiten (ich oben / bestimme) 🤠', labelErRec: 'Während sie mich reitet 🤠', labelSieGive: 'Ihn reiten & führen 🤠', labelErGive: 'Mich reiten lassen 🤠' },
+      { id: 'doggy_pos', type: 'both', labelSieRec: 'Von hinten genommen werden (Doggy) 🧱', labelErRec: 'Von hinten stoßend (Doggy) 🧱', labelSieGive: 'Ihn von hinten verführen 🧱', labelErGive: 'Sie von hinten nehmen (Doggy) 🧱' },
+      { id: 'oral_vag', type: 'er_gives', labelSieRec: 'Zunge tief in mir spüren 👅', labelErRec: '', labelSieGive: '', labelErGive: 'Sie mit der Zunge ficken 👅' },
+      { id: 'anal_penis', type: 'both', labelSieRec: 'Schwanz im Arsch (Arschfick) 🔥', labelErRec: 'Prostatamassage 🎯', labelSieGive: 'Seine Prostata massieren 🎯', labelErGive: 'Mit dem Schwanz in ihren Arsch 🔥' },
+      { id: 'anal_finger', type: 'both', labelSieRec: 'Finger im Arsch 🍑', labelErRec: 'Finger anal / Damm-Massage 🍑', labelSieGive: 'Ihn mit Fingern anal verwöhnen 🍑', labelErGive: 'Mit Fingern in ihr Arschloch 🍑' },
+      { id: 'rimming', type: 'both', labelSieRec: 'Zunge an meinem Arschloch 👅', labelErRec: 'Zunge an meinem Arschloch 👅', labelSieGive: 'Sein Arschloch lecken 👅', labelErGive: 'Ihr Arschloch lecken 👅' },
+      { id: 'toys', type: 'both', labelSieRec: 'Spielzeug (Vibrator / Dildo) 🔌', labelErRec: 'Toy / Masturbator / Plug 🔌', labelSieGive: 'Toy bei ihm einsetzen 🔌', labelErGive: 'Vibrator / Toy an ihr bedienen 🔌' },
+      { id: 'bondage', type: 'both', labelSieRec: 'Gefesselt & fixiert werden 🔗', labelErRec: 'Gefesselt & fixiert werden 🔗', labelSieGive: 'Ihn fesseln & bestimmen 🔗', labelErGive: 'Sie fesseln & bestimmen 🔗' },
+      { id: 'spanking', type: 'both', labelSieRec: 'Klapse auf den Po / Spanking 💥', labelErRec: 'Klapse auf den Po / Spanking 💥', labelSieGive: 'Ihm Klapse auf den Po geben 💥', labelErGive: 'Ihr Klapse auf den Po geben 💥' },
+      { id: 'edging_game', type: 'both', labelSieRec: 'Orgasmus rauszögern / quälen ⏳', labelErRec: 'Mich quälen & rauszögern (Edging) ⏳', labelSieGive: 'Ihn quälen & rauszögern ⏳', labelErGive: 'Sie quälen & rauszögern ⏳' },
+      { id: 'only_receive', type: 'both', labelSieRec: '', labelErRec: '', labelSieGive: 'Heute will ich nur empfangen 🧘', labelErGive: 'Heute will ich nur empfangen 🧘' }
+    ];
+
+    // ORGASMUS-RAHMEN & ABSPRITZ-ORTE (BEREICH 3)
+    const defaultFocusFramework = [
+      { id: 'org_priority_must', labelSie: 'Ich will heute unbedingt kommen 🎯', labelEr: 'Ich will heute unbedingt kommen 🎯' },
+      { id: 'org_priority_partner', labelSie: 'Heute soll SEIN Orgasmus im Fokus stehen 👑', labelEr: 'Heute soll IHR Orgasmus im Fokus stehen 👑' },
+      { id: 'org_priority_free', labelSie: 'Kein Orgasmus-Muss / Nur treiben lassen 🌊', labelEr: 'Kein Orgasmus-Muss / Nur treiben lassen 🌊' }
     ];
 
     const defaultCumLocations = [
-      { id: 'cum_vag', title: 'In die Fotze (tief rein) 📥', labelSie: 'In die Fotze (drinnen) 📥', labelEr: 'In die Fotze (tief rein) 📥' },
-      { id: 'cum_mouth', title: 'In den Mund / schlucken 👄', labelSie: 'In den Mund / schlucken 👄', labelEr: 'In ihren Mund / schlucken 👄' },
-      { id: 'cum_tits', title: 'Auf die Brüste / Dekolleté 🍒', labelSie: 'Auf die Brüste / Dekolleté 🍒', labelEr: 'Auf ihre Brüste / Dekolleté 🍒' },
-      { id: 'cum_ass_in', title: 'Tief ins Arschloch 🍑', labelSie: 'Tief ins Arschloch 🍑', labelEr: 'Tief in ihren Arsch 🍑' },
-      { id: 'cum_body', title: 'Auf Bauch / Po / Rücken ✨', labelSie: 'Auf Bauch / Po / Rücken ✨', labelEr: 'Auf ihren Bauch / Po / Rücken ✨' },
-      { id: 'cum_face', title: 'Ins Gesicht 💦', labelSie: 'Ins Gesicht 💦', labelEr: 'In ihr Gesicht 💦' }
+      { id: 'cum_vag', labelSie: 'In die Fotze (drinnen) 📥', labelEr: 'In die Fotze (tief rein) 📥' },
+      { id: 'cum_mouth', labelSie: 'In den Mund / schlucken 👄', labelEr: 'In ihren Mund / schlucken 👄' },
+      { id: 'cum_tits', labelSie: 'Auf die Brüste / Dekolleté 🍒', labelEr: 'Auf ihre Brüste / Dekolleté 🍒' },
+      { id: 'cum_ass_in', labelSie: 'Tief ins Arschloch 🍑', labelEr: 'Tief in ihren Arsch 🍑' },
+      { id: 'cum_body', labelSie: 'Auf Bauch / Po / Rücken ✨', labelEr: 'Auf ihren Bauch / Po / Rücken ✨' },
+      { id: 'cum_face', labelSie: 'Ins Gesicht 💦', labelEr: 'In ihr Gesicht 💦' },
+      { id: 'cum_everywhere', labelSie: 'Völlig egal / Wo es gerade kommt 🔥', labelEr: 'Völlig egal / Wo es gerade kommt 🔥' }
     ];
 
     let state = {
@@ -520,7 +535,9 @@
       completedReviews: [],
       kopfkino: {
         practicesCatalog: defaultPracticesCatalog,
+        focusFramework: defaultFocusFramework,
         cumCatalog: defaultCumLocations,
+        // State speichert Werte als: { key: { status: 'erlaubt' | 'fokus' | 'tabu' } }
         erPreferences: null,
         siePreferences: null,
         isUnlocked: false
@@ -708,7 +725,7 @@
           playSensualSound('chime');
         } 
         // KOPFKINO SYNC
-        else if (data.type === 'kopfkino_sync_v3') {
+        else if (data.type === 'kopfkino_2switch_sync') {
           if (data.sender === 'Er') state.kopfkino.erPreferences = data.preferences;
           if (data.sender === 'Sie') state.kopfkino.siePreferences = data.preferences;
           if (data.practicesCatalog) state.kopfkino.practicesCatalog = data.practicesCatalog;
@@ -875,12 +892,12 @@
     // STORAGE & PERSISTENZ
     // =========================================================================
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v111', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v110', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v111');
+      const saved = localStorage.getItem('couple_pulse_state_v110');
       if (saved) { 
         try { 
           const parsed = JSON.parse(saved);
@@ -893,6 +910,7 @@
       if (!state.kopfkino) {
         state.kopfkino = {
           practicesCatalog: defaultPracticesCatalog,
+          focusFramework: defaultFocusFramework,
           cumCatalog: defaultCumLocations,
           erPreferences: null,
           siePreferences: null,
@@ -900,6 +918,7 @@
         };
       }
       if (!state.kopfkino.practicesCatalog) state.kopfkino.practicesCatalog = defaultPracticesCatalog;
+      if (!state.kopfkino.focusFramework) state.kopfkino.focusFramework = defaultFocusFramework;
       if (!state.kopfkino.cumCatalog) state.kopfkino.cumCatalog = defaultCumLocations;
 
       if (!state.shoutboxMessages) state.shoutboxMessages = [];
@@ -925,6 +944,7 @@
         reviewBtn.classList.add('hidden');
       }
 
+      // KOPFKINO STATUS BANNER
       const kopfkinoBanner = document.getElementById('kopfkino-match-ready-banner');
       const myPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
       const partnerPrefs = state.currentUser === 'Er' ? state.kopfkino.siePreferences : state.kopfkino.erPreferences;
@@ -1169,6 +1189,7 @@
       if (!currentDraftPreferences[key]) {
         currentDraftPreferences[key] = { status: 'erlaubt' };
       }
+      // Toggle-Mechanik: Wenn bereits aktiv -> zurück auf 'erlaubt'
       if (currentDraftPreferences[key].status === status) {
         currentDraftPreferences[key].status = 'erlaubt';
       } else {
@@ -1225,7 +1246,7 @@
       const isEr = state.currentUser === 'Er';
       const practices = state.kopfkino.practicesCatalog || defaultPracticesCatalog;
 
-      // SCHRITT 1: VERWÖHNEN & ROLLEN
+      // SCHRITT 1: VERWÖHNEN & ROLLEN (EMPFANGEN & GEBEN)
       if (wizardCurrentStep === 1) {
         modalTitle.innerText = "Schritt 1 von 2: Spielarten & Rollen";
         modalSubtitle.innerText = "Standard ist 'Erlaubt' – setze nur Highlights & Tabus";
@@ -1259,17 +1280,23 @@
 
         actions.innerHTML = `
           <button onclick="wizardNextStep()" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-98 transition-all">
-            Weiter zum Finale →
+            Weiter zu Orgasmus & Finale →
           </button>
         `;
       }
 
-      // SCHRITT 2: ABSPRITZ-ORTE
+      // SCHRITT 2: RAHMEN & ABSPRITZ-ORTE
       else if (wizardCurrentStep === 2) {
-        modalTitle.innerText = "Schritt 2 von 2: Das Abspritz-Finale";
-        modalSubtitle.innerText = "Abspritz-Zonen festlegen & Tabus sperren";
+        modalTitle.innerText = "Schritt 2 von 2: Orgasmus-Rahmen & Finale";
+        modalSubtitle.innerText = "Druck rausnehmen & Abspritz-Zonen festlegen";
 
+        const focusFramework = state.kopfkino.focusFramework || defaultFocusFramework;
         const cumList = state.kopfkino.cumCatalog || defaultCumLocations;
+
+        let frameHtml = focusFramework.map(f => {
+          const label = isEr ? f.labelEr : f.labelSie;
+          return render2SwitchCard(`frame_${f.id}`, label);
+        }).join('');
 
         let cumHtml = cumList.map(c => {
           const label = isEr ? c.labelEr : c.labelSie;
@@ -1279,6 +1306,11 @@
         content.innerHTML = `
           <div class="space-y-3.5 max-h-72 overflow-y-auto pr-1 text-xs">
             <div class="space-y-1.5">
+              <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">🎯 Orgasmus-Modus für heute:</span>
+              ${frameHtml}
+            </div>
+
+            <div class="space-y-1.5 pt-2 border-t border-slate-850">
               <span class="text-[10px] font-bold text-rose-400 uppercase tracking-wider block">${isEr ? '💦 Wohin willst du abspritzen?' : '💦 Wohin darf er abspritzen?'}</span>
               ${cumHtml}
             </div>
@@ -1319,7 +1351,7 @@
       saveState();
 
       LiveStream.sendData({
-        type: 'kopfkino_sync_v3',
+        type: 'kopfkino_2switch_sync',
         sender: state.currentUser,
         preferences: currentDraftPreferences,
         practicesCatalog: state.kopfkino.practicesCatalog
@@ -1343,7 +1375,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // MATCH REVEAL SCREEN: SYNTHESE ZU DEN 3 KLAR STRUKTURIERTEN SÄULEN
+    // MATCH REVEAL SCREEN: DIE 3 KLAR STRUKTURIERTEN SÄULEN
     // -------------------------------------------------------------------------
     let currentMatchHighlightTitles = [];
 
@@ -1358,12 +1390,13 @@
       progressBox.classList.add('hidden');
       catalogBtn.classList.remove('hidden');
 
-      modalTitle.innerText = "✨ EUER ABEND-KOMPASS";
-      modalSubtitle.innerText = "Gemeinsame Schnittmenge & Flüsterbox";
+      modalTitle.innerText = "✨ Euer Abend-Kompass";
+      modalSubtitle.innerText = "Gemeinsames Match & Flüsterbox";
 
       const erP = state.kopfkino.erPreferences || {};
       const sieP = state.kopfkino.siePreferences || {};
       const practices = state.kopfkino.practicesCatalog || defaultPracticesCatalog;
+      const focusFramework = state.kopfkino.focusFramework || defaultFocusFramework;
       const cumList = state.kopfkino.cumCatalog || defaultCumLocations;
 
       let highlights = [];
@@ -1372,133 +1405,123 @@
       let blockedTaboos = [];
       currentMatchHighlightTitles = [];
 
-      // PRAKTIKEN SYNTHETISIEREN (KEINE DOPPELNENNUNGEN)
+      // 1. PRAKTIKEN ABGLEICHEN (EMPFANGEN ↔ GEBEN)
       practices.forEach(p => {
         const erRec = (erP[`rec_${p.id}`] || {}).status || 'erlaubt';
-        const erGive = (erP[`give_${p.id}`] || {}).status || 'erlaubt';
-        const sieRec = (sieP[`rec_${p.id}`] || {}).status || 'erlaubt';
         const sieGive = (sieP[`give_${p.id}`] || {}).status || 'erlaubt';
 
-        // 1. TABU-PRÜFUNG
-        if (erRec === 'tabu' || erGive === 'tabu' || sieRec === 'tabu' || sieGive === 'tabu') {
-          blockedTaboos.push(p.title || p.labelSieRec || p.labelErRec);
+        const sieRec = (sieP[`rec_${p.id}`] || {}).status || 'erlaubt';
+        const erGive = (erP[`give_${p.id}`] || {}).status || 'erlaubt';
+
+        // Tabu Prüfung
+        if (erRec === 'tabu' || sieGive === 'tabu' || sieRec === 'tabu' || erGive === 'tabu') {
+          blockedTaboos.push(p.labelSieRec || p.labelErRec || p.labelSieGive || p.labelErGive);
           return;
         }
 
-        const title = p.title || p.labelSieRec || p.labelErRec;
-        const erGives_sieReceives = (erGive === 'erlaubt' || erGive === 'fokus') && (sieRec === 'erlaubt' || sieRec === 'fokus') && p.labelErGive && p.labelSieRec;
-        const sieGives_erReceives = (sieGive === 'erlaubt' || sieGive === 'fokus') && (erRec === 'erlaubt' || erRec === 'fokus') && p.labelSieGive && p.labelErRec;
+        const erGives_sieReceives = (erGive === 'erlaubt' || erGive === 'fokus') && (sieRec === 'erlaubt' || sieRec === 'fokus');
+        const sieGives_erReceives = (sieGive === 'erlaubt' || sieGive === 'fokus') && (erRec === 'erlaubt' || erRec === 'fokus');
 
         const hasFocus = erGive === 'fokus' || erRec === 'fokus' || sieGive === 'fokus' || sieRec === 'fokus';
-        const doubleFocus = (erGive === 'fokus' && sieRec === 'fokus') || (sieGive === 'fokus' && erRec === 'fokus') || (erRec === 'fokus' && sieRec === 'fokus');
+        const doubleFocus = (erGive === 'fokus' && sieRec === 'fokus') || (sieGive === 'fokus' && erRec === 'fokus');
 
-        currentMatchHighlightTitles.push(title);
-
-        // A) HIGHLIGHT & VOLLTREFFER (FOKUS)
-        if (hasFocus) {
-          let roleSubtext = 'Völlig frei & beidseitig flexibel';
-          if (erGives_sieReceives && sieGives_erReceives) {
-            roleSubtext = 'Gegenseitig';
-          } else if (erGives_sieReceives) {
-            roleSubtext = 'Er verwöhnt aktiv ↔ Sie genießt passiv';
-          } else if (sieGives_erReceives) {
-            roleSubtext = 'Sie verwöhnt aktiv ↔ Er genießt passiv';
+        if (erGives_sieReceives && sieGives_erReceives) {
+          const label = p.labelSieRec || p.labelErRec;
+          currentMatchHighlightTitles.push(label);
+          if (hasFocus) {
+            highlights.push(`🔥 <strong>Gegenseitig:</strong> ${label} ${doubleFocus ? '⭐ DOPPEL-FOKUS!' : ''}`);
+          } else {
+            openPlayground.push(`Gegenseitig: ${label}`);
           }
-
-          highlights.push(`
-            <div class="space-y-0.5">
-              <div>🔥 <strong>${title}</strong> : ${doubleFocus ? 'DOPPELTER VOLLTREFFER! Beide haben Fokus gesetzt!' : 'VOLLTREFFER!'}</div>
-              <div class="text-[10px] text-amber-200/80">(${roleSubtext})</div>
-            </div>
-          `);
-        }
-        // B) KLARE ROLLENVERTEILUNG
-        else if (erGives_sieReceives && !sieGives_erReceives) {
-          roleMatches.push(`👑 <strong>${title}</strong> : Er verwöhnt aktiv ↔ Sie genießt passiv`);
-        } else if (sieGives_erReceives && !erGives_sieReceives) {
-          roleMatches.push(`👑 <strong>${title}</strong> : Sie verwöhnt aktiv ↔ Er genießt passiv`);
-        }
-        // C) FREIGEGEBENE SPIELWIESE (KACHEL-DESIGN)
-        else {
-          let roleText = 'Völlig frei & beidseitig flexibel';
-          if (erGives_sieReceives && sieGives_erReceives) {
-            roleText = 'Völlig frei & beidseitig flexibel';
-          } else if (erRec === 'erlaubt' && sieRec !== 'erlaubt') {
-            roleText = 'Er lässt sich verwöhnen ↔ Sie ist offen für beides';
-          } else if (sieRec === 'erlaubt' && erRec !== 'erlaubt') {
-            roleText = 'Sie lässt sich verwöhnen ↔ Er ist offen für beides';
+        } else if (erGives_sieReceives) {
+          currentMatchHighlightTitles.push(p.labelSieRec);
+          if (hasFocus) {
+            highlights.push(`🔥 <strong>Er verwöhnt:</strong> ${p.labelErGive} ↔ Sie genießt ${doubleFocus ? '⭐ DOPPEL-FOKUS!' : ''}`);
+          } else {
+            roleMatches.push(`👑 <strong>Er verwöhnt:</strong> ${p.labelErGive} ↔ Sie genießt`);
           }
-
-          openPlayground.push({ title: title, roleText: roleText });
+        } else if (sieGives_erReceives) {
+          currentMatchHighlightTitles.push(p.labelErRec);
+          if (hasFocus) {
+            highlights.push(`🔥 <strong>Sie verwöhnt:</strong> ${p.labelSieGive} ↔ Er genießt ${doubleFocus ? '⭐ DOPPEL-FOKUS!' : ''}`);
+          } else {
+            roleMatches.push(`👑 <strong>Sie verwöhnt:</strong> ${p.labelSieGive} ↔ Er genießt`);
+          }
         }
       });
 
-      // ABSPRITZ-ORTE SYNTHETISIEREN
+      // 2. ORGASMUS-RAHMEN ABGLEICHEN
+      focusFramework.forEach(f => {
+        const erF = (erP[`frame_${f.id}`] || {}).status || 'erlaubt';
+        const sieF = (sieP[`frame_${f.id}`] || {}).status || 'erlaubt';
+
+        if (erF === 'fokus' || sieF === 'fokus') {
+          const label = erF === 'fokus' ? f.labelEr : f.labelSie;
+          highlights.push(`🎯 <strong>Orgasmus-Fokus:</strong> ${label} ${(erF === 'fokus' && sieF === 'fokus') ? '⭐ BEIDE!' : ''}`);
+        }
+      });
+
+      // 3. ABSPRITZ-ORTE ABGLEICHEN
       cumList.forEach(c => {
         const erC = (erP[`cum_${c.id}`] || {}).status || 'erlaubt';
         const sieC = (sieP[`cum_${c.id}`] || {}).status || 'erlaubt';
 
         if (erC === 'tabu' || sieC === 'tabu') {
-          blockedTaboos.push(`Abspritzen: ${c.title}`);
+          blockedTaboos.push(c.labelEr);
           return;
         }
 
         if ((erC === 'erlaubt' || erC === 'fokus') && (sieC === 'erlaubt' || sieC === 'fokus')) {
+          currentMatchHighlightTitles.push(c.labelEr);
           if (erC === 'fokus' || sieC === 'fokus') {
-            highlights.push(`
-              <div class="space-y-0.5">
-                <div>💦 <strong>Abspritzen: ${c.title}</strong> : ${(erC === 'fokus' && sieC === 'fokus') ? 'DOPPELTER ABSPRITZ-FOKUS! ⭐' : 'Abspritz-Wunsch freigegeben!'}</div>
-              </div>
-            `);
+            highlights.push(`💦 <strong>Abspritz-Highlight:</strong> ${c.labelEr} ${(erC === 'fokus' && sieC === 'fokus') ? '⭐ BEIDE!' : ''}`);
           } else {
-            openPlayground.push({ title: `💦 ${c.title}`, roleText: 'Beidseitig freigegeben' });
+            openPlayground.push(`💦 Abspritzen: ${c.labelEr}`);
           }
         }
       });
 
       content.innerHTML = `
-        <div class="space-y-3.5 text-xs">
+        <div class="space-y-3 text-xs">
           
           <!-- SÄULE 1: VOLLTREFFER & HIGHLIGHTS -->
           ${highlights.length > 0 ? `
-            <div class="bg-gradient-to-br from-amber-950/80 to-slate-900 border border-amber-500/60 rounded-2xl p-3.5 glow-amber space-y-2">
-              <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider block">🔥 VOLLTREFFER & HIGHLIGHTS:</span>
-              <div class="text-[11px] text-slate-100 space-y-2">
-                ${highlights.map(h => `<div class="bg-slate-950/60 p-2 rounded-xl border border-amber-900/50">${h}</div>`).join('')}
+            <div class="bg-gradient-to-br from-amber-950/80 to-slate-900 border border-amber-500/60 rounded-2xl p-3 glow-amber space-y-1.5">
+              <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider block">🔥 Volltreffer & Highlights (Fokus):</span>
+              <div class="text-[11px] text-slate-100 space-y-1">
+                ${highlights.map(h => `<div>${h}</div>`).join('')}
               </div>
             </div>
           ` : ''}
 
           <!-- SÄULE 2: KLARE ROLLENVERTEILUNG -->
           ${roleMatches.length > 0 ? `
-            <div class="bg-gradient-to-br from-purple-950/80 to-slate-900 border border-purple-500/50 rounded-2xl p-3.5 glow-purple space-y-2">
-              <span class="text-[9px] font-bold text-purple-300 uppercase tracking-wider block">👑 KLARE ROLLENVERTEILUNG:</span>
-              <div class="text-[11px] text-slate-200 space-y-1.5">
-                ${roleMatches.map(r => `<div class="bg-slate-950/60 p-2 rounded-xl border border-purple-900/40">${r}</div>`).join('')}
+            <div class="bg-purple-950/60 border border-purple-500/50 rounded-2xl p-3 space-y-1.5">
+              <span class="text-[9px] font-bold text-purple-300 uppercase tracking-wider block">👑 Klare Rollenverteilung:</span>
+              <div class="text-[11px] text-slate-200 space-y-1">
+                ${roleMatches.map(r => `<div>${r}</div>`).join('')}
               </div>
             </div>
           ` : ''}
 
-          <!-- SÄULE 3: FREIGESCHALTETE SPIELWIESE (ORIGINAL KACHEL-DESIGN) -->
+          <!-- SÄULE 3: FREIGEGEBENE SPIELWIESE -->
           ${openPlayground.length > 0 ? `
-            <div class="bg-slate-950/90 border border-emerald-500/40 rounded-2xl p-3.5 space-y-2">
-              <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider block">🌿 FREIGESCHALTETE SPIELWIESE:</span>
-              <div class="space-y-1.5">
+            <div class="bg-slate-950 border border-emerald-500/40 rounded-2xl p-3 space-y-1.5">
+              <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider block">🌿 Freigeschaltete Spielwiese:</span>
+              <div class="space-y-1">
                 ${openPlayground.map(item => `
-                  <div class="flex items-center justify-between p-2.5 rounded-xl border border-emerald-900/40 bg-slate-900/80">
-                    <span class="font-bold text-slate-100 text-xs">${item.title}</span>
-                    <span class="text-[10px] text-emerald-400/90 text-right font-medium max-w-[150px]">${item.roleText}</span>
+                  <div class="text-[11px] text-slate-300 bg-slate-900/80 p-1.5 rounded-xl border border-slate-850">
+                    ${item}
                   </div>
                 `).join('')}
               </div>
             </div>
           ` : ''}
 
-          <!-- DISKRET AUSGESCHLOSSEN -->
+          <!-- TABUS DISKRET GEWAHRT -->
           ${blockedTaboos.length > 0 ? `
-            <div class="bg-slate-950/80 border border-rose-900/50 rounded-2xl p-2.5 text-[11px] text-slate-400 flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0"></span>
-              <span><strong>Diskret ausgeschlossen:</strong> ${Array.from(new Set(blockedTaboos)).join(', ')}</span>
+            <div class="bg-slate-950/60 border border-slate-900 rounded-xl p-2 text-[10px] text-slate-500">
+              🛑 Diskret geschützt: ${Array.from(new Set(blockedTaboos)).join(', ')}
             </div>
           ` : ''}
 
@@ -1598,7 +1621,7 @@
       container.innerHTML = list.map((p, idx) => `
         <div class="bg-slate-950 border border-slate-800 p-2.5 rounded-xl space-y-1">
           <div class="flex justify-between items-center font-bold text-slate-200">
-            <span>${p.title || p.labelSieRec || p.labelErRec}</span>
+            <span>${p.labelSieRec || p.labelErRec || p.labelSieGive || p.labelErGive}</span>
             <button onclick="deleteCatalogPractice(${idx})" class="text-rose-400 hover:text-rose-300 text-xs px-1">🗑️</button>
           </div>
           <div class="text-[10px] text-purple-400 font-semibold">Typ: ${p.type || 'both'}</div>
@@ -1624,17 +1647,15 @@
       if (category === 'both') {
         state.kopfkino.practicesCatalog.push({
           id: safeId,
-          title: label,
           type: 'both',
-          labelSieRec: label + ' (Empfangen)',
-          labelErRec: label + ' (Empfangen)',
-          labelSieGive: label + ' (Geben)',
-          labelErGive: label + ' (Geben)'
+          labelSieRec: label,
+          labelErRec: label,
+          labelSieGive: label,
+          labelErGive: label
         });
       } else if (category === 'sie_gives') {
         state.kopfkino.practicesCatalog.push({
           id: safeId,
-          title: label,
           type: 'sie_gives',
           labelSieRec: '',
           labelErRec: label,
@@ -1644,7 +1665,6 @@
       } else if (category === 'er_gives') {
         state.kopfkino.practicesCatalog.push({
           id: safeId,
-          title: label,
           type: 'er_gives',
           labelSieRec: label,
           labelErRec: '',
@@ -1653,7 +1673,7 @@
         });
       } else if (category === 'cum') {
         if (!state.kopfkino.cumCatalog) state.kopfkino.cumCatalog = defaultCumLocations;
-        state.kopfkino.cumCatalog.push({ id: safeId, title: label, labelSie: label, labelEr: label });
+        state.kopfkino.cumCatalog.push({ id: safeId, labelSie: label, labelEr: label });
       }
 
       document.getElementById('new-item-label').value = '';
@@ -2000,6 +2020,7 @@
       state.eveningReservation = null; 
       state.kopfkino = {
         practicesCatalog: defaultPracticesCatalog,
+        focusFramework: defaultFocusFramework,
         cumCatalog: defaultCumLocations,
         erPreferences: null,
         siePreferences: null,
