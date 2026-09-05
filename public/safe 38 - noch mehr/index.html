@@ -113,7 +113,7 @@
       <section id="incoming-stream-banner" class="hidden bg-gradient-to-r from-purple-950 to-pink-950 border border-purple-500/70 rounded-2xl p-4 glow-purple space-y-2 animate-pulse">
         <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
           <span>👁️ Live-Tease gestartet!</span>
-          <span class="bg-purple-900/80 px-2 py-0.5 rounded-full text-[10px] border border-purple-500/40 font-bold">LIVE 🔴</span>
+          <span class="bg-purple-900/80 px-2 py-0.5 rounded-full text-[10px] border border-purple-500/40">LIVE 🔴</span>
         </div>
         <div class="text-xs text-slate-200 bg-slate-950/60 p-2.5 rounded-xl border border-purple-800/40">
           <span id="incoming-stream-sender" class="font-bold text-pink-300">Partner</span> überträgt gerade eine private Peepshow für dich...
@@ -276,8 +276,8 @@
             <label class="text-[10px] text-slate-400 block pb-0.5">Bereich / Kategorie:</label>
             <select id="new-item-category" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
               <option value="both">⚡ Praktik: Beide können es (Symmetrisch)</option>
-              <option value="sie_gives">⚡ Praktik: Sie verwöhnt Ihn (z. B. Eier lecken 🥚 / Titjob / Prostata)</option>
-              <option value="er_gives">⚡ Praktik: Er verwöhnt Sie (z. B. Kitzler lecken 👅 / Fingern / Arschfick)</option>
+              <option value="sie_gives">⚡ Praktik: Sie verwöhnt Ihn (z. B. Eier lecken 🥚 / Titjob)</option>
+              <option value="er_gives">⚡ Praktik: Er verwöhnt Sie (z. B. Kitzler lecken 👅 / Fingern)</option>
               <option value="cum">💦 Abspritz-Ort</option>
             </select>
           </div>
@@ -485,17 +485,14 @@
       beide: ['Zungenkuss-Marathon 💋', 'Hände unters Shirt ✨', 'An die Wand gedrückt 🧱', 'Knutschen im Stehen ⚡']
     };
 
-    // DYNAMISCHE MATRIX FÜR DIE THEMEN-KARTEN (SAUBER GETRENNTE ASYMMETRIEN)
+    // DYNAMISCHE MATRIX FÜR DIE THEMEN-KARTEN
     const defaultPracticesCatalog = [
       { id: 'fesseln', title: 'Fesseln & Fixieren 🔗', type: 'both', labelSieRec: 'Fesseln & Fixieren 🔗 (Empfangen)', labelErRec: 'Fesseln & Fixieren 🔗 (Empfangen)', labelSieGive: 'Fesseln & Fixieren 🔗 (Geben)', labelErGive: 'Fesseln & Fixieren 🔗 (Geben)' },
       { id: 'spanking', title: 'Spanking & Schläge 👋', type: 'both', labelSieRec: 'Spanking & Schläge 👋 (Empfangen)', labelErRec: 'Spanking & Schläge 👋 (Empfangen)', labelSieGive: 'Spanking & Schläge 👋 (Geben)', labelErGive: 'Spanking & Schläge 👋 (Geben)' },
       { id: 'oral', title: 'Oralverkehr & Deep 💋', type: 'both', labelSieRec: 'Zunge & Mund am Kitzler 👅', labelErRec: 'Oral (Blowjob / Mund & Zunge) 💋', labelSieGive: 'Mit Mund & Zunge (Blowjob) 💋', labelErGive: 'Ihre Fotze & Kitzler lecken 👅' },
       { id: 'toys', title: 'Intensive Toys & Plugs 🔌', type: 'both', labelSieRec: 'Spielzeug (Vibrator / Dildo) 🔌', labelErRec: 'Toy / Masturbator / Plug 🔌', labelSieGive: 'Toy bei ihm einsetzen 🔌', labelErGive: 'Vibrator / Toy an ihr bedienen 🔌' },
       { id: 'dirtytalk', title: 'Dominanter Dirty Talk 🗣️', type: 'both', labelSieRec: 'Dominanter Dirty Talk 🗣️ (Empfangen)', labelErRec: 'Dominanter Dirty Talk 🗣️ (Empfangen)', labelSieGive: 'Dominanten Dirty Talk führen 🗣️', labelErGive: 'Dominanten Dirty Talk führen 🗣️' },
-      { id: 'anal_prostate', title: 'Prostatamassage 🎯', type: 'sie_gives', labelSieRec: '', labelErRec: 'Prostatamassage 🎯', labelSieGive: 'Seine Prostata massieren 🎯', labelErGive: '' },
-      { id: 'anal_penis', title: 'Schwanz im Arsch (Arschfick) 🔥', type: 'er_gives', labelSieRec: 'Schwanz im Arsch (Arschfick) 🔥', labelErRec: '', labelSieGive: '', labelErGive: 'Mit dem Schwanz in ihren Arsch 🔥' },
-      { id: 'anal_finger', title: 'Finger anal / Damm-Massage 🍑', type: 'both', labelSieRec: 'Finger im Arsch 🍑', labelErRec: 'Finger anal / Damm-Massage 🍑', labelSieGive: 'Ihn mit Fingern anal verwöhnen 🍑', labelErGive: 'Mit Fingern in ihr Arschloch 🍑' },
-      { id: 'rimming', title: 'Zunge am Arschloch 👅', type: 'both', labelSieRec: 'Zunge an meinem Arschloch 👅', labelErRec: 'Zunge an meinem Arschloch 👅', labelSieGive: 'Sein Arschloch lecken 👅', labelErGive: 'Ihr Arschloch lecken 👅' },
+      { id: 'anal', title: 'Anale Spielarten 🍑', type: 'both', labelSieRec: 'Anale Spielarten & Finger 🍑', labelErRec: 'Prostatamassage & Finger anal 🎯', labelSieGive: 'Seine Prostata massieren 🎯', labelErGive: 'Anale Spielarten bei ihr 🍑' },
       { id: 'titjob', title: 'Mit den Brüsten (Titjob) 🍒', type: 'sie_gives', labelSieRec: '', labelErRec: 'Mit ihren Brüsten (Titjob) 🍒', labelSieGive: 'Mit meinen Brüsten (Titjob) 🍒', labelErGive: '' },
       { id: 'balls_lick', title: 'Eier lecken & kraulen 🥚', type: 'sie_gives', labelSieRec: '', labelErRec: 'Eier lecken & kraulen 🥚', labelSieGive: 'Seine Eier lecken & kraulen 🥚', labelErGive: '' },
       { id: 'ride_pos', title: 'Reiten (sie oben / bestimmt) 🤠', type: 'both', labelSieRec: 'Beim Reiten (ich oben / bestimme) 🤠', labelErRec: 'Während sie mich reitet 🤠', labelSieGive: 'Ihn reiten & führen 🤠', labelErGive: 'Mich reiten lassen 🤠' },
@@ -731,6 +728,7 @@
         // INTERAKTIVES FINALE-UPDATE (ER WECHSELT DEN ABSPRITZ-FAVORITEN)
         else if (data.type === 'er_cum_focus_update') {
           if (!state.kopfkino.erPreferences) state.kopfkino.erPreferences = {};
+          // Setze vorherige Cum-Fokusse zurück
           Object.keys(state.kopfkino.erPreferences).forEach(k => {
             if (k.startsWith('cum_') && state.kopfkino.erPreferences[k].status === 'fokus') {
               state.kopfkino.erPreferences[k].status = 'erlaubt';
@@ -912,12 +910,12 @@
     // STORAGE & PERSISTENZ
     // =========================================================================
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v121', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v120', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v121');
+      const saved = localStorage.getItem('couple_pulse_state_v120');
       if (saved) { 
         try { 
           const parsed = JSON.parse(saved);
@@ -1458,6 +1456,7 @@
 
       if (!state.kopfkino.erPreferences) state.kopfkino.erPreferences = {};
       
+      // Reset alte Cum-Fokusse
       Object.keys(state.kopfkino.erPreferences).forEach(k => {
         if (k.startsWith('cum_') && state.kopfkino.erPreferences[k].status === 'fokus') {
           state.kopfkino.erPreferences[k].status = 'erlaubt';
@@ -1609,7 +1608,7 @@
         }
         // B) EINSEITIGE IMPULSE & ANGENOMMENE VEREINBARUNGEN
         else {
-          // Er wünscht sich etwas (Sie verwöhnt ihn)
+          // Er wünscht sich etwas
           if (erRecFokus && sieGive !== 'tabu') {
             const key = `wish_er_${p.id}`;
             currentMatchHighlightTitles.push(title);
@@ -1626,7 +1625,7 @@
               }
             }
           }
-          // Sie wünscht sich etwas (Er verwöhnt sie)
+          // Sie wünscht sich etwas
           if (sieRecFokus && erGive !== 'tabu') {
             const key = `wish_sie_${p.id}`;
             currentMatchHighlightTitles.push(title);
@@ -1643,7 +1642,7 @@
               }
             }
           }
-          // Er bietet an zu verwöhnen (Er verwöhnt sie - Nur Sie sieht das Angebot!)
+          // Er bietet an zu verwöhnen (Nur Sie sieht das Angebot!)
           if (erGivesFokus && sieRec !== 'tabu') {
             const key = `offer_er_${p.id}`;
             currentMatchHighlightTitles.push(title);
@@ -1660,7 +1659,7 @@
               }
             }
           }
-          // Sie bietet an zu verwöhnen (Sie verwöhnt ihn - Nur Er sieht das Angebot!)
+          // Sie bietet an zu verwöhnen (Nur Er sieht das Angebot!)
           if (sieGiveFokus && erRec !== 'tabu') {
             const key = `offer_sie_${p.id}`;
             currentMatchHighlightTitles.push(title);
@@ -1704,6 +1703,7 @@
         }
       });
 
+      // Zusammenbau der Säulen: ZUERST Matches, DANACH Vereinbarungen
       const allErVerwoehntSie = [...erVerwoehntSieMatches, ...erVerwoehntSieAgreed];
       const allSieVerwoehntIhn = [...sieVerwoehntIhnMatches, ...sieVerwoehntIhnAgreed];
       const hasFixedProgram = (allErVerwoehntSie.length > 0 || allSieVerwoehntIhn.length > 0);
