@@ -1,1 +1,2269 @@
 
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#020617">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>CouplePulse</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- PeerJS für P2P WebRTC Streaming & Live-Datensync -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#f43f5e', 600: '#e11d48', 900: '#881337' },
+            slate: { 850: '#151f32', 855: '#111a2c' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { -webkit-tap-highlight-color: transparent; }
+    .glow-rose { box-shadow: 0 0 30px -5px rgba(244, 63, 94, 0.35); }
+    .glow-amber { box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.35); }
+    .glow-indigo { box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.35); }
+    .glow-purple { box-shadow: 0 0 25px -5px rgba(168, 85, 247, 0.35); }
+    .glow-emerald { box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.35); }
+    
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(0.9); }
+      100% { opacity: 0; transform: translateY(-130px) scale(1.3); }
+    }
+    .floating-reaction {
+      animation: floatUp 2.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+      pointer-events: none;
+    }
+    
+    @keyframes whisperIn {
+      0% { opacity: 0; transform: translateY(20px) scale(0.9); }
+      15% { opacity: 1; transform: translateY(0) scale(1); }
+      80% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-15px) scale(0.95); }
+    }
+    .floating-whisper {
+      animation: whisperIn 3.5s ease-in-out forwards;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 md:bg-black text-slate-100 min-h-screen font-sans select-none antialiased flex justify-center items-start">
+
+  <!-- ================================================================= -->
+  <!-- SMARTPHONE APP CONTAINER -->
+  <!-- ================================================================= -->
+  <div class="w-full max-w-md min-h-screen bg-slate-950 md:border-x md:border-slate-800/80 md:shadow-[0_0_60px_-15px_rgba(0,0,0,0.9)] flex flex-col justify-between relative overflow-hidden pb-8">
+
+    <!-- TOP BAR -->
+    <header class="border-b border-slate-850 sticky top-0 bg-slate-950/95 backdrop-blur z-30">
+      <div class="p-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xl animate-pulse">✨</span>
+          <span class="font-bold tracking-wider text-xs uppercase text-slate-400">CouplePulse</span>
+          <button onclick="setCustomRoomKey()" title="Paar-Schlüssel bearbeiten" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-1.5 py-0.5 rounded-md font-mono">🔑 PIN</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="openPendingReviewsModal()" id="header-review-btn" class="relative p-1.5 bg-slate-900 border border-slate-800 rounded-full text-slate-300 hover:text-white text-xs hidden flex items-center justify-center">
+            💌 <span id="header-review-count" class="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+          </button>
+          
+          <button onclick="resetDay()" class="text-[10px] text-slate-500 hover:text-slate-300 px-1.5 py-1">Reset</button>
+          <div class="flex items-center bg-slate-900 rounded-full p-0.5 border border-slate-800 text-xs">
+            <button id="btn-user-er" onclick="switchUser('Er')" class="px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all">Er</button>
+            <button id="btn-user-sie" onclick="switchUser('Sie')" class="px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all">Sie</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ================================================================= -->
+    <!-- HAUPTSEITE: HEUTE & JETZT -->
+    <!-- ================================================================= -->
+    <main class="w-full p-4 space-y-4 flex-1 flex flex-col justify-start">
+
+      <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK -->
+      <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950 to-purple-950 border border-rose-500/70 rounded-2xl p-3.5 glow-rose space-y-2 animate-pulse">
+        <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
+          <span>💖 Rückmeldung vom Partner</span>
+          <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Schließen</button>
+        </div>
+        <div id="incoming-feedback-text" class="text-sm font-bold text-slate-100 bg-slate-950/70 p-2.5 rounded-xl border border-rose-800/40"></div>
+      </section>
+
+      <!-- BANNER: KOPFKINO MATCH BEREIT / EINLADUNG -->
+      <section id="kopfkino-match-ready-banner" class="hidden bg-gradient-to-r from-purple-950 via-indigo-950 to-pink-950 border border-purple-500/70 rounded-2xl p-4 glow-purple space-y-2.5 animate-pulse">
+        <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
+          <span id="kopfkino-banner-title">✨ Kopfkino-Match bereit!</span>
+          <span class="bg-purple-900/80 px-2 py-0.5 rounded-full text-[10px] border border-purple-500/40 font-bold">MATCH 🔥</span>
+        </div>
+        <div id="kopfkino-banner-desc" class="text-xs text-slate-200 bg-slate-950/60 p-2.5 rounded-xl border border-purple-800/40">
+          Beide haben gewählt. Enthülle jetzt euer gemeinsames Match & den Abend-Fahrplan!
+        </div>
+        <button onclick="openKopfkinoModal()" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg active:scale-[0.98]">
+          🔍 Abend-Match ansehen
+        </button>
+      </section>
+
+      <!-- LIVE-BANNER: EINGEHENDER LIVE-STREAM VOM PARTNER -->
+      <section id="incoming-stream-banner" class="hidden bg-gradient-to-r from-purple-950 to-pink-950 border border-purple-500/70 rounded-2xl p-4 glow-purple space-y-2 animate-pulse">
+        <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
+          <span>👁️ Live-Tease gestartet!</span>
+          <span class="bg-purple-900/80 px-2 py-0.5 rounded-full text-[10px] border border-purple-500/40 font-bold">LIVE 🔴</span>
+        </div>
+        <div class="text-xs text-slate-200 bg-slate-950/60 p-2.5 rounded-xl border border-purple-800/40">
+          <span id="incoming-stream-sender" class="font-bold text-pink-300">Partner</span> überträgt gerade eine private Peepshow für dich...
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button onclick="LiveStream.joinAsViewer()" class="flex-1 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg shadow-purple-950 active:scale-[0.98]">
+            👁️ Peepshow öffnen
+          </button>
+          <button onclick="LiveStream.declineStream()" class="py-2 px-3 bg-slate-800 text-xs text-slate-400 rounded-xl">
+            ✕ Später
+          </button>
+        </div>
+      </section>
+
+      <!-- LIVE-BANNER: EINGEHENDES SPONTAN-SIGNAL -->
+      <section id="incoming-craving-banner" class="hidden bg-gradient-to-r from-rose-950 to-pink-950 border border-rose-600/70 rounded-2xl p-4 glow-rose space-y-3 relative overflow-hidden">
+        <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
+          <span>⚡ Spontaner Impuls vom Partner</span>
+          <span id="incoming-time-badge" class="bg-rose-900/80 px-2 py-0.5 rounded-full text-[10px] border border-rose-500/40">JETZT ⚡</span>
+        </div>
+        
+        <div class="bg-slate-950/90 border border-rose-800/50 rounded-xl p-3.5 space-y-2">
+          <div id="craving-locked-view" class="text-center py-2 space-y-2">
+            <div class="text-xs text-rose-200 font-medium">Ein spontanes Verlangen wartet auf dich! 🎁</div>
+            <button onclick="toggleCravingReveal()" class="w-full py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md active:scale-[0.98] transition-all">
+              ✨ Signal aufdecken ✨
+            </button>
+          </div>
+          
+          <div id="craving-hidden-view" class="hidden space-y-2">
+            <div id="incoming-craving-text" class="text-xs font-semibold text-slate-100 leading-relaxed"></div>
+          </div>
+        </div>
+        
+        <div class="space-y-2 pt-1">
+          <div class="flex gap-2">
+            <button onclick="respondCraving('accepted')" class="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-xs font-bold uppercase rounded-xl transition-all shadow-lg shadow-rose-900/50 active:scale-[0.98]">
+              ❤️ Bin sofort da!
+            </button>
+            <button onclick="respondCraving('later')" class="py-3 px-3.5 bg-slate-800 text-xs font-medium rounded-xl text-slate-300">
+              ⏳ In 10 Min
+            </button>
+          </div>
+          <button onclick="respondCraving('evening')" class="w-full py-2.5 bg-indigo-950 hover:bg-indigo-900 border border-indigo-600/50 text-indigo-300 text-xs font-semibold rounded-xl transition-all">
+            🌙 Heute Abend (sobald Zeit ist!)
+          </button>
+        </div>
+      </section>
+
+      <!-- BANNER: ABEND-RESERVIERUNG -->
+      <section id="evening-reservation-banner" class="hidden bg-gradient-to-r from-slate-900 to-indigo-950 border border-indigo-500/60 rounded-2xl p-3.5 glow-indigo space-y-1.5">
+        <div class="flex justify-between items-center text-xs font-bold text-indigo-300 uppercase tracking-wider">
+          <span class="flex items-center gap-1.5"><span>🌙</span> Für heute Abend reserviert</span>
+          <button onclick="clearEveningReservation()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Erledigt</button>
+        </div>
+        <div id="evening-reservation-text" class="text-xs text-slate-200 bg-slate-950/60 p-2.5 rounded-xl border border-indigo-900/40"></div>
+      </section>
+
+      <!-- ZENTRALE FLÜSTER-SHOUTBOX (HOMESCREEN) -->
+      <section class="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-3.5 space-y-2.5 glow-purple">
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
+            <span>💬</span> Flüsterbox für heute
+          </span>
+          <span class="text-[10px] text-slate-400">Live P2P</span>
+        </div>
+
+        <div id="home-shoutbox-messages" class="space-y-1.5 max-h-48 overflow-y-auto pr-1 text-xs"></div>
+
+        <div class="space-y-1.5 pt-1 border-t border-slate-800/80">
+          <div class="flex gap-1 overflow-x-auto pb-1 text-base">
+            <button onclick="sendQuickShoutEmoji('🔥')" class="p-1 hover:scale-125 transition-all">🔥</button>
+            <button onclick="sendQuickShoutEmoji('❤️')" class="p-1 hover:scale-125 transition-all">❤️</button>
+            <button onclick="sendQuickShoutEmoji('😈')" class="p-1 hover:scale-125 transition-all">😈</button>
+            <button onclick="sendQuickShoutEmoji('💋')" class="p-1 hover:scale-125 transition-all">💋</button>
+            <button onclick="sendQuickShoutEmoji('🍷')" class="p-1 hover:scale-125 transition-all">🍷</button>
+            <button onclick="sendQuickShoutEmoji('🪶')" class="p-1 hover:scale-125 transition-all">🪶</button>
+            <button onclick="sendQuickShoutEmoji('🍑')" class="p-1 hover:scale-125 transition-all">🍑</button>
+            <button onclick="sendQuickShoutEmoji('🕯️')" class="p-1 hover:scale-125 transition-all">🕯️</button>
+          </div>
+          <div class="flex gap-1.5">
+            <input id="home-shout-input" type="text" placeholder="Notiz, Emoji oder Flüsternachricht..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+            <button onclick="sendShoutboxMessage('home-shout-input')" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-[0.98]">Senden</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- HAUPT-AKTIONEN -->
+      <div class="space-y-2.5 pt-2 mt-auto">
+        <button onclick="openCravingModal()" class="w-full py-4 bg-gradient-to-r from-amber-600 via-rose-600 to-pink-600 text-xs uppercase font-bold tracking-wider rounded-xl shadow-lg shadow-rose-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 glow-rose">
+          <span>🔥</span> <span>Spontanen Wunsch senden</span>
+        </button>
+
+        <button onclick="openKopfkinoModal()" class="w-full py-3.5 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 border border-purple-500/40 text-purple-200 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] glow-purple">
+          <span>🧠</span> <span>Kopfkino & Abend-Match</span>
+        </button>
+
+        <button onclick="LiveStream.startAsSender()" class="w-full py-3 bg-gradient-to-r from-purple-950 via-slate-900 to-pink-950 border border-purple-500/30 text-purple-300 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+          <span>👁️</span> <span>Live-Peepshow starten</span>
+        </button>
+      </div>
+
+    </main>
+
+    <!-- ================================================================= -->
+    <!-- KOPFKINO MODAL: 3-SCHRITTE EINGABE & MATCH SCREEN -->
+    <!-- ================================================================= -->
+    <div id="kopfkino-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl glow-purple max-h-[90vh] overflow-y-auto flex flex-col justify-between">
+        
+        <div>
+          <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">🧠</span>
+              <div>
+                <h3 id="kopfkino-modal-title" class="font-bold text-xs text-purple-200 uppercase tracking-wider">Kopfkino-Abstimmung</h3>
+                <p id="kopfkino-modal-subtitle" class="text-[10px] text-slate-400">Schritt 1 von 3: Empfangen</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="kopfkino-btn-edit-catalog" onclick="openCatalogEditModal()" class="text-[10px] text-purple-400 hover:text-purple-300 font-bold underline" title="Optionen verwalten">✏️ Katalog</button>
+              <button onclick="closeKopfkinoModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-1">✕</button>
+            </div>
+          </div>
+          <div id="kopfkino-wizard-progress" class="w-full bg-slate-950 h-1.5 rounded-full mt-2 overflow-hidden border border-slate-800">
+            <div id="kopfkino-progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-rose-500 transition-all duration-300 w-1/3"></div>
+          </div>
+        </div>
+
+        <div id="kopfkino-modal-content" class="my-auto py-1"></div>
+
+        <div id="kopfkino-modal-actions" class="flex gap-2 pt-2 border-t border-slate-850"></div>
+
+      </div>
+    </div>
+
+    <!-- MODAL: KATALOG EDITIEREN & ERWEITERN (PLATZSPAREND) -->
+    <div id="catalog-edit-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl max-h-[85vh] flex flex-col justify-between">
+        
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <h3 class="font-bold text-sm text-purple-200">✏️ Praktiken & Texte bearbeiten</h3>
+          <button onclick="closeCatalogEditModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-1">✕</button>
+        </div>
+        
+        <!-- GROSSER, FLÜSSIGER SCROLLBEREICH FÜR DIE LISTE -->
+        <div id="catalog-items-container" class="space-y-2 overflow-y-auto pr-1 text-xs flex-1 my-2"></div>
+
+        <!-- EINKLAPPBARES FORMULAR ZUM ANLEGEN -->
+        <div class="pt-1 border-t border-slate-800">
+          <button id="btn-toggle-add-catalog" onclick="toggleAddCatalogForm()" class="w-full py-2 bg-slate-950 hover:bg-slate-800 border border-purple-500/40 text-purple-300 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all">
+            <span>➕</span> <span>Neues Element anlegen</span>
+          </button>
+
+          <div id="add-catalog-form" class="hidden bg-slate-950 border border-purple-500/40 p-3 rounded-2xl space-y-2 mt-2">
+            <div>
+              <label class="text-[10px] text-slate-400 block pb-0.5">Bereich & Richtung:</label>
+              <select id="new-item-category" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+                <option value="er_gives">👑 Er verwöhnt Sie (Er gibt / Sie empfängt)</option>
+                <option value="sie_gives">👑 Sie verwöhnt Ihn (Sie gibt / Er empfängt)</option>
+                <option value="cum">💦 Abspritz-Ort / Finale</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="text-[10px] text-rose-300 font-semibold block pb-0.5">1. Text für Ihn (seine Sicht):</label>
+              <input id="new-item-label-er" type="text" placeholder="z. B. Schwanz lutschen & Deepthroat 💋" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
+            </div>
+
+            <div>
+              <label class="text-[10px] text-purple-300 font-semibold block pb-0.5">2. Text für Sie (ihre Sicht):</label>
+              <input id="new-item-label-sie" type="text" placeholder="z. B. Ihn mit Mund & Zunge verwöhnen 💋" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+            </div>
+
+            <div class="flex gap-2 pt-1">
+              <button onclick="saveNewCatalogItem()" class="flex-1 py-2 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-[0.98]">
+                Speichern ✨
+              </button>
+              <button onclick="toggleAddCatalogForm()" class="py-2 px-3 bg-slate-900 text-slate-400 text-xs rounded-xl">
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MODAL: AUSSTEHENDE BEWERTUNGEN & HIGHLIGHT-ARCHIV -->
+    <!-- ================================================================= -->
+    <div id="pending-reviews-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+          <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
+            <span>💌</span> Deine Erlebnisse & Bewertungen
+          </h3>
+          <button onclick="closePendingReviewsModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">✕</button>
+        </div>
+        <div id="pending-reviews-container" class="space-y-2.5 max-h-[60vh] overflow-y-auto text-xs"></div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MODAL: NACHBEREITUNGS-FEEDBACK & BEWERTUNG -->
+    <!-- ================================================================= -->
+    <div id="feedback-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl text-center">
+        <h3 class="font-bold text-base text-slate-100 flex items-center justify-center gap-2">
+          <span>💖</span> Wie war der Moment für dich?
+        </h3>
+        <p class="text-xs text-slate-400">Gib deinem Partner eine Rückmeldung!</p>
+        
+        <div class="grid grid-cols-3 gap-2 pt-1">
+          <button onclick="submitFeedback('🌋 Unfassbar gut! (10/10)')" class="p-2.5 bg-slate-950 border border-slate-800 hover:border-rose-500 rounded-2xl text-xs font-semibold text-rose-300 transition-all flex flex-col items-center gap-1">
+            <span class="text-lg">🌋</span>
+            <span>10/10</span>
+          </button>
+          <button onclick="submitFeedback('🔥 Richtig heiß!')" class="p-2.5 bg-slate-950 border border-slate-800 hover:border-amber-500 rounded-2xl text-xs font-semibold text-amber-300 transition-all flex flex-col items-center gap-1">
+            <span class="text-lg">🔥</span>
+            <span>Heiß</span>
+          </button>
+          <button onclick="submitFeedback('✨ Schön & intensiv')" class="p-2.5 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-2xl text-xs font-semibold text-indigo-300 transition-all flex flex-col items-center gap-1">
+            <span class="text-lg">✨</span>
+            <span>Schön</span>
+          </button>
+        </div>
+
+        <div class="pt-1">
+          <input id="feedback-custom-text" type="text" placeholder="Kurzes Kompliment (optional)..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
+        </div>
+
+        <button onclick="submitCustomFeedback()" class="w-full py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-rose-900/40 active:scale-[0.98]">
+          Abschicken ✨
+        </button>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- UPGRADED LIVE-STUDIO -->
+    <!-- ================================================================= -->
+    <div id="stream-overlay" class="hidden absolute inset-0 bg-slate-950 z-50 flex flex-col justify-between p-3.5">
+      <div class="flex justify-between items-center z-20 bg-slate-950/80 backdrop-blur-md p-2.5 rounded-2xl border border-slate-800 shadow-xl">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+          <span id="stream-role-label" class="text-xs font-bold uppercase tracking-wider text-rose-300">Live-Stream</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button id="btn-flip-cam" onclick="LiveStream.flipCamera()" class="p-1.5 bg-slate-800 text-xs rounded-xl text-slate-300 hover:text-white">🔄</button>
+          <button id="btn-stream-mute" onclick="LiveStream.toggleAudio()" class="px-2 py-1 bg-slate-800 text-xs rounded-xl text-slate-300">🔇 Stumm</button>
+          <button onclick="LiveStream.endStream()" class="px-3 py-1 bg-rose-600 hover:bg-rose-500 text-xs font-bold uppercase rounded-xl transition-all">✕ Ende</button>
+        </div>
+      </div>
+
+      <div class="relative flex-1 my-2 rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 flex items-center justify-center shadow-inner">
+        <video id="remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
+        <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+        <div id="pip-container" class="hidden absolute bottom-3 right-3 w-28 h-40 rounded-2xl overflow-hidden border-2 border-rose-500/80 shadow-2xl bg-black z-20 transition-all">
+          <video id="pip-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+          <div class="absolute top-1 left-1.5 bg-black/60 px-1.5 py-0.5 rounded text-[8px] font-bold text-rose-300">DU</div>
+        </div>
+        <div id="floating-reactions-box" class="absolute inset-0 pointer-events-none flex flex-col justify-end p-6 space-y-2 items-center z-30"></div>
+        <div id="floating-whisper-box" class="absolute inset-x-4 top-16 pointer-events-none flex flex-col items-center space-y-2 z-30"></div>
+        <div id="stream-status-overlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center space-y-2 z-20">
+          <span class="text-3xl animate-pulse">👁️</span>
+          <span id="stream-status-text" class="text-xs font-semibold text-slate-300">Verbindung wird aufgebaut...</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-950/90 backdrop-blur-md p-3 rounded-2xl border border-slate-800 space-y-2.5 z-20 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-1.5 text-[11px] font-bold text-slate-400">
+          <div class="flex gap-3">
+            <button id="tab-ctrl-emoji" onclick="LiveStream.switchControlTab('emoji')" class="text-rose-400">✨ Emojis</button>
+            <button id="tab-ctrl-regie" onclick="LiveStream.switchControlTab('regie')" class="hover:text-slate-200">🎬 Regie</button>
+            <button id="tab-ctrl-whisper" onclick="LiveStream.switchControlTab('whisper')" class="hover:text-slate-200">💬 Flüstern</button>
+          </div>
+          <button id="btn-toggle-2way" onclick="LiveStream.toggleViewerCamera()" class="px-2.5 py-1 bg-purple-950 hover:bg-purple-900 border border-purple-500/50 text-[10px] font-bold text-purple-200 rounded-lg transition-all">
+            📹 Eigene Kamera an
+          </button>
+        </div>
+
+        <div id="ctrl-panel-emoji" class="flex justify-around gap-1 text-xl py-0.5">
+          <button onclick="LiveStream.sendReaction('🔥', 'fire')" class="p-2 bg-slate-900 rounded-xl">🔥</button>
+          <button onclick="LiveStream.sendReaction('❤️', 'heart')" class="p-2 bg-slate-900 rounded-xl">❤️</button>
+          <button onclick="LiveStream.sendReaction('😈', 'devil')" class="p-2 bg-slate-900 rounded-xl">😈</button>
+          <button onclick="LiveStream.sendReaction('💋', 'kiss')" class="p-2 bg-slate-900 rounded-xl">💋</button>
+          <button onclick="LiveStream.sendReaction('💦', 'splash')" class="p-2 bg-slate-900 rounded-xl">💦</button>
+        </div>
+
+        <div id="ctrl-panel-regie" class="hidden grid grid-cols-2 gap-1.5 text-xs font-semibold py-0.5">
+          <button onclick="LiveStream.sendRegie('⬇️ Kamera tiefer')" class="py-1.5 px-2 bg-slate-900 text-amber-300 border border-slate-800 rounded-xl text-left">⬇️ Kamera tiefer</button>
+          <button onclick="LiveStream.sendRegie('⏳ Langsamer...')" class="py-1.5 px-2 bg-slate-900 text-indigo-300 border border-slate-800 rounded-xl text-left">⏳ Langsamer...</button>
+          <button onclick="LiveStream.sendRegie('✨ Zieh dich aus')" class="py-1.5 px-2 bg-slate-900 text-pink-300 border border-slate-800 rounded-xl text-left">✨ Zieh dich aus</button>
+          <button onclick="LiveStream.sendRegie('🔥 Berühr dich da...')" class="py-1.5 px-2 bg-slate-900 text-rose-400 border border-slate-800 rounded-xl text-left">🔥 Berühr dich da...</button>
+        </div>
+
+        <div id="ctrl-panel-whisper" class="hidden space-y-2 py-0.5">
+          <div class="flex gap-1.5 overflow-x-auto pb-1 text-[10px] text-slate-300">
+            <button onclick="LiveStream.sendWhisper('Du machst mich so an... 🔥')" class="whitespace-nowrap px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg">Du machst mich an... 🔥</button>
+            <button onclick="LiveStream.sendWhisper('Komm gleich ins Schlafzimmer 🚪')" class="whitespace-nowrap px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg">Komm ins Schlafzimmer 🚪</button>
+          </div>
+          <div class="flex gap-1.5">
+            <input id="stream-whisper-input" type="text" placeholder="Flüstertext senden..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
+            <button onclick="LiveStream.sendCustomWhisper()" class="px-3 py-1.5 bg-rose-600 text-white font-bold text-xs rounded-xl">Senden</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MODAL: SPONTANER WUNSCH (SCHLANK, SCHNELL & PRÄZISE) -->
+    <!-- ================================================================= -->
+    <div id="craving-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end justify-center p-0">
+      <div class="bg-slate-900 border-t border-slate-800 w-full rounded-t-3xl p-5 space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+          <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
+            <span>🔥</span> Worauf hast du JETZT Lust?
+          </h3>
+          <button onclick="closeCravingModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">✕</button>
+        </div>
+
+        <!-- DIE 3 STUFEN DER LUST -->
+        <div class="space-y-2">
+          <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Intensität / Impuls wählen:</label>
+          
+          <div class="space-y-2 text-xs font-bold">
+            <button type="button" onclick="selectCravingLevel('knutschen')" id="btn-craving-knutschen" class="w-full p-3.5 rounded-2xl border border-slate-800 bg-slate-950 text-slate-200 flex items-center justify-between transition-all hover:border-pink-500">
+              <span class="flex items-center gap-2.5 text-sm">
+                <span class="text-lg">💋</span>
+                <span>Nur knutschen</span>
+              </span>
+              <span class="text-[10px] text-pink-400 font-normal">Zärtlich & heiß</span>
+            </button>
+
+            <button type="button" onclick="selectCravingLevel('fummeln')" id="btn-craving-fummeln" class="w-full p-3.5 rounded-2xl border border-slate-800 bg-slate-950 text-slate-200 flex items-center justify-between transition-all hover:border-amber-500">
+              <span class="flex items-center gap-2.5 text-sm">
+                <span class="text-lg">🔥</span>
+                <span>Fummeln</span>
+              </span>
+              <span class="text-[10px] text-amber-400 font-normal">Petting & anfassen</span>
+            </button>
+
+            <button type="button" onclick="selectCravingLevel('dringend')" id="btn-craving-dringend" class="w-full p-3.5 rounded-2xl border border-slate-800 bg-slate-950 text-slate-200 flex items-center justify-between transition-all hover:border-rose-500">
+              <span class="flex items-center gap-2.5 text-sm">
+                <span class="text-lg">🎯</span>
+                <span>Dringend kommen</span>
+              </span>
+              <span class="text-[10px] text-rose-400 font-normal">Schnelle Entladung</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- OPTIONALE FLÜSTER-NOTIZ -->
+        <div class="space-y-1 pt-1">
+          <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Flüster-Notiz oder Ort (optional):</label>
+          <input id="craving-note-input" type="text" placeholder="z. B. Küche 🚪 / Schlafzimmer / Komm sofort..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
+        </div>
+
+        <button onclick="sendQuickCraving()" class="w-full py-3.5 bg-gradient-to-r from-rose-600 via-pink-600 to-amber-600 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-rose-900/40 active:scale-[0.98] transition-all">
+          🚀 Signal jetzt senden
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JAVASCRIPT ENGINE -->
+  <script>
+    // DUAL-TEXT KATALOG: INDIVIDUELLE FORMULIERUNG FÜR IHN (labelEr) UND FÜR SIE (labelSie)
+    const defaultPracticesCatalog = [
+      // ER VERWÖHNT SIE (type: 'er_gives')
+      { 
+        id: 'er_oral', 
+        type: 'er_gives', 
+        labelEr: 'Ihren Kitzler & Fotze lecken 👅', 
+        labelSie: 'Sinnlich mit seiner Zunge verwöhnt werden 👅' 
+      },
+      { 
+        id: 'er_finger', 
+        type: 'er_gives', 
+        labelEr: 'Sie fingern & ihren G-Punkt massieren 🪶', 
+        labelSie: 'Intensive Fingermassage & G-Punkt Lust 🪶' 
+      },
+      { 
+        id: 'er_toys', 
+        type: 'er_gives', 
+        labelEr: 'Vibrator & Toys an ihr einsetzen 🔌', 
+        labelSie: 'Mit dem Vibrator zum Zittern gebracht werden 🔌' 
+      },
+      { 
+        id: 'er_spank', 
+        type: 'er_gives', 
+        labelEr: 'Ihr geil den Hintern versohlen (Spanking) 👋', 
+        labelSie: 'Prickelndes Spanking auf meinen Po 👋' 
+      },
+      { 
+        id: 'er_fesseln', 
+        type: 'er_gives', 
+        labelEr: 'Sie fesseln & ihr die Kontrolle nehmen 🔗', 
+        labelSie: 'Hingebungsvoll gefesselt & fixiert werden 🔗' 
+      },
+      { 
+        id: 'er_dirty', 
+        type: 'er_gives', 
+        labelEr: 'Dreckiger, dominanter Dirty Talk zu ihr 🗣️', 
+        labelSie: 'Verruchte, dominante Worte ins Ohr geflüstert 🗣️' 
+      },
+      { 
+        id: 'er_doggy', 
+        type: 'er_gives', 
+        labelEr: 'Sie von hinten nehmen (Doggy) 🧱', 
+        labelSie: 'Wild & tief von hinten genommen werden 🧱' 
+      },
+      { 
+        id: 'er_anal', 
+        type: 'er_gives', 
+        labelEr: 'Schwanz tief in ihren Arsch (Arschfick) 🔥', 
+        labelSie: 'Intensiv & eng anal verwöhnt werden 🔥' 
+      },
+      { 
+        id: 'er_rimming', 
+        type: 'er_gives', 
+        labelEr: 'Ihr heißes Arschloch lecken (Rimming) 👅', 
+        labelSie: 'Sanfte Zunge an meinem Arschloch spüren 👅' 
+      },
+      { 
+        id: 'er_edging', 
+        type: 'er_gives', 
+        labelEr: 'Ihre Orgasmen quälen & hinauszögern (Edging) ⏳', 
+        labelSie: 'Kurz vor dem Höhepunkt heiß hingehalten werden ⏳' 
+      },
+      { 
+        id: 'er_massage', 
+        type: 'er_gives', 
+        labelEr: 'Ihren nackten Körper mit warmem Öl massieren 💆', 
+        labelSie: 'Sinnliche Ganzkörper-Ölmassage genießen 💆' 
+      },
+
+      // SIE VERWÖHNT IHN (type: 'sie_gives')
+      { 
+        id: 'sie_oral', 
+        type: 'sie_gives', 
+        labelEr: 'Schwanz lutschen & geiler Deepthroat 💋', 
+        labelSie: 'Ihn mit Mund & Zunge verwöhnen 💋' 
+      },
+      { 
+        id: 'sie_prostate', 
+        type: 'sie_gives', 
+        labelEr: 'Meine Prostata intensiv massieren 🎯', 
+        labelSie: 'Seine Prostata zärtlich & tief massieren 🎯' 
+      },
+      { 
+        id: 'sie_balls', 
+        type: 'sie_gives', 
+        labelEr: 'Meine Eier lecken & zärtlich kraulen 🥚', 
+        labelSie: 'Seine Hoden mit Zunge & Händen verwöhnen 🥚' 
+      },
+      { 
+        id: 'sie_titjob', 
+        type: 'sie_gives', 
+        labelEr: 'Meinen Schwanz zwischen ihren Brüsten (Titjob) 🍒', 
+        labelSie: 'Ihn mit meinen nackten Brüsten verwöhnen (Titjob) 🍒' 
+      },
+      { 
+        id: 'sie_ride', 
+        type: 'sie_gives', 
+        labelEr: 'Mich hemmungslos reiten & die Führung übernehmen 🤠', 
+        labelSie: 'Oben sitzen, ihn reiten & bestimmen 🤠' 
+      },
+      { 
+        id: 'sie_spank', 
+        type: 'sie_gives', 
+        labelEr: 'Mir dominant den Hintern versohlen (Spanking) 👋', 
+        labelSie: 'Ihm frech den Hintern versohlen 👋' 
+      },
+      { 
+        id: 'sie_fesseln', 
+        type: 'sie_gives', 
+        labelEr: 'Mich fesseln & mir die Macht nehmen 🔗', 
+        labelSie: 'Ihn fesseln & hilflos machen 🔗' 
+      },
+      { 
+        id: 'sie_dirty', 
+        type: 'sie_gives', 
+        labelEr: 'Mich dominant demütigen / Dirty Talk 🗣️', 
+        labelSie: 'Ihn mit verruchten Worten führen 🗣️' 
+      },
+      { 
+        id: 'sie_rimming', 
+        type: 'sie_gives', 
+        labelEr: 'Mein Arschloch mit ihrer Zunge verwöhnen 👅', 
+        labelSie: 'Sein Arschloch mit der Zunge liebkosen 👅' 
+      },
+      { 
+        id: 'sie_edging', 
+        type: 'sie_gives', 
+        labelEr: 'Mich quälen & meinen Orgasmus rauszögern (Edging) ⏳', 
+        labelSie: 'Ihn quälen & am Rande des Abspritzens halten ⏳' 
+      },
+      { 
+        id: 'sie_massage', 
+        type: 'sie_gives', 
+        labelEr: 'Mich mit Öl verwöhnen & berühren 💆', 
+        labelSie: 'Ihn sinnlich mit Massageöl verwöhnen 💆' 
+      }
+    ];
+
+    const defaultCumLocations = [
+      { id: 'cum_vag', title: 'In die Fotze (tief rein) 📥', labelSie: 'In meine Fotze (drinnen) 📥', labelEr: 'In ihre Fotze (tief rein) 📥' },
+      { id: 'cum_mouth', title: 'In den Mund / schlucken 👄', labelSie: 'In meinen Mund / schlucken 👄', labelEr: 'In ihren Mund / schlucken 👄' },
+      { id: 'cum_tits', title: 'Auf die Brüste / Dekolleté 🍒', labelSie: 'Auf meine Brüste / Dekolleté 🍒', labelEr: 'Auf ihre Brüste / Dekolleté 🍒' },
+      { id: 'cum_ass_in', title: 'Tief ins Arschloch 🍑', labelSie: 'Tief in mein Arschloch 🍑', labelEr: 'Tief in ihren Arsch 🍑' },
+      { id: 'cum_body', title: 'Auf Bauch / Po / Rücken ✨', labelSie: 'Auf meinen Bauch / Po / Rücken ✨', labelEr: 'Auf ihren Bauch / Po / Rücken ✨' },
+      { id: 'cum_face', title: 'Ins Gesicht 💦', labelSie: 'In mein Gesicht 💦', labelEr: 'In ihr Gesicht 💦' }
+    ];
+
+    let state = {
+      currentUser: localStorage.getItem('cp_current_user') || 'Er',
+      coupleKey: localStorage.getItem('cp_couple_key') || 'unser-paar-code',
+      pendingReviews: [],
+      completedReviews: [],
+      kopfkino: {
+        practicesCatalog: defaultPracticesCatalog,
+        cumCatalog: defaultCumLocations,
+        erPreferences: null,
+        siePreferences: null,
+        itemReactions: {},
+        isUnlocked: false
+      },
+      shoutboxMessages: [
+        { id: 1, from: 'System', text: 'Willkommen in eurer privaten Flüsterbox! Hinterlasst Notizen oder Teaser für heute ✨', timestamp: Date.now() }
+      ],
+      activeCraving: null,
+      eveningReservation: null
+    };
+
+    let selectedCravingLevel = 'fummeln';
+    let activeReviewItem = null;
+    let wizardCurrentStep = 1;
+    let currentDraftPreferences = {};
+
+    function getPracticeLabel(p, user) {
+      if (!p) return '';
+      if (user === 'Er') {
+        return p.labelEr || p.labelSie || p.title || 'Praktik';
+      } else {
+        return p.labelSie || p.labelEr || p.title || 'Praktik';
+      }
+    }
+
+    function setCustomRoomKey() {
+      const current = state.coupleKey || 'unser-paar-code';
+      const input = prompt("Gemeinsamen Paar-PIN / Schlüssel festlegen (muss auf beiden Handys identisch sein):", current);
+      if (input && input.trim()) {
+        state.coupleKey = input.trim().toLowerCase();
+        localStorage.setItem('cp_couple_key', state.coupleKey);
+        saveState();
+        alert(`🔑 PIN geändert auf: ${state.coupleKey}\nVerbindung wird neu aufgebaut...`);
+        LiveStream.initPeer();
+      }
+    }
+
+    // =========================================================================
+    // PEERJS LIVE DATA SYNC & STREAMING
+    // =========================================================================
+    const LiveStream = {
+      peer: null,
+      primaryCall: null,
+      secondaryCall: null,
+      dataConn: null,
+      localStream: null,
+      viewerStream: null,
+      isSender: false,
+      isViewerCameraOn: false,
+      currentFacingMode: 'user',
+      audioMuted: true,
+
+      initPeer() {
+        if (this.peer && !this.peer.destroyed) { try { this.peer.destroy(); } catch (e) {} }
+        const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
+        const myId = `cp_${safeRoom}_${state.currentUser.toLowerCase()}`;
+        
+        this.peer = new Peer(myId, {
+          secure: true,
+          host: '0.peerjs.com',
+          port: 443,
+          config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] },
+          debug: 1
+        });
+
+        this.peer.on('open', (id) => {
+          this.connectData();
+        });
+
+        this.peer.on('connection', (conn) => {
+          this.dataConn = conn;
+          conn.on('data', (data) => this.handleIncomingData(data));
+          conn.on('close', () => { this.dataConn = null; });
+        });
+
+        this.peer.on('call', (call) => {
+          if (this.localStream && !this.secondaryCall) {
+            this.secondaryCall = call;
+            call.answer();
+            call.on('stream', (s) => {
+              document.getElementById('pip-container').classList.remove('hidden');
+              document.getElementById('pip-video').srcObject = s;
+              document.getElementById('pip-video').play().catch(e => {});
+            });
+            return;
+          }
+
+          this.primaryCall = call;
+          this.isSender = false;
+          this.showViewerOverlay();
+          call.answer();
+
+          call.on('stream', (remoteStream) => {
+            const rVideo = document.getElementById('remote-video');
+            rVideo.srcObject = remoteStream;
+            rVideo.muted = this.audioMuted;
+            rVideo.play().catch(e => {});
+            document.getElementById('stream-status-overlay').classList.add('hidden');
+            playSensualSound('chime');
+          });
+
+          call.on('close', () => this.closeOverlay());
+        });
+      },
+
+      connectData() {
+        if (this.dataConn && this.dataConn.open) return;
+        const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
+        const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
+        const partnerId = `cp_${safeRoom}_${targetUser}`;
+        
+        try {
+          const conn = this.peer.connect(partnerId);
+          if (conn) {
+            conn.on('open', () => {
+              this.dataConn = conn;
+            });
+            conn.on('data', (data) => this.handleIncomingData(data));
+            conn.on('close', () => {
+              this.dataConn = null;
+              setTimeout(() => this.connectData(), 4000);
+            });
+          }
+        } catch(e) {}
+      },
+
+      sendData(payload) {
+        if (this.dataConn && this.dataConn.open) {
+          this.dataConn.send(payload);
+        } else {
+          this.connectData();
+          setTimeout(() => {
+            if (this.dataConn && this.dataConn.open) {
+              this.dataConn.send(payload);
+            }
+          }, 800);
+        }
+      },
+
+      async startAsSender() {
+        try {
+          this.localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.currentFacingMode }, audio: true });
+          this.isSender = true;
+          this.showSenderOverlay();
+          document.getElementById('local-video').srcObject = this.localStream;
+          document.getElementById('local-video').play().catch(e => {});
+          document.getElementById('stream-status-text').innerText = 'Warte auf Partner...';
+
+          const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
+          const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
+          const partnerId = `cp_${safeRoom}_${targetUser}`;
+
+          this.connectData();
+          this.primaryCall = this.peer.call(partnerId, this.localStream);
+          if (this.primaryCall) {
+            this.primaryCall.on('stream', (s) => {
+              document.getElementById('pip-container').classList.remove('hidden');
+              document.getElementById('pip-video').srcObject = s;
+              document.getElementById('pip-video').play().catch(e => {});
+            });
+            document.getElementById('stream-status-overlay').classList.add('hidden');
+          }
+        } catch (e) {
+          alert('Kamera-Fehler: ' + e.message);
+          this.closeOverlay();
+        }
+      },
+
+      joinAsViewer() { this.showViewerOverlay(); },
+      declineStream() { document.getElementById('incoming-stream-banner').classList.add('hidden'); },
+
+      handleIncomingData(data) {
+        if (data.type === 'reaction') {
+          this.showFloatingReaction(data.emoji);
+          this.triggerHaptic(data.hapticType);
+        } else if (data.type === 'regie') {
+          this.showFloatingWhisper(`🎬 ${data.text}`);
+        } else if (data.type === 'whisper') {
+          this.showFloatingWhisper(`💬 "${data.text}"`);
+          playSensualSound('heartbeat');
+        } else if (data.type === 'stream_ended') {
+          this.closeOverlay();
+        } else if (data.type === 'new_craving') {
+          state.activeCraving = data.craving;
+          saveState();
+          playSensualSound('chime');
+          updateUI();
+        } else if (data.type === 'craving_accepted') {
+          if (data.craving && data.craving.from === state.currentUser) {
+            state.pendingReviews.push({ id: data.craving.id, title: data.craving.title, from: state.currentUser });
+            saveState();
+            playSensualSound('chime');
+            showFeedbackBanner(`🎉 Dein Partner hat deinen Wunsch ("${data.craving.title}") angenommen!`);
+          }
+        } else if (data.type === 'craving_response') {
+          state.activeCraving = null;
+          showFeedbackBanner(`🎉 Partner-Rückmeldung: ${data.message}`);
+          playSensualSound('chime');
+          saveState();
+        } else if (data.type === 'craving_feedback') {
+          showFeedbackBanner(data.feedback);
+          playSensualSound('chime');
+        } 
+        // KATALOG SOFORT-SYNC
+        else if (data.type === 'catalog_sync') {
+          state.kopfkino.practicesCatalog = data.practicesCatalog;
+          if (data.cumCatalog) state.kopfkino.cumCatalog = data.cumCatalog;
+          saveState();
+          playSensualSound('heartbeat');
+          showFeedbackBanner("✨ Praktiken-Katalog wurde vom Partner aktualisiert!");
+          if (document.getElementById('catalog-edit-modal') && !document.getElementById('catalog-edit-modal').classList.contains('hidden')) {
+            renderCatalogItemsList();
+          }
+        }
+        // KOPFKINO SYNC
+        else if (data.type === 'kopfkino_v8_sync') {
+          if (data.sender === 'Er') state.kopfkino.erPreferences = data.preferences;
+          if (data.sender === 'Sie') state.kopfkino.siePreferences = data.preferences;
+          if (data.practicesCatalog) state.kopfkino.practicesCatalog = data.practicesCatalog;
+          
+          checkKopfkinoUnlock();
+          saveState();
+          playSensualSound('chime');
+          
+          if (state.kopfkino.isUnlocked) {
+            showFeedbackBanner(`✨ Beide haben gewählt: Euer Abend-Match ist jetzt freigeschaltet!`);
+          } else {
+            showFeedbackBanner(`🧠 ${data.sender} hat Vorlieben eingeloggt. Mach jetzt mit!`);
+          }
+        }
+        // INTERAKTIVES FINALE-UPDATE
+        else if (data.type === 'er_cum_focus_update') {
+          if (!state.kopfkino.erPreferences) state.kopfkino.erPreferences = {};
+          Object.keys(state.kopfkino.erPreferences).forEach(k => {
+            if (k.startsWith('cum_') && state.kopfkino.erPreferences[k].status === 'fokus') {
+              state.kopfkino.erPreferences[k].status = 'erlaubt';
+            }
+          });
+          if (data.cumKey) {
+            state.kopfkino.erPreferences[data.cumKey] = { status: 'fokus' };
+          }
+          saveState();
+          playSensualSound('chime');
+          showFeedbackBanner(`💦 Er hat den Abspritz-Favoriten auf "${data.title}" geändert!`);
+          if (document.getElementById('kopfkino-modal') && !document.getElementById('kopfkino-modal').classList.contains('hidden')) {
+            renderKopfkinoMatchReveal();
+          }
+        }
+        // REAKTIONS-SYNC
+        else if (data.type === 'item_single_reaction_sync') {
+          if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
+          if (data.text) {
+            state.kopfkino.itemReactions[data.itemKey] = { user: data.sender, text: data.text };
+          } else {
+            delete state.kopfkino.itemReactions[data.itemKey];
+          }
+          saveState();
+          playSensualSound('heartbeat');
+          if (document.getElementById('kopfkino-modal') && !document.getElementById('kopfkino-modal').classList.contains('hidden')) {
+            renderKopfkinoMatchReveal();
+          }
+        }
+        // SHOUTBOX SYNC
+        else if (data.type === 'shoutbox_message') {
+          if (!state.shoutboxMessages) state.shoutboxMessages = [];
+          state.shoutboxMessages.push(data.message);
+          saveState();
+          playSensualSound('heartbeat');
+          renderAllShoutboxes();
+          showFeedbackBanner(`💬 ${data.message.from}: ${data.message.text}`);
+        }
+        // KOPFKINO ERLEBNIS ERFÜLLT SYNC
+        else if (data.type === 'kopfkino_fulfilled_event') {
+          saveState();
+          playSensualSound('chime');
+          showFeedbackBanner(`🎉 Euer gemeinsamer Abend ("${data.title}") wurde als erfüllt markiert!`);
+        }
+      },
+
+      triggerHaptic(type) { if (navigator.vibrate) navigator.vibrate(100); },
+
+      async toggleViewerCamera() {
+        const btn = document.getElementById('btn-toggle-2way');
+        if (!this.isViewerCameraOn) {
+          try {
+            this.viewerStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            document.getElementById('pip-container').classList.remove('hidden');
+            document.getElementById('pip-video').srcObject = this.viewerStream;
+            document.getElementById('pip-video').play();
+            const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
+            const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
+            this.secondaryCall = this.peer.call(`cp_${safeRoom}_${targetUser}`, this.viewerStream);
+            this.isViewerCameraOn = true;
+            btn.innerText = '✕ Kamera aus';
+          } catch (e) { alert(e.message); }
+        } else {
+          if (this.viewerStream) this.viewerStream.getTracks().forEach(t => t.stop());
+          if (this.secondaryCall) this.secondaryCall.close();
+          document.getElementById('pip-container').classList.add('hidden');
+          this.isViewerCameraOn = false;
+          btn.innerText = '📹 Eigene Kamera an';
+        }
+      },
+
+      async flipCamera() {
+        if (!this.localStream) return;
+        this.currentFacingMode = this.currentFacingMode === 'user' ? 'environment' : 'user';
+        this.localStream.getTracks().forEach(t => t.stop());
+        this.localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.currentFacingMode }, audio: true });
+        document.getElementById('local-video').srcObject = this.localStream;
+      },
+
+      switchControlTab(tab) {
+        ['emoji', 'regie', 'whisper'].forEach(t => {
+          document.getElementById(`tab-ctrl-${t}`).className = (t === tab) ? 'text-rose-400 font-bold' : 'text-slate-400';
+          document.getElementById(`ctrl-panel-${t}`).classList.toggle('hidden', t !== tab);
+        });
+      },
+
+      sendReaction(emoji, type) {
+        this.showFloatingReaction(emoji);
+        this.sendData({ type: 'reaction', emoji, hapticType: type });
+      },
+      sendRegie(text) {
+        this.showFloatingWhisper(`🎬 ${text}`);
+        this.sendData({ type: 'regie', text });
+      },
+      sendWhisper(text) {
+        this.showFloatingWhisper(`💬 "${text}"`);
+        this.sendData({ type: 'whisper', text });
+      },
+      sendCustomWhisper() {
+        const inp = document.getElementById('stream-whisper-input');
+        if (inp.value.trim()) { this.sendWhisper(inp.value.trim()); inp.value = ''; }
+      },
+
+      showFloatingReaction(emoji) {
+        const box = document.getElementById('floating-reactions-box');
+        const span = document.createElement('div');
+        span.className = 'floating-reaction text-3xl'; span.innerText = emoji;
+        box.appendChild(span); setTimeout(() => span.remove(), 2200);
+      },
+      showFloatingWhisper(text) {
+        const box = document.getElementById('floating-whisper-box');
+        const pill = document.createElement('div');
+        pill.className = 'floating-whisper bg-slate-950/85 border border-rose-500/50 px-3 py-1 rounded-full text-xs text-rose-200';
+        pill.innerText = text; box.appendChild(pill); setTimeout(() => pill.remove(), 3500);
+      },
+
+      showSenderOverlay() {
+        document.getElementById('stream-overlay').classList.remove('hidden');
+        document.getElementById('local-video').classList.remove('hidden');
+        document.getElementById('remote-video').classList.add('hidden');
+        document.getElementById('btn-toggle-2way').classList.add('hidden');
+        document.getElementById('btn-flip-cam').classList.remove('hidden');
+      },
+      showViewerOverlay() {
+        document.getElementById('stream-overlay').classList.remove('hidden');
+        document.getElementById('local-video').classList.add('hidden');
+        document.getElementById('remote-video').classList.remove('hidden');
+        document.getElementById('btn-toggle-2way').classList.remove('hidden');
+        document.getElementById('btn-flip-cam').classList.add('hidden');
+      },
+      toggleAudio() {
+        this.audioMuted = !this.audioMuted;
+        document.getElementById('btn-stream-mute').innerText = this.audioMuted ? '🔇 Stumm' : '🔊 Ton';
+        document.getElementById('remote-video').muted = this.audioMuted;
+      },
+      closeOverlay() { document.getElementById('stream-overlay').classList.add('hidden'); document.getElementById('pip-container').classList.add('hidden'); },
+      endStream() {
+        if (this.localStream) this.localStream.getTracks().forEach(t => t.stop());
+        if (this.viewerStream) this.viewerStream.getTracks().forEach(t => t.stop());
+        this.sendData({ type: 'stream_ended' });
+        this.primaryCall?.close(); this.secondaryCall?.close();
+        this.closeOverlay();
+      }
+    };
+
+    // =========================================================================
+    // AUDIO ENGINE
+    // =========================================================================
+    let audioCtx = null;
+    function playSensualSound(type = 'heartbeat') {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        if (type === 'heartbeat') {
+          osc.frequency.setValueAtTime(65, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.18);
+          gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.18);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.18);
+        } else if (type === 'chime') {
+          osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        }
+      } catch (e) {}
+    }
+
+    // =========================================================================
+    // STORAGE & PERSISTENZ
+    // =========================================================================
+    function saveState() {
+      localStorage.setItem('couple_pulse_state_v128', JSON.stringify(state));
+      updateUI();
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem('couple_pulse_state_v128');
+      if (saved) { 
+        try { 
+          const parsed = JSON.parse(saved);
+          Object.assign(state, parsed);
+        } catch (e) {} 
+      }
+      if (!state.kopfkino) {
+        state.kopfkino = {
+          practicesCatalog: defaultPracticesCatalog,
+          cumCatalog: defaultCumLocations,
+          erPreferences: null,
+          siePreferences: null,
+          itemReactions: {},
+          isUnlocked: false
+        };
+      }
+      if (!state.kopfkino.practicesCatalog || state.kopfkino.practicesCatalog.some(p => !p.labelEr || !p.labelSie)) {
+        state.kopfkino.practicesCatalog = defaultPracticesCatalog;
+      }
+      if (!state.kopfkino.cumCatalog) state.kopfkino.cumCatalog = defaultCumLocations;
+      if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
+      if (!state.shoutboxMessages) state.shoutboxMessages = [];
+
+      checkKopfkinoUnlock();
+      updateUI();
+    }
+
+    function checkKopfkinoUnlock() {
+      state.kopfkino.isUnlocked = Boolean(state.kopfkino.erPreferences && state.kopfkino.siePreferences);
+    }
+
+    function updateUI() {
+      const partner = state.currentUser === 'Er' ? 'Sie' : 'Er';
+
+      const reviewBtn = document.getElementById('header-review-btn');
+      const reviewCount = document.getElementById('header-review-count');
+      const pendingCount = (state.pendingReviews || []).filter(r => r.from === state.currentUser).length;
+      if (pendingCount > 0) {
+        reviewBtn.classList.remove('hidden');
+        reviewCount.innerText = pendingCount;
+      } else {
+        reviewBtn.classList.add('hidden');
+      }
+
+      const kopfkinoBanner = document.getElementById('kopfkino-match-ready-banner');
+      const myPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
+      const partnerPrefs = state.currentUser === 'Er' ? state.kopfkino.siePreferences : state.kopfkino.erPreferences;
+
+      if (state.kopfkino.isUnlocked) {
+        kopfkinoBanner.classList.remove('hidden');
+        document.getElementById('kopfkino-banner-title').innerText = '✨ Euer Abend-Match ist bereit!';
+        document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben gewählt. Entdecke euer Match & die Flüsterbox!';
+      } else if (partnerPrefs && !myPrefs) {
+        kopfkinoBanner.classList.remove('hidden');
+        document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat Vorlieben eingeloggt!`;
+        document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um euer Match für heute Abend zu enthüllen.`;
+      } else {
+        kopfkinoBanner.classList.add('hidden');
+      }
+
+      const banner = document.getElementById('incoming-craving-banner');
+      if (state.activeCraving && state.activeCraving.from !== state.currentUser) {
+        banner.classList.remove('hidden');
+        document.getElementById('incoming-craving-text').innerHTML = `
+          <div class="text-rose-300 font-bold text-sm flex items-center gap-1.5">
+            <span>${state.activeCraving.emoji}</span> 
+            <span>${state.activeCraving.title}</span>
+          </div>
+          ${state.activeCraving.note ? `<div class="text-amber-200 text-xs mt-1 italic bg-amber-950/40 p-1.5 rounded-lg border border-amber-800/40">💬 "${state.activeCraving.note}"</div>` : ''}
+        `;
+      } else { banner.classList.add('hidden'); }
+
+      const eveningBanner = document.getElementById('evening-reservation-banner');
+      if (state.eveningReservation) {
+        eveningBanner.classList.remove('hidden');
+        document.getElementById('evening-reservation-text').innerHTML = `
+          <div class="font-semibold text-indigo-200">${state.eveningReservation.emoji} ${state.eveningReservation.title}</div>
+          ${state.eveningReservation.note ? `<div class="text-[10px] text-slate-400 italic">💬 "${state.eveningReservation.note}"</div>` : ''}
+        `;
+      } else { eveningBanner.classList.add('hidden'); }
+
+      document.getElementById('btn-user-er').className = state.currentUser === 'Er' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
+      document.getElementById('btn-user-sie').className = state.currentUser === 'Sie' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
+
+      renderAllShoutboxes();
+    }
+
+    function toggleCravingReveal() {
+      const locked = document.getElementById('craving-locked-view');
+      const hidden = document.getElementById('craving-hidden-view');
+      if (locked && hidden) {
+        locked.classList.toggle('hidden');
+        hidden.classList.toggle('hidden');
+      }
+    }
+
+    function switchUser(newUser) {
+      state.currentUser = newUser;
+      localStorage.setItem('cp_current_user', newUser);
+      LiveStream.initPeer();
+      updateUI();
+      playSensualSound('heartbeat');
+    }
+
+    // =========================================================================
+    // FLÜSTER-SHOUTBOX ENGINE
+    // =========================================================================
+    function renderAllShoutboxes() {
+      const homeBox = document.getElementById('home-shoutbox-messages');
+      const modalBox = document.getElementById('modal-shoutbox-messages');
+      const messages = state.shoutboxMessages || [];
+
+      const html = messages.map(m => {
+        const isMe = m.from === state.currentUser;
+        const isSys = m.from === 'System';
+        if (isSys) {
+          return `<div class="text-[10px] text-slate-500 italic text-center py-0.5">${m.text}</div>`;
+        }
+        return `
+          <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+            <div class="max-w-[80%] rounded-2xl px-2.5 py-1 text-[11px] ${isMe ? 'bg-gradient-to-r from-purple-600 to-rose-600 text-white rounded-br-none' : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-bl-none'}">
+              <span class="text-[9px] block opacity-70 font-bold">${m.from}</span>
+              <span>${m.text}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (homeBox) {
+        homeBox.innerHTML = html;
+        homeBox.scrollTop = homeBox.scrollHeight;
+      }
+      if (modalBox) {
+        modalBox.innerHTML = html;
+        modalBox.scrollTop = modalBox.scrollHeight;
+      }
+    }
+
+    function sendShoutboxMessage(inputId) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const text = input.value.trim();
+      if (!text) return;
+
+      const newMsg = {
+        id: Date.now(),
+        from: state.currentUser,
+        text: text,
+        timestamp: Date.now()
+      };
+
+      if (!state.shoutboxMessages) state.shoutboxMessages = [];
+      state.shoutboxMessages.push(newMsg);
+      input.value = '';
+
+      LiveStream.sendData({
+        type: 'shoutbox_message',
+        message: newMsg
+      });
+
+      playSensualSound('heartbeat');
+      saveState();
+      renderAllShoutboxes();
+    }
+
+    function sendQuickShoutEmoji(emoji) {
+      const newMsg = {
+        id: Date.now(),
+        from: state.currentUser,
+        text: emoji,
+        timestamp: Date.now()
+      };
+
+      if (!state.shoutboxMessages) state.shoutboxMessages = [];
+      state.shoutboxMessages.push(newMsg);
+
+      LiveStream.sendData({
+        type: 'shoutbox_message',
+        message: newMsg
+      });
+
+      playSensualSound('chime');
+      saveState();
+      renderAllShoutboxes();
+    }
+
+    // =========================================================================
+    // KOPFKINO ENGINE: GERICHTETER 3-SCHRITTE-WIZARD MIT DUALEN TEXTEN
+    // =========================================================================
+    function openKopfkinoModal() {
+      checkKopfkinoUnlock();
+      const myPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
+      
+      if (state.kopfkino.isUnlocked) {
+        renderKopfkinoMatchReveal();
+      } else {
+        wizardCurrentStep = 1;
+        currentDraftPreferences = JSON.parse(JSON.stringify(myPrefs || {}));
+        renderKopfkinoWizard();
+      }
+
+      document.getElementById('kopfkino-modal').classList.remove('hidden');
+    }
+
+    function closeKopfkinoModal() {
+      document.getElementById('kopfkino-modal').classList.add('hidden');
+    }
+
+    function toggleDraftItemStatus(key, status) {
+      const scrollEl = document.getElementById('wizard-scroll-container');
+      const savedScroll = scrollEl ? scrollEl.scrollTop : 0;
+
+      if (!currentDraftPreferences[key]) {
+        currentDraftPreferences[key] = { status: 'erlaubt' };
+      }
+      if (currentDraftPreferences[key].status === status) {
+        currentDraftPreferences[key].status = 'erlaubt';
+      } else {
+        currentDraftPreferences[key].status = status;
+      }
+      playSensualSound('chime');
+      renderKopfkinoWizard(savedScroll);
+    }
+
+    function render2SwitchCard(key, label) {
+      const current = (currentDraftPreferences[key] && currentDraftPreferences[key].status) ? currentDraftPreferences[key].status : 'erlaubt';
+      const isFokus = current === 'fokus';
+      const isTabu = current === 'tabu';
+
+      return `
+        <div class="bg-slate-950/85 border ${isFokus ? 'border-amber-500/80 glow-amber' : isTabu ? 'border-rose-600/70' : 'border-slate-800'} rounded-2xl p-2.5 space-y-2 transition-all">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-200 truncate max-w-[170px]">${label}</span>
+            <span class="text-[9px] font-bold ${isFokus ? 'text-amber-400' : isTabu ? 'text-rose-400' : 'text-emerald-400/90'}">
+              ${isFokus ? '🔥 Fokus' : isTabu ? '🛑 Tabu' : '🌿 Erlaubt'}
+            </span>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-1.5 text-[9px] font-bold">
+            <button type="button" onclick="toggleDraftItemStatus('${key}', 'fokus')" 
+              class="py-1.5 rounded-xl border transition-all ${isFokus ? 'bg-amber-500 border-amber-400 text-slate-950 shadow animate-pulse' : 'bg-slate-900 border-slate-800 text-amber-300/80 hover:border-amber-500'}">
+              🔥 Fokus heute
+            </button>
+            <button type="button" onclick="toggleDraftItemStatus('${key}', 'tabu')" 
+              class="py-1.5 rounded-xl border transition-all ${isTabu ? 'bg-rose-600 border-rose-400 text-white shadow' : 'bg-slate-900 border-slate-800 text-rose-400/80 hover:border-rose-500'}">
+              🛑 Heute Tabu
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderModel1FinaleCard(key, label, isEr) {
+      const current = (currentDraftPreferences[key] && currentDraftPreferences[key].status) ? currentDraftPreferences[key].status : 'erlaubt';
+      const isFokus = current === 'fokus';
+      const isTabu = current === 'tabu';
+
+      if (!isEr) {
+        return `
+          <div class="bg-slate-950/85 border ${isTabu ? 'border-rose-600/70' : 'border-emerald-500/50'} rounded-2xl p-2.5 space-y-2 transition-all">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-200 truncate max-w-[170px]">${label}</span>
+              <span class="text-[9px] font-bold ${isTabu ? 'text-rose-400' : 'text-emerald-400'}">
+                ${isTabu ? '🛑 Tabu' : '✓ Erlaubt'}
+              </span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 text-[9px] font-bold">
+              <button type="button" onclick="toggleDraftItemStatus('${key}', 'erlaubt')" 
+                class="py-1.5 rounded-xl border transition-all ${!isTabu ? 'bg-emerald-600 border-emerald-400 text-white shadow' : 'bg-slate-900 border-slate-800 text-slate-400'}">
+                ✓ Freigegeben
+              </button>
+              <button type="button" onclick="toggleDraftItemStatus('${key}', 'tabu')" 
+                class="py-1.5 rounded-xl border transition-all ${isTabu ? 'bg-rose-600 border-rose-400 text-white shadow' : 'bg-slate-900 border-slate-800 text-rose-400/80 hover:border-rose-500'}">
+                🛑 Heute Tabu
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        return `
+          <div class="bg-slate-950/85 border ${isFokus ? 'border-amber-500/80 glow-amber' : isTabu ? 'border-rose-600/70' : 'border-slate-800'} rounded-2xl p-2.5 space-y-2 transition-all">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-200 truncate max-w-[170px]">${label}</span>
+              <span class="text-[9px] font-bold ${isFokus ? 'text-amber-400' : isTabu ? 'text-rose-400' : 'text-slate-400'}">
+                ${isFokus ? '🔥 Mein Wunsch' : isTabu ? '🛑 Tabu' : 'Offen'}
+              </span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 text-[9px] font-bold">
+              <button type="button" onclick="toggleDraftItemStatus('${key}', 'fokus')" 
+                class="py-1.5 rounded-xl border transition-all ${isFokus ? 'bg-amber-500 border-amber-400 text-slate-950 shadow animate-pulse' : 'bg-slate-900 border-slate-800 text-amber-300/80 hover:border-amber-500'}">
+                🔥 Mein Favorit
+              </button>
+              <button type="button" onclick="toggleDraftItemStatus('${key}', 'tabu')" 
+                class="py-1.5 rounded-xl border transition-all ${isTabu ? 'bg-rose-600 border-rose-400 text-white shadow' : 'bg-slate-900 border-slate-800 text-rose-400/80 hover:border-rose-500'}">
+                🛑 Tabu
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // WIZARD SCHRITTE 1, 2 & 3
+    // -------------------------------------------------------------------------
+    function renderKopfkinoWizard(restoreScrollTop = 0) {
+      const modalTitle = document.getElementById('kopfkino-modal-title');
+      const modalSubtitle = document.getElementById('kopfkino-modal-subtitle');
+      const content = document.getElementById('kopfkino-modal-content');
+      const actions = document.getElementById('kopfkino-modal-actions');
+      const progressBar = document.getElementById('kopfkino-progress-bar');
+      const progressBox = document.getElementById('kopfkino-wizard-progress');
+      const catalogBtn = document.getElementById('kopfkino-btn-edit-catalog');
+
+      progressBox.classList.remove('hidden');
+      catalogBtn.classList.remove('hidden');
+      progressBar.style.width = (wizardCurrentStep * 33.33) + '%';
+
+      const isEr = state.currentUser === 'Er';
+      const practices = state.kopfkino.practicesCatalog || defaultPracticesCatalog;
+
+      // SCHRITT 1: EMPFANGEN
+      if (wizardCurrentStep === 1) {
+        modalTitle.innerText = "Schritt 1 von 3: Empfangen";
+        modalSubtitle.innerText = isEr ? "Wie soll SIE dich heute verwöhnen?" : "Wie soll ER dich heute verwöhnen?";
+
+        const targetCategory = isEr ? 'sie_gives' : 'er_gives';
+        const recItems = practices.filter(p => p.type === targetCategory);
+
+        let recHtml = recItems.map(p => {
+          const label = getPracticeLabel(p, state.currentUser);
+          return render2SwitchCard(p.id, label);
+        }).join('');
+
+        content.innerHTML = `
+          <div id="wizard-scroll-container" class="space-y-2 max-h-72 overflow-y-auto pr-1 text-xs">
+            <p class="text-[11px] text-slate-400 pb-1">Alles ist 'Erlaubt' – setze nur Highlights & Tabus:</p>
+            ${recHtml}
+          </div>
+        `;
+
+        actions.innerHTML = `
+          <button onclick="wizardNextStep()" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-[0.98] transition-all">
+            Weiter zu Schritt 2 (Geben) →
+          </button>
+        `;
+      }
+
+      // SCHRITT 2: GEBEN
+      else if (wizardCurrentStep === 2) {
+        modalTitle.innerText = "Schritt 2 von 3: Geben";
+        modalSubtitle.innerText = isEr ? "Wie möchtest DU Sie heute verwöhnen?" : "Wie möchtest DU Ihn heute verwöhnen?";
+
+        const targetCategory = isEr ? 'er_gives' : 'sie_gives';
+        const giveItems = practices.filter(p => p.type === targetCategory);
+
+        let giveHtml = giveItems.map(p => {
+          const label = getPracticeLabel(p, state.currentUser);
+          return render2SwitchCard(p.id, label);
+        }).join('');
+
+        content.innerHTML = `
+          <div id="wizard-scroll-container" class="space-y-2 max-h-72 overflow-y-auto pr-1 text-xs">
+            <p class="text-[11px] text-slate-400 pb-1">Wozu hast du heute aktiv Lust & Energie?</p>
+            ${giveHtml}
+          </div>
+        `;
+
+        actions.innerHTML = `
+          <button onclick="wizardPrevStep()" class="py-2.5 px-3 bg-slate-800 text-xs font-semibold rounded-xl text-slate-400">← Zurück</button>
+          <button onclick="wizardNextStep()" class="flex-1 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-[0.98] transition-all">
+            Weiter zum Finale →
+          </button>
+        `;
+      }
+
+      // SCHRITT 3: DAS ABSPRITZ-FINALE
+      else if (wizardCurrentStep === 3) {
+        modalTitle.innerText = "Schritt 3 von 3: Das Finale";
+        modalSubtitle.innerText = isEr ? "Wähle deinen Favoriten / Hauptwunsch" : "Wähle alle Zonen, die für dich heute freigegeben sind";
+
+        const cumList = state.kopfkino.cumCatalog || defaultCumLocations;
+        let cumHtml = cumList.map(c => {
+          const label = isEr ? c.labelEr : c.labelSie;
+          return renderModel1FinaleCard(`cum_${c.id}`, label, isEr);
+        }).join('');
+
+        content.innerHTML = `
+          <div id="wizard-scroll-container" class="space-y-2 max-h-72 overflow-y-auto pr-1 text-xs">
+            <p class="text-[11px] text-slate-400 pb-1">${isEr ? 'Wo möchtest du heute am liebsten abspritzen?' : 'Wohin darf er heute seinen Saft spritzen?'}</p>
+            ${cumHtml}
+          </div>
+        `;
+
+        actions.innerHTML = `
+          <button onclick="wizardPrevStep()" class="py-2.5 px-3 bg-slate-800 text-xs font-semibold rounded-xl text-slate-400">← Zurück</button>
+          <button onclick="submitPreferences()" class="flex-1 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-[0.98] transition-all">
+            🚀 Einloggen & Senden
+          </button>
+        `;
+      }
+
+      if (restoreScrollTop > 0) {
+        setTimeout(() => {
+          const sc = document.getElementById('wizard-scroll-container');
+          if (sc) sc.scrollTop = restoreScrollTop;
+        }, 0);
+      }
+    }
+
+    function wizardNextStep() {
+      if (wizardCurrentStep < 3) {
+        wizardCurrentStep++;
+        renderKopfkinoWizard();
+      }
+    }
+
+    function wizardPrevStep() {
+      if (wizardCurrentStep > 1) {
+        wizardCurrentStep--;
+        renderKopfkinoWizard();
+      }
+    }
+
+    function submitPreferences() {
+      if (state.currentUser === 'Er') {
+        state.kopfkino.erPreferences = JSON.parse(JSON.stringify(currentDraftPreferences));
+      } else {
+        state.kopfkino.siePreferences = JSON.parse(JSON.stringify(currentDraftPreferences));
+      }
+
+      checkKopfkinoUnlock();
+      saveState();
+
+      LiveStream.sendData({
+        type: 'kopfkino_v8_sync',
+        sender: state.currentUser,
+        preferences: currentDraftPreferences,
+        practicesCatalog: state.kopfkino.practicesCatalog
+      });
+
+      fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sender: state.currentUser })
+      }).catch(err => {});
+
+      closeKopfkinoModal();
+      playSensualSound('chime');
+
+      if (state.kopfkino.isUnlocked) {
+        alert("✨ Perfekt! Beide haben gewählt. Euer Abend-Match steht fest!");
+        openKopfkinoModal();
+      } else {
+        alert("✓ Deine Vorlieben wurden gespeichert! Du wirst benachrichtigt, sobald dein Partner fertig ist.");
+      }
+    }
+
+    function changeErCumFocusDirectly(cumKey, cumTitle) {
+      if (state.currentUser !== 'Er') return;
+
+      if (!state.kopfkino.erPreferences) state.kopfkino.erPreferences = {};
+      
+      Object.keys(state.kopfkino.erPreferences).forEach(k => {
+        if (k.startsWith('cum_') && state.kopfkino.erPreferences[k].status === 'fokus') {
+          state.kopfkino.erPreferences[k].status = 'erlaubt';
+        }
+      });
+
+      state.kopfkino.erPreferences[cumKey] = { status: 'fokus' };
+      saveState();
+      playSensualSound('chime');
+
+      LiveStream.sendData({
+        type: 'er_cum_focus_update',
+        sender: 'Er',
+        cumKey: cumKey,
+        title: cumTitle
+      });
+
+      renderKopfkinoMatchReveal();
+    }
+
+    // -------------------------------------------------------------------------
+    // MATCH REVEAL SCREEN: PERSÖNLICHE FORMULIERUNGEN PRO NUTZER
+    // -------------------------------------------------------------------------
+    let currentMatchHighlightTitles = [];
+
+    function setSingleReaction(itemKey, text) {
+      if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
+      const current = state.kopfkino.itemReactions[itemKey];
+
+      if (current && current.user === state.currentUser) {
+        delete state.kopfkino.itemReactions[itemKey];
+        LiveStream.sendData({
+          type: 'item_single_reaction_sync',
+          sender: state.currentUser,
+          itemKey: itemKey,
+          text: null
+        });
+      } else {
+        state.kopfkino.itemReactions[itemKey] = { user: state.currentUser, text: text };
+        LiveStream.sendData({
+          type: 'item_single_reaction_sync',
+          sender: state.currentUser,
+          itemKey: itemKey,
+          text: text
+        });
+      }
+
+      playSensualSound('heartbeat');
+      saveState();
+      renderKopfkinoMatchReveal();
+    }
+
+    function renderTargetedReactionButton(itemKey, buttonLabel, isAllowedToReact) {
+      const reactionObj = (state.kopfkino.itemReactions || {})[itemKey];
+      const isConfirmed = Boolean(reactionObj);
+      const isConfirmedByMe = reactionObj && reactionObj.user === state.currentUser;
+
+      if (!isAllowedToReact) {
+        return reactionObj ? `
+          <div class="mt-1 pt-1 border-t border-slate-800/60 flex items-center justify-end">
+            <span class="text-[10px] text-emerald-400 font-bold animate-pulse">Partner freut sich drauf! ✨</span>
+          </div>
+        ` : '';
+      }
+
+      return `
+        <div class="flex items-center justify-between mt-1.5 pt-1.5 border-t border-slate-800/60" onclick="event.stopPropagation()">
+          <button onclick="setSingleReaction('${itemKey}', '${buttonLabel}')" 
+            class="px-3 py-1 rounded-xl text-[10px] font-bold border transition-all ${isConfirmed ? 'bg-gradient-to-r from-emerald-500 to-teal-500 border-emerald-400 text-slate-950 shadow-lg shadow-emerald-950 animate-pulse' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-purple-500'}">
+            ${buttonLabel}
+          </button>
+          ${isConfirmedByMe ? `<span class="text-[9px] text-emerald-400 font-bold">Aktiv geleuchtet ✨</span>` : ''}
+        </div>
+      `;
+    }
+
+    function renderKopfkinoMatchReveal() {
+      const modalTitle = document.getElementById('kopfkino-modal-title');
+      const modalSubtitle = document.getElementById('kopfkino-modal-subtitle');
+      const content = document.getElementById('kopfkino-modal-content');
+      const actions = document.getElementById('kopfkino-modal-actions');
+      const progressBox = document.getElementById('kopfkino-wizard-progress');
+      const catalogBtn = document.getElementById('kopfkino-btn-edit-catalog');
+
+      progressBox.classList.add('hidden');
+      catalogBtn.classList.remove('hidden');
+
+      modalTitle.innerText = "✨ EUER ABEND-FAHRPLAN";
+      modalSubtitle.innerText = "Gemeinsames Match & Flüsterbox";
+
+      const isEr = state.currentUser === 'Er';
+      const erP = state.kopfkino.erPreferences || {};
+      const sieP = state.kopfkino.siePreferences || {};
+      const practices = state.kopfkino.practicesCatalog || defaultPracticesCatalog;
+      const cumList = state.kopfkino.cumCatalog || defaultCumLocations;
+      const reactions = state.kopfkino.itemReactions || {};
+
+      let erVerwoehntSieMatches = [];
+      let erVerwoehntSieAgreed = [];
+      let sieVerwoehntIhnMatches = [];
+      let sieVerwoehntIhnAgreed = [];
+
+      let openWishesForMe = [];
+      let partnerOffersForMe = [];
+      let blockedTaboos = [];
+      
+      let cumFinaleFavorit = null;
+      let cumAllowedZonen = [];
+      currentMatchHighlightTitles = [];
+
+      practices.forEach(p => {
+        const myLabel = getPracticeLabel(p, state.currentUser);
+
+        // FALL A: ER VERWÖHNT SIE (Er gibt -> Sie empfängt)
+        if (p.type === 'er_gives') {
+          const erGive = (erP[p.id] || {}).status || 'erlaubt';
+          const sieRec = (sieP[p.id] || {}).status || 'erlaubt';
+
+          if (erGive === 'tabu' || sieRec === 'tabu') {
+            blockedTaboos.push(myLabel);
+          } else if (erGive === 'fokus' && sieRec === 'fokus') {
+            erVerwoehntSieMatches.push(`🔥 <strong>${myLabel}</strong> : DOPPELTER VOLLTREFFER! ⭐`);
+            currentMatchHighlightTitles.push(myLabel);
+          } else if (sieRec === 'fokus' && erGive !== 'tabu') {
+            const key = `wish_sie_${p.id}`;
+            currentMatchHighlightTitles.push(myLabel);
+            if (reactions[key]) {
+              erVerwoehntSieAgreed.push(`💖 <strong>${myLabel}</strong> <span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-bold">Vereinbart</span>`);
+            } else if (isEr) {
+              openWishesForMe.push(`
+                <div>
+                  <div>🧘 <strong>Wunsch von Sie:</strong> ${myLabel}</div>
+                  ${renderTargetedReactionButton(key, '✨ Sehr gerne!', true)}
+                </div>
+              `);
+            }
+          } else if (erGive === 'fokus' && sieRec !== 'tabu') {
+            const key = `offer_er_${p.id}`;
+            currentMatchHighlightTitles.push(myLabel);
+            if (reactions[key]) {
+              erVerwoehntSieAgreed.push(`🎁 <strong>${myLabel}</strong> <span class="text-[9px] bg-amber-950 text-amber-300 border border-amber-800 px-1.5 py-0.5 rounded font-bold">Vereinbart</span>`);
+            } else if (!isEr) {
+              partnerOffersForMe.push(`
+                <div>
+                  <div>🎁 <strong>Angebot von Er:</strong> ${myLabel}</div>
+                  ${renderTargetedReactionButton(key, '🔥 Ooh ja!', true)}
+                </div>
+              `);
+            }
+          }
+        }
+
+        // FALL B: SIE VERWÖHNT IHN (Sie gibt -> Er empfängt)
+        else if (p.type === 'sie_gives') {
+          const erRec = (erP[p.id] || {}).status || 'erlaubt';
+          const sieGive = (sieP[p.id] || {}).status || 'erlaubt';
+
+          if (sieGive === 'tabu' || erRec === 'tabu') {
+            blockedTaboos.push(myLabel);
+          } else if (sieGive === 'fokus' && erRec === 'fokus') {
+            sieVerwoehntIhnMatches.push(`🔥 <strong>${myLabel}</strong> : DOPPELTER VOLLTREFFER! ⭐`);
+            currentMatchHighlightTitles.push(myLabel);
+          } else if (erRec === 'fokus' && sieGive !== 'tabu') {
+            const key = `wish_er_${p.id}`;
+            currentMatchHighlightTitles.push(myLabel);
+            if (reactions[key]) {
+              sieVerwoehntIhnAgreed.push(`💖 <strong>${myLabel}</strong> <span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-bold">Vereinbart</span>`);
+            } else if (!isEr) {
+              openWishesForMe.push(`
+                <div>
+                  <div>🧘 <strong>Wunsch von Er:</strong> ${myLabel}</div>
+                  ${renderTargetedReactionButton(key, '✨ Sehr gerne!', true)}
+                </div>
+              `);
+            }
+          } else if (sieGive === 'fokus' && erRec !== 'tabu') {
+            const key = `offer_sie_${p.id}`;
+            currentMatchHighlightTitles.push(myLabel);
+            if (reactions[key]) {
+              sieVerwoehntIhnAgreed.push(`🎁 <strong>${myLabel}</strong> <span class="text-[9px] bg-amber-950 text-amber-300 border border-amber-800 px-1.5 py-0.5 rounded font-bold">Vereinbart</span>`);
+            } else if (isEr) {
+              partnerOffersForMe.push(`
+                <div>
+                  <div>🎁 <strong>Angebot von Sie:</strong> ${myLabel}</div>
+                  ${renderTargetedReactionButton(key, '🔥 Ooh ja!', true)}
+                </div>
+              `);
+            }
+          }
+        }
+      });
+
+      // 2. ABSPRITZ-ORTE AUSWERTEN
+      cumList.forEach(c => {
+        const erC = (erP[`cum_${c.id}`] || {}).status || 'erlaubt';
+        const sieC = (sieP[`cum_${c.id}`] || {}).status || 'erlaubt';
+        const label = isEr ? c.labelEr : c.labelSie;
+
+        if (erC === 'tabu' || sieC === 'tabu') {
+          blockedTaboos.push(`Abspritzen: ${label}`);
+          return;
+        }
+
+        const isErFokus = erC === 'fokus';
+        const isSieAllowed = sieC !== 'tabu';
+
+        if (isSieAllowed) {
+          if (isErFokus) {
+            cumFinaleFavorit = label;
+            cumAllowedZonen.unshift({ key: `cum_${c.id}`, title: label, isFav: true });
+            currentMatchHighlightTitles.push(label);
+          } else {
+            cumAllowedZonen.push({ key: `cum_${c.id}`, title: label, isFav: false });
+          }
+        }
+      });
+
+      const allErVerwoehntSie = [...erVerwoehntSieMatches, ...erVerwoehntSieAgreed];
+      const allSieVerwoehntIhn = [...sieVerwoehntIhnMatches, ...sieVerwoehntIhnAgreed];
+      const hasFixedProgram = (allErVerwoehntSie.length > 0 || allSieVerwoehntIhn.length > 0);
+
+      content.innerHTML = `
+        <div class="space-y-3.5 text-xs">
+          
+          <!-- SÄULE 1 & 2: DIE FESTEN HANDLUNGSSÄULEN FÜR DEN ABEND -->
+          ${hasFixedProgram ? `
+            <div class="space-y-2.5">
+              ${allErVerwoehntSie.length > 0 ? `
+                <div class="bg-gradient-to-br from-rose-950/80 to-slate-900 border border-rose-500/60 rounded-2xl p-3.5 glow-rose space-y-2">
+                  <span class="text-[10px] font-bold text-rose-300 uppercase tracking-wider block">👑 ER VERWÖHNT SIE (SEINE AUFGABEN):</span>
+                  <div class="text-[11px] text-slate-100 space-y-1.5">
+                    ${allErVerwoehntSie.map(item => `<div class="bg-slate-950/70 p-2 rounded-xl border border-rose-900/50">${item}</div>`).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              ${allSieVerwoehntIhn.length > 0 ? `
+                <div class="bg-gradient-to-br from-purple-950/80 to-slate-900 border border-purple-500/60 rounded-2xl p-3.5 glow-purple space-y-2">
+                  <span class="text-[10px] font-bold text-purple-300 uppercase tracking-wider block">👑 SIE VERWÖHNT IHN (IHRE AUFGABEN):</span>
+                  <div class="text-[11px] text-slate-100 space-y-1.5">
+                    ${allSieVerwoehntIhn.map(item => `<div class="bg-slate-950/70 p-2 rounded-xl border border-purple-900/50">${item}</div>`).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          ` : `
+            <div class="bg-slate-950/60 border border-slate-855 p-3 rounded-2xl text-[11px] text-slate-400 italic text-center">
+              Noch kein fest vereinbartes Programm – bestätigt unten offene Impulse oder schreibt in die Flüsterbox! ✨
+            </div>
+          `}
+
+          <!-- SÄULE 3: DAS FINALE & ABSPRITZ-ZONEN -->
+          <div class="bg-slate-950 border border-amber-500/40 rounded-2xl p-3.5 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-[9px] font-bold text-amber-300 uppercase tracking-wider block">💦 DAS FINALE & ABSPRITZ-ZONEN:</span>
+              ${isEr ? `<span class="text-[9px] text-amber-400/80 italic">Tippe zum Wechseln</span>` : ''}
+            </div>
+            
+            ${cumFinaleFavorit ? `
+              <div class="bg-amber-950/60 border border-amber-500/70 p-2 rounded-xl text-amber-100 font-bold text-[11px] flex items-center justify-between">
+                <span>🎯 Hauptfavorit: ${cumFinaleFavorit}</span>
+                <span class="text-[9px] bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded font-bold">⭐ Sein Wunsch</span>
+              </div>
+            ` : ''}
+
+            ${cumAllowedZonen.length > 0 ? `
+              <div class="pt-0.5 space-y-1">
+                <span class="text-[10px] text-slate-400 block font-semibold">Alle von ihr freigegebenen Zonen:</span>
+                <div class="flex flex-wrap gap-1">
+                  ${cumAllowedZonen.map(z => `
+                    <button type="button" ${isEr ? `onclick="changeErCumFocusDirectly('${z.key}', '${z.title}')"` : ''} 
+                      class="px-2.5 py-1 rounded-xl text-[10px] border transition-all ${z.isFav ? 'bg-amber-500 border-amber-400 text-slate-950 font-bold shadow animate-pulse' : isEr ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-amber-500 cursor-pointer' : 'bg-slate-900 border-slate-800 text-slate-300 cursor-default'}">
+                      ${z.title} ${z.isFav ? '⭐' : ''}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- SÄULE 4: OFFENE WÜNSCHE & ANGEBOTE DES PARTNERS -->
+          ${(openWishesForMe.length > 0 || partnerOffersForMe.length > 0) ? `
+            <div class="bg-slate-950/90 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
+              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">💭 NOCH OFFENE IMPULSE DEINES PARTNERS:</span>
+              
+              ${openWishesForMe.length > 0 ? `
+                <div class="space-y-1.5">
+                  <span class="text-[10px] font-bold text-purple-400 block">Wünsche deines Partners (an dich):</span>
+                  <div class="space-y-1.5">${openWishesForMe.map(w => `<div class="bg-slate-900/90 p-2 rounded-xl border border-slate-855">${w}</div>`).join('')}</div>
+                </div>
+              ` : ''}
+
+              ${partnerOffersForMe.length > 0 ? `
+                <div class="space-y-1.5 pt-1">
+                  <span class="text-[10px] font-bold text-rose-400 block">Verwöhn-Angebote deines Partners (für dich):</span>
+                  <div class="space-y-1.5">${partnerOffersForMe.map(o => `<div class="bg-slate-900/90 p-2 rounded-xl border border-slate-855">${o}</div>`).join('')}</div>
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
+
+          <!-- SÄULE 5: DISKRET AUSGESCHLOSSEN (TABUS) -->
+          ${blockedTaboos.length > 0 ? `
+            <div class="bg-slate-950/80 border border-rose-900/50 rounded-2xl p-2.5 text-[11px] text-slate-400 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0"></span>
+              <span><strong>Diskret ausgeschlossen:</strong> ${Array.from(new Set(blockedTaboos)).join(', ')}</span>
+            </div>
+          ` : ''}
+
+          <!-- EMBEDDED SHOUTBOX -->
+          <div class="bg-slate-950 border border-purple-500/40 rounded-2xl p-3 space-y-2">
+            <span class="text-[9px] font-bold text-purple-300 uppercase tracking-wider block flex items-center gap-1.5">
+              <span>💬</span> Flüsterbox für diesen Abend
+            </span>
+            <div id="modal-shoutbox-messages" class="space-y-1 max-h-24 overflow-y-auto pr-1 text-xs"></div>
+            <div class="flex gap-1 overflow-x-auto pb-1 text-sm">
+              <button onclick="sendQuickShoutEmoji('🔥')" class="p-1 hover:scale-125 transition-all">🔥</button>
+              <button onclick="sendQuickShoutEmoji('❤️')" class="p-1 hover:scale-125 transition-all">❤️</button>
+              <button onclick="sendQuickShoutEmoji('😈')" class="p-1 hover:scale-125 transition-all">😈</button>
+              <button onclick="sendQuickShoutEmoji('💋')" class="p-1 hover:scale-125 transition-all">💋</button>
+              <button onclick="sendQuickShoutEmoji('🍷')" class="p-1 hover:scale-125 transition-all">🍷</button>
+              <button onclick="sendQuickShoutEmoji('🪶')" class="p-1 hover:scale-125 transition-all">🪶</button>
+            </div>
+            <div class="flex gap-1.5">
+              <input id="modal-shout-input" type="text" placeholder="Gedanke, Teaser oder Emoji..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+              <button onclick="sendShoutboxMessage('modal-shout-input')" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-[0.98]">Senden</button>
+            </div>
+          </div>
+
+          <!-- ALS ERFÜLLT MARKIEREN -->
+          <button onclick="markKopfkinoFulfilled()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 mt-2">
+            <span>✨</span> <span>Unser Abend-Erlebnis als erfüllt markieren</span>
+          </button>
+
+        </div>
+      `;
+
+      actions.innerHTML = `
+        <button onclick="openKopfkinoRestart()" class="w-full py-2.5 bg-slate-800 text-xs font-semibold rounded-xl text-slate-400">
+          ✏️ Eigene Vorlieben neu anpassen
+        </button>
+      `;
+
+      renderAllShoutboxes();
+    }
+
+    function openKopfkinoRestart() {
+      wizardCurrentStep = 1;
+      const mySavedPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
+      currentDraftPreferences = JSON.parse(JSON.stringify(mySavedPrefs || {}));
+      renderKopfkinoWizard();
+    }
+
+    function markKopfkinoFulfilled() {
+      const matchTitle = currentMatchHighlightTitles.length > 0 
+        ? currentMatchHighlightTitles.slice(0, 2).join(' + ') 
+        : 'Gemeinsames Kopfkino-Erlebnis';
+
+      LiveStream.sendData({
+        type: 'kopfkino_fulfilled_event',
+        title: matchTitle
+      });
+
+      activeReviewItem = {
+        id: Date.now(),
+        title: matchTitle,
+        from: state.currentUser
+      };
+
+      closeKopfkinoModal();
+      saveState();
+      playSensualSound('chime');
+      openFeedbackModal();
+    }
+
+    // =========================================================================
+    // DYNAMISCHER KATALOG-EDITOR MIT DUAL-TEXTEN & SOFORT-SYNC
+    // =========================================================================
+    function openCatalogEditModal() {
+      renderCatalogItemsList();
+      document.getElementById('catalog-edit-modal').classList.remove('hidden');
+    }
+
+    function closeCatalogEditModal() {
+      document.getElementById('catalog-edit-modal').classList.add('hidden');
+      if (state.kopfkino.isUnlocked) {
+        renderKopfkinoMatchReveal();
+      } else {
+        renderKopfkinoWizard();
+      }
+    }
+
+    function toggleAddCatalogForm() {
+      const form = document.getElementById('add-catalog-form');
+      const btn = document.getElementById('btn-toggle-add-catalog');
+      if (form.classList.contains('hidden')) {
+        form.classList.remove('hidden');
+        btn.classList.add('hidden');
+      } else {
+        form.classList.add('hidden');
+        btn.classList.remove('hidden');
+      }
+    }
+
+    function renderCatalogItemsList() {
+      const container = document.getElementById('catalog-items-container');
+      const list = state.kopfkino.practicesCatalog || defaultPracticesCatalog;
+
+      container.innerHTML = list.map((p, idx) => `
+        <div class="bg-slate-950 border border-slate-800 p-2.5 rounded-xl space-y-1">
+          <div class="flex justify-between items-center">
+            <span class="text-[10px] font-bold ${p.type === 'er_gives' ? 'text-rose-400' : 'text-purple-400'} uppercase">
+              ${p.type === 'er_gives' ? '👑 Er verwöhnt Sie' : '👑 Sie verwöhnt Ihn'}
+            </span>
+            <div class="flex items-center gap-2">
+              <button onclick="editCatalogPractice(${idx})" class="text-purple-400 hover:text-purple-300 text-xs px-1" title="Bearbeiten">✏️</button>
+              <button onclick="deleteCatalogPractice(${idx})" class="text-rose-400 hover:text-rose-300 text-xs px-1" title="Löschen">🗑️</button>
+            </div>
+          </div>
+          <div class="text-slate-200 text-xs">
+            <div><strong class="text-rose-300 font-medium">Er:</strong> ${p.labelEr || p.title}</div>
+            <div><strong class="text-purple-300 font-medium">Sie:</strong> ${p.labelSie || p.title}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function editCatalogPractice(index) {
+      const p = state.kopfkino.practicesCatalog[index];
+      const newLabelEr = prompt("1. Text für Ihn (seine Sicht / Formulierung):", p.labelEr || p.title);
+      if (newLabelEr === null) return;
+      
+      const newLabelSie = prompt("2. Text für Sie (ihre Sicht / Formulierung):", p.labelSie || newLabelEr || p.title);
+      if (newLabelSie === null) return;
+
+      if (newLabelEr.trim() || newLabelSie.trim()) {
+        p.labelEr = newLabelEr.trim() || newLabelSie.trim();
+        p.labelSie = newLabelSie.trim() || newLabelEr.trim();
+        saveState();
+        broadcastCatalogSync();
+        renderCatalogItemsList();
+      }
+    }
+
+    function deleteCatalogPractice(index) {
+      if (confirm("Diese Praktik wirklich aus dem Katalog entfernen?")) {
+        state.kopfkino.practicesCatalog.splice(index, 1);
+        saveState();
+        broadcastCatalogSync();
+        renderCatalogItemsList();
+      }
+    }
+
+    function broadcastCatalogSync() {
+      LiveStream.sendData({
+        type: 'catalog_sync',
+        practicesCatalog: state.kopfkino.practicesCatalog,
+        cumCatalog: state.kopfkino.cumCatalog
+      });
+    }
+
+    function saveNewCatalogItem() {
+      const category = document.getElementById('new-item-category').value;
+      const labelEr = document.getElementById('new-item-label-er').value.trim();
+      const labelSie = document.getElementById('new-item-label-sie').value.trim();
+      
+      if (!labelEr && !labelSie) { 
+        alert("Bitte mindestens eine Bezeichnung eingeben."); 
+        return; 
+      }
+
+      const safeId = 'custom_' + Date.now();
+      const finalLabelEr = labelEr || labelSie;
+      const finalLabelSie = labelSie || labelEr;
+
+      if (category === 'cum') {
+        if (!state.kopfkino.cumCatalog) state.kopfkino.cumCatalog = defaultCumLocations;
+        state.kopfkino.cumCatalog.push({ 
+          id: safeId, 
+          title: finalLabelEr, 
+          labelSie: finalLabelSie, 
+          labelEr: finalLabelEr 
+        });
+      } else {
+        state.kopfkino.practicesCatalog.push({
+          id: safeId,
+          type: category,
+          labelEr: finalLabelEr,
+          labelSie: finalLabelSie
+        });
+      }
+
+      document.getElementById('new-item-label-er').value = '';
+      document.getElementById('new-item-label-sie').value = '';
+      toggleAddCatalogForm();
+      saveState();
+      broadcastCatalogSync();
+      renderCatalogItemsList();
+      alert(`✓ Erfolgreich mit beiden Texten gespeichert & synchronisiert!`);
+    }
+
+    // =========================================================================
+    // BEWERTUNGEN & FEEDBACK
+    // =========================================================================
+    function openPendingReviewsModal() {
+      const modal = document.getElementById('pending-reviews-modal');
+      const container = document.getElementById('pending-reviews-container');
+      container.innerHTML = '';
+
+      const pending = (state.pendingReviews || []).filter(r => r.from === state.currentUser);
+      const history = state.completedReviews || [];
+
+      if (pending.length === 0 && history.length === 0) {
+        container.innerHTML = `<div class="text-slate-500 italic text-center py-4">Keine Erlebnisse oder Bewertungen vorhanden ✨</div>`;
+        modal.classList.remove('hidden');
+        return;
+      }
+
+      if (pending.length > 0) {
+        const pendingHeader = document.createElement('div');
+        pendingHeader.className = 'text-[10px] font-bold text-rose-400 uppercase tracking-wider pb-1';
+        pendingHeader.innerText = 'Warte auf deine Bewertung:';
+        container.appendChild(pendingHeader);
+
+        pending.forEach((review) => {
+          const div = document.createElement('div');
+          div.className = 'bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-2 mb-2';
+          div.innerHTML = `
+            <div class="font-bold text-slate-100 text-xs">🔥 ${review.title}</div>
+            <div class="text-[10px] text-slate-400">Hat dein Partner diesen Moment erfüllt?</div>
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <button onclick="resolveReview(${review.id}, 'cancel')" class="py-2 px-1 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded-xl text-[10px] font-medium text-center">
+                ❌ Ausgefallen
+              </button>
+              <button onclick="resolveReview(${review.id}, 'success')" class="py-2 px-1 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-bold text-center">
+                ✨ Ja, wunderschön!
+              </button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      }
+
+      if (history.length > 0) {
+        const histHeader = document.createElement('div');
+        histHeader.className = 'text-[10px] font-bold text-slate-400 uppercase tracking-wider pt-3 pb-1';
+        histHeader.innerText = 'Letzte Highlights (Archiv):';
+        container.appendChild(histHeader);
+
+        history.slice(0, 5).forEach((item) => {
+          const div = document.createElement('div');
+          div.className = 'bg-slate-950/60 border border-slate-855 p-2.5 rounded-xl text-xs space-y-0.5 mb-1';
+          div.innerHTML = `
+            <div class="font-semibold text-slate-200">🔥 ${item.title}</div>
+            <div class="text-[10px] text-rose-400">Bewertung: ${item.feedback}</div>
+          `;
+          container.appendChild(div);
+        });
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closePendingReviewsModal() {
+      document.getElementById('pending-reviews-modal').classList.add('hidden');
+    }
+
+    function resolveReview(id, status) {
+      const reviewObj = state.pendingReviews.find(r => r.id === id);
+      state.pendingReviews = state.pendingReviews.filter(r => r.id !== id);
+
+      if (status === 'success') {
+        closePendingReviewsModal();
+        saveState();
+        activeReviewItem = reviewObj;
+        openFeedbackModal();
+      } else {
+        saveState();
+        closePendingReviewsModal();
+      }
+    }
+
+    function openFeedbackModal() {
+      document.getElementById('feedback-modal').classList.remove('hidden');
+    }
+
+    function closeFeedbackModal() {
+      document.getElementById('feedback-modal').classList.add('hidden');
+    }
+
+    function submitFeedback(text) {
+      sendFeedbackAndClose(text);
+    }
+
+    function submitCustomFeedback() {
+      const custom = document.getElementById('feedback-custom-text').value.trim();
+      const text = custom ? `✨ "${custom}"` : '🔥 Super gelaufen!';
+      sendFeedbackAndClose(text);
+    }
+
+    function sendFeedbackAndClose(feedbackText) {
+      closeFeedbackModal();
+      document.getElementById('feedback-custom-text').value = '';
+      
+      const title = activeReviewItem && activeReviewItem.title ? activeReviewItem.title : 'Gemeinsamer Moment';
+      const finalMsg = `${feedbackText} (${title})`;
+
+      if (!state.completedReviews) state.completedReviews = [];
+      state.completedReviews.unshift({ title: title, feedback: feedbackText, timestamp: Date.now() });
+
+      LiveStream.sendData({ type: 'craving_feedback', feedback: finalMsg });
+      saveState();
+      alert("💖 Feedback an den Partner gesendet & im Archiv gespeichert!");
+    }
+
+    function showFeedbackBanner(text) {
+      const banner = document.getElementById('incoming-feedback-banner');
+      document.getElementById('incoming-feedback-text').innerText = text;
+      banner.classList.remove('hidden');
+    }
+
+    function closeFeedbackBanner() {
+      document.getElementById('incoming-feedback-banner').classList.add('hidden');
+    }
+
+    // =========================================================================
+    // SPONTAN-WUNSCH LOGIK (SCHLANK & DIREKT)
+    // =========================================================================
+    function openCravingModal() { 
+      selectCravingLevel('fummeln');
+      document.getElementById('craving-note-input').value = '';
+      document.getElementById('craving-modal').classList.remove('hidden'); 
+    }
+
+    function closeCravingModal() { 
+      document.getElementById('craving-modal').classList.add('hidden'); 
+    }
+
+    function selectCravingLevel(level) {
+      selectedCravingLevel = level;
+      
+      const config = {
+        knutschen: { btn: 'btn-craving-knutschen', border: 'border-pink-500', bg: 'bg-pink-950/40' },
+        fummeln: { btn: 'btn-craving-fummeln', border: 'border-amber-500', bg: 'bg-amber-950/40' },
+        dringend: { btn: 'btn-craving-dringend', border: 'border-rose-500', bg: 'bg-rose-950/40' }
+      };
+
+      Object.entries(config).forEach(([key, val]) => {
+        const el = document.getElementById(val.btn);
+        if (el) {
+          if (key === level) {
+            el.className = `w-full p-3.5 rounded-2xl border ${val.border} ${val.bg} text-white flex items-center justify-between transition-all shadow-lg`;
+          } else {
+            el.className = `w-full p-3.5 rounded-2xl border border-slate-800 bg-slate-950 text-slate-300 flex items-center justify-between transition-all opacity-70 hover:opacity-100`;
+          }
+        }
+      });
+    }
+
+    function sendQuickCraving() {
+      const labels = {
+        knutschen: { title: 'Nur knutschen', emoji: '💋' },
+        fummeln: { title: 'Fummeln & Petting', emoji: '🔥' },
+        dringend: { title: 'Dringend kommen', emoji: '🎯' }
+      };
+
+      const selected = labels[selectedCravingLevel] || labels.fummeln;
+      const note = document.getElementById('craving-note-input').value.trim();
+
+      const newCraving = {
+        id: Date.now(),
+        from: state.currentUser,
+        title: selected.title,
+        emoji: selected.emoji,
+        note: note,
+        fulfilled: false
+      };
+
+      closeCravingModal();
+      
+      LiveStream.sendData({ type: 'new_craving', craving: newCraving });
+
+      fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sender: state.currentUser })
+      }).catch(err => {});
+
+      alert(`✓ Signal "${selected.emoji} ${selected.title}" an Partner gesendet!`);
+      saveState();
+    }
+
+    function respondCraving(action) {
+      if (action === 'accepted') {
+        const cravingObj = state.activeCraving;
+        state.activeCraving = null;
+        playSensualSound('chime');
+        alert("❤️ Angenommen! Viel Spaß.");
+        
+        if (cravingObj) {
+          LiveStream.sendData({ type: 'craving_response', action: 'accepted', message: 'Kommt sofort! ❤️', craving: cravingObj });
+          LiveStream.sendData({ type: 'craving_accepted', craving: cravingObj });
+        }
+      } else if (action === 'later') {
+        alert("⏳ Dein Partner hat auf in 10 Minuten verschoben!");
+        state.activeCraving = null;
+        LiveStream.sendData({ type: 'craving_response', action: 'later', message: 'Braucht noch 10 Minuten ⏳' });
+      } else if (action === 'evening') {
+        state.eveningReservation = { 
+          from: state.activeCraving.from, 
+          title: state.activeCraving.title, 
+          emoji: state.activeCraving.emoji, 
+          note: state.activeCraving.note 
+        };
+        state.activeCraving = null;
+        LiveStream.sendData({ type: 'craving_response', action: 'evening', message: 'Für heute Abend reserviert 🌙' });
+      }
+      saveState();
+    }
+
+    function clearEveningReservation() { state.eveningReservation = null; saveState(); }
+    
+    function resetDay() { 
+      state.pendingReviews = []; 
+      state.completedReviews = []; 
+      state.activeCraving = null; 
+      state.eveningReservation = null; 
+      state.kopfkino = {
+        practicesCatalog: defaultPracticesCatalog,
+        cumCatalog: defaultCumLocations,
+        erPreferences: null,
+        siePreferences: null,
+        itemReactions: {},
+        isUnlocked: false
+      };
+      state.shoutboxMessages = [
+        { id: Date.now(), from: 'System', text: 'Neuer Tag gestartet! Flüsterbox zurückgesetzt ✨', timestamp: Date.now() }
+      ];
+      saveState(); 
+      alert("✨ Tag & Kopfkino wurden zurückgesetzt!");
+    }
+
+    loadState();
+    LiveStream.initPeer();
+  </script>
+</body>
+</html>
