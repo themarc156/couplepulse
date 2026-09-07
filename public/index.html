@@ -1063,15 +1063,15 @@
     }
 
     // =========================================================================
-    // STORAGE & PERSISTENZ
+    // STORAGE & PERSISTENZ (DAUERHAFTES SPEICHERN EIGENER ELEMENTE)
     // =========================================================================
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v133', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v134', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v133');
+      const saved = localStorage.getItem('couple_pulse_state_v134');
       if (saved) { 
         try { 
           const parsed = JSON.parse(saved);
@@ -1088,10 +1088,13 @@
           isUnlocked: false
         };
       }
-      if (!state.kopfkino.practicesCatalog || state.kopfkino.practicesCatalog.length !== 24) {
+      // Nur initialisieren, wenn der Katalog gar nicht existiert oder leer ist
+      if (!state.kopfkino.practicesCatalog || !Array.isArray(state.kopfkino.practicesCatalog) || state.kopfkino.practicesCatalog.length === 0) {
         state.kopfkino.practicesCatalog = defaultPracticesCatalog;
       }
-      if (!state.kopfkino.cumCatalog) state.kopfkino.cumCatalog = defaultCumLocations;
+      if (!state.kopfkino.cumCatalog || !Array.isArray(state.kopfkino.cumCatalog)) {
+        state.kopfkino.cumCatalog = defaultCumLocations;
+      }
       if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
       if (!state.shoutboxMessages) state.shoutboxMessages = [];
 
@@ -1259,7 +1262,7 @@
     }
 
     // =========================================================================
-    // KOPFKINO ENGINE: GERICHTETER 3-SCHRITTE-WIZARD MIT NEUEN FRAGEN
+    // KOPFKINO ENGINE: GERICHTETER 3-SCHRITTE-WIZARD (VOLLSTÄNDIGER TEXT)
     // =========================================================================
     function openKopfkinoModal() {
       checkKopfkinoUnlock();
@@ -2280,19 +2283,15 @@
       state.completedReviews = []; 
       state.activeCraving = null; 
       state.eveningReservation = null; 
-      state.kopfkino = {
-        practicesCatalog: defaultPracticesCatalog,
-        cumCatalog: defaultCumLocations,
-        erPreferences: null,
-        siePreferences: null,
-        itemReactions: {},
-        isUnlocked: false
-      };
+      state.kopfkino.erPreferences = null;
+      state.kopfkino.siePreferences = null;
+      state.kopfkino.itemReactions = {};
+      state.kopfkino.isUnlocked = false;
       state.shoutboxMessages = [
         { id: Date.now(), from: 'System', text: 'Neuer Tag gestartet! Flüsterbox zurückgesetzt ✨', timestamp: Date.now() }
       ];
       saveState(); 
-      alert("✨ Tag & Kopfkino wurden zurückgesetzt!");
+      alert("✨ Tag & Kopfkino-Abstimmung wurden zurückgesetzt! Euer Katalog bleibt erhalten.");
     }
 
     loadState();
