@@ -282,7 +282,7 @@
 
             <div>
               <label class="text-[10px] text-rose-300 font-semibold block pb-0.5">1. Text für Ihn (seine Sicht):</label>
-              <input id="new-item-label-er" type="text" placeholder="z. B. Schwanz lutschen & Deepthroat 💋" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
+              <input id="new-item-label-er" type="text" placeholder="z. B. Schwanz lutschen & mit dem Mund verwöhnen 💋" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
             </div>
 
             <div>
@@ -484,142 +484,158 @@
 
   <!-- JAVASCRIPT ENGINE -->
   <script>
-    // DUAL-TEXT KATALOG: INDIVIDUELLE FORMULIERUNG FÜR IHN (labelEr) UND FÜR SIE (labelSie)
+    // DIE 24 FEINABGESTIMMTEN PRAKTIKEN MIT PERSÖNLICHER TONALITÄT
     const defaultPracticesCatalog = [
-      // ER VERWÖHNT SIE (type: 'er_gives')
+      // ==========================================
+      // ER VERWÖHNT SIE (type: 'er_gives') [12]
+      // ==========================================
       { 
-        id: 'er_oral', 
+        id: 'er_fesseln', 
         type: 'er_gives', 
-        labelEr: 'Ihren Kitzler & Fotze lecken 👅', 
-        labelSie: 'Sinnlich mit seiner Zunge verwöhnt werden 👅' 
-      },
-      { 
-        id: 'er_finger', 
-        type: 'er_gives', 
-        labelEr: 'Sie fingern & ihren G-Punkt massieren 🪶', 
-        labelSie: 'Intensive Fingermassage & G-Punkt Lust 🪶' 
-      },
-      { 
-        id: 'er_toys', 
-        type: 'er_gives', 
-        labelEr: 'Vibrator & Toys an ihr einsetzen 🔌', 
-        labelSie: 'Mit dem Vibrator zum Zittern gebracht werden 🔌' 
+        labelEr: 'Sie fesseln & verwöhnen', 
+        labelSie: 'Mich fesseln & verwöhnen' 
       },
       { 
         id: 'er_spank', 
         type: 'er_gives', 
-        labelEr: 'Ihr geil den Hintern versohlen (Spanking) 👋', 
-        labelSie: 'Prickelndes Spanking auf meinen Po 👋' 
+        labelEr: 'Klapse auf den Po (Spanking)', 
+        labelSie: 'Mir ordentliche Klapse auf den Hintern geben' 
       },
       { 
-        id: 'er_fesseln', 
+        id: 'er_oral', 
         type: 'er_gives', 
-        labelEr: 'Sie fesseln & ihr die Kontrolle nehmen 🔗', 
-        labelSie: 'Hingebungsvoll gefesselt & fixiert werden 🔗' 
+        labelEr: 'Ihren Kitzler & ihre Fotze lecken', 
+        labelSie: 'Mich mit seiner Zunge verwöhnen' 
+      },
+      { 
+        id: 'er_finger', 
+        type: 'er_gives', 
+        labelEr: 'Sie fingern & ihren G-Punkt massieren', 
+        labelSie: 'Mich fingern & meinen G-Punkt massieren' 
+      },
+      { 
+        id: 'er_toys', 
+        type: 'er_gives', 
+        labelEr: 'Sie mit Spielzeugen verwöhnen', 
+        labelSie: 'Mich mit Spielzeugen heiß machen' 
       },
       { 
         id: 'er_dirty', 
         type: 'er_gives', 
-        labelEr: 'Dreckiger, dominanter Dirty Talk zu ihr 🗣️', 
-        labelSie: 'Verruchte, dominante Worte ins Ohr geflüstert 🗣️' 
+        labelEr: 'Dominanter Dirty Talk', 
+        labelSie: 'Dominanter Dirty Talk' 
       },
       { 
         id: 'er_doggy', 
         type: 'er_gives', 
-        labelEr: 'Sie von hinten nehmen (Doggy) 🧱', 
-        labelSie: 'Wild & tief von hinten genommen werden 🧱' 
+        labelEr: 'Sie von hinten nehmen (Doggy)', 
+        labelSie: 'Mich fest & tief von hinten nehmen' 
       },
       { 
         id: 'er_anal', 
         type: 'er_gives', 
-        labelEr: 'Schwanz tief in ihren Arsch (Arschfick) 🔥', 
-        labelSie: 'Intensiv & eng anal verwöhnt werden 🔥' 
+        labelEr: 'Ihr geiles, enges Arschloch ficken (Arschfick)', 
+        labelSie: 'Mein Arschloch ficken' 
       },
       { 
         id: 'er_rimming', 
         type: 'er_gives', 
-        labelEr: 'Ihr heißes Arschloch lecken (Rimming) 👅', 
-        labelSie: 'Sanfte Zunge an meinem Arschloch spüren 👅' 
+        labelEr: 'Ihr heißes Arschloch lecken (Rimming)', 
+        labelSie: 'Mein Arschloch mit seiner Zunge verwöhnen' 
       },
       { 
         id: 'er_edging', 
         type: 'er_gives', 
-        labelEr: 'Ihre Orgasmen quälen & hinauszögern (Edging) ⏳', 
-        labelSie: 'Kurz vor dem Höhepunkt heiß hingehalten werden ⏳' 
+        labelEr: 'Ihren Orgasmus bis zum Äußersten hinauszögern (Edging)', 
+        labelSie: 'Mich kurz vor dem Höhepunkt hinhalten' 
       },
       { 
         id: 'er_massage', 
         type: 'er_gives', 
-        labelEr: 'Ihren nackten Körper mit warmem Öl massieren 💆', 
-        labelSie: 'Sinnliche Ganzkörper-Ölmassage genießen 💆' 
+        labelEr: 'Ihren nackten Körper mit Öl massieren', 
+        labelSie: 'Sinnliche Ganzkörper-Ölmassage' 
+      },
+      { 
+        id: 'er_standard_sex', 
+        type: 'er_gives', 
+        labelEr: 'Meinen Schwanz in ihr Fickloch stoßen (Standard-Sex)', 
+        labelSie: 'Er soll mich einfach ficken (Standard-Sex)' 
       },
 
-      // SIE VERWÖHNT IHN (type: 'sie_gives')
+      // ==========================================
+      // SIE VERWÖHNT IHN (type: 'sie_gives') [12]
+      // ==========================================
       { 
         id: 'sie_oral', 
         type: 'sie_gives', 
-        labelEr: 'Schwanz lutschen & geiler Deepthroat 💋', 
-        labelSie: 'Ihn mit Mund & Zunge verwöhnen 💋' 
+        labelEr: 'Schwanz lutschen & mit dem Mund verwöhnen', 
+        labelSie: 'Ihn mit Mund & Zunge verwöhnen' 
       },
       { 
         id: 'sie_prostate', 
         type: 'sie_gives', 
-        labelEr: 'Meine Prostata intensiv massieren 🎯', 
-        labelSie: 'Seine Prostata zärtlich & tief massieren 🎯' 
+        labelEr: 'Meine Prostata massieren', 
+        labelSie: 'Seine Prostata massieren' 
       },
       { 
         id: 'sie_balls', 
         type: 'sie_gives', 
-        labelEr: 'Meine Eier lecken & zärtlich kraulen 🥚', 
-        labelSie: 'Seine Hoden mit Zunge & Händen verwöhnen 🥚' 
+        labelEr: 'Meine Eier lecken & zärtlich kraulen', 
+        labelSie: 'Seine Hoden mit Mund & Händen verwöhnen' 
       },
       { 
         id: 'sie_titjob', 
         type: 'sie_gives', 
-        labelEr: 'Meinen Schwanz zwischen ihren Brüsten (Titjob) 🍒', 
-        labelSie: 'Ihn mit meinen nackten Brüsten verwöhnen (Titjob) 🍒' 
+        labelEr: 'Meinen Schwanz mit ihren Brüsten verwöhnen (Titjob)', 
+        labelSie: 'Ihn mit meinen nackten Brüsten verwöhnen (Titjob)' 
       },
       { 
         id: 'sie_ride', 
         type: 'sie_gives', 
-        labelEr: 'Mich hemmungslos reiten & die Führung übernehmen 🤠', 
-        labelSie: 'Oben sitzen, ihn reiten & bestimmen 🤠' 
+        labelEr: 'Mich hemmungslos reiten & die Führung übernehmen', 
+        labelSie: 'Oben sitzen, ihn reiten & bestimmen' 
       },
       { 
         id: 'sie_spank', 
         type: 'sie_gives', 
-        labelEr: 'Mir dominant den Hintern versohlen (Spanking) 👋', 
-        labelSie: 'Ihm frech den Hintern versohlen 👋' 
+        labelEr: 'Klapse auf den Po (Spanking)', 
+        labelSie: 'Klapse auf den Po' 
       },
       { 
         id: 'sie_fesseln', 
         type: 'sie_gives', 
-        labelEr: 'Mich fesseln & mir die Macht nehmen 🔗', 
-        labelSie: 'Ihn fesseln & hilflos machen 🔗' 
+        labelEr: 'Mich fesseln & dominieren', 
+        labelSie: 'Ihn fesseln & wehrlos machen' 
       },
       { 
         id: 'sie_dirty', 
         type: 'sie_gives', 
-        labelEr: 'Mich dominant demütigen / Dirty Talk 🗣️', 
-        labelSie: 'Ihn mit verruchten Worten führen 🗣️' 
+        labelEr: 'Dominanter Dirty Talk', 
+        labelSie: 'Ihn mit verruchten Worten führen' 
       },
       { 
         id: 'sie_rimming', 
         type: 'sie_gives', 
-        labelEr: 'Mein Arschloch mit ihrer Zunge verwöhnen 👅', 
-        labelSie: 'Sein Arschloch mit der Zunge liebkosen 👅' 
+        labelEr: 'Mein Arschloch mit ihrer Zunge verwöhnen', 
+        labelSie: 'Sein Arschloch mit der Zunge liebkosen' 
       },
       { 
         id: 'sie_edging', 
         type: 'sie_gives', 
-        labelEr: 'Mich quälen & meinen Orgasmus rauszögern (Edging) ⏳', 
-        labelSie: 'Ihn quälen & am Rande des Abspritzens halten ⏳' 
+        labelEr: 'Mich quälen und meinen Orgasmus rauszögern (Edging)', 
+        labelSie: 'Ihn quälen & am Rande des Abspritzens halten' 
       },
       { 
         id: 'sie_massage', 
         type: 'sie_gives', 
-        labelEr: 'Mich mit Öl verwöhnen & berühren 💆', 
-        labelSie: 'Ihn sinnlich mit Massageöl verwöhnen 💆' 
+        labelEr: 'Mich mit Öl verwöhnen und berühren', 
+        labelSie: 'Ihn sinnlich mit Massageöl verwöhnen' 
+      },
+      { 
+        id: 'sie_watch_solo', 
+        type: 'sie_gives', 
+        labelEr: 'Mich zuschauen lassen während sie an sich spielt', 
+        labelSie: 'Ihn zuschauen lassen' 
       }
     ];
 
@@ -1050,12 +1066,12 @@
     // STORAGE & PERSISTENZ
     // =========================================================================
     function saveState() {
-      localStorage.setItem('couple_pulse_state_v131', JSON.stringify(state));
+      localStorage.setItem('couple_pulse_state_v133', JSON.stringify(state));
       updateUI();
     }
 
     function loadState() {
-      const saved = localStorage.getItem('couple_pulse_state_v131');
+      const saved = localStorage.getItem('couple_pulse_state_v133');
       if (saved) { 
         try { 
           const parsed = JSON.parse(saved);
@@ -1072,7 +1088,7 @@
           isUnlocked: false
         };
       }
-      if (!state.kopfkino.practicesCatalog || state.kopfkino.practicesCatalog.some(p => !p.labelEr || !p.labelSie)) {
+      if (!state.kopfkino.practicesCatalog || state.kopfkino.practicesCatalog.length !== 24) {
         state.kopfkino.practicesCatalog = defaultPracticesCatalog;
       }
       if (!state.kopfkino.cumCatalog) state.kopfkino.cumCatalog = defaultCumLocations;
@@ -1243,7 +1259,7 @@
     }
 
     // =========================================================================
-    // KOPFKINO ENGINE: GERICHTETER 3-SCHRITTE-WIZARD (VOLLSTÄNDIGER TEXT)
+    // KOPFKINO ENGINE: GERICHTETER 3-SCHRITTE-WIZARD MIT NEUEN FRAGEN
     // =========================================================================
     function openKopfkinoModal() {
       checkKopfkinoUnlock();
@@ -1355,7 +1371,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // WIZARD SCHRITTE 1, 2 & 3
+    // WIZARD SCHRITTE 1, 2 & 3 MIT NEUEN FRAGESTELLUNGEN
     // -------------------------------------------------------------------------
     function renderKopfkinoWizard(restoreScrollTop = 0) {
       const modalTitle = document.getElementById('kopfkino-modal-title');
@@ -1376,7 +1392,7 @@
       // SCHRITT 1: EMPFANGEN
       if (wizardCurrentStep === 1) {
         modalTitle.innerText = "Schritt 1 von 3: Empfangen";
-        modalSubtitle.innerText = isEr ? "Wie soll SIE dich heute verwöhnen?" : "Wie soll ER dich heute verwöhnen?";
+        modalSubtitle.innerText = isEr ? "Was soll SIE heute mit Dir machen?" : "Was soll ER heute mit Dir machen?";
 
         const targetCategory = isEr ? 'sie_gives' : 'er_gives';
         const recItems = practices.filter(p => p.type === targetCategory);
@@ -1403,7 +1419,7 @@
       // SCHRITT 2: GEBEN
       else if (wizardCurrentStep === 2) {
         modalTitle.innerText = "Schritt 2 von 3: Geben";
-        modalSubtitle.innerText = isEr ? "Wie möchtest DU Sie heute verwöhnen?" : "Wie möchtest DU Ihn heute verwöhnen?";
+        modalSubtitle.innerText = isEr ? "Was willst DU heute mit IHR anstellen?" : "Was willst DU heute mit IHM anstellen?";
 
         const targetCategory = isEr ? 'er_gives' : 'sie_gives';
         const giveItems = practices.filter(p => p.type === targetCategory);
@@ -1431,7 +1447,7 @@
       // SCHRITT 3: DAS ABSPRITZ-FINALE
       else if (wizardCurrentStep === 3) {
         modalTitle.innerText = "Schritt 3 von 3: Das Finale";
-        modalSubtitle.innerText = isEr ? "Wähle deinen Favoriten / Hauptwunsch" : "Wähle alle Zonen, die für dich heute freigegeben sind";
+        modalSubtitle.innerText = isEr ? "Wo möchtest du heute am liebsten abspritzen?" : "Wohin darf er heute seinen Saft spritzen?";
 
         const cumList = state.kopfkino.cumCatalog || defaultCumLocations;
         let cumHtml = cumList.map(c => {
@@ -1441,7 +1457,7 @@
 
         content.innerHTML = `
           <div id="wizard-scroll-container" class="space-y-2 max-h-72 overflow-y-auto pr-1 text-xs">
-            <p class="text-[11px] text-slate-400 pb-1">${isEr ? 'Wo möchtest du heute am liebsten abspritzen?' : 'Wohin darf er heute seinen Saft spritzen?'}</p>
+            <p class="text-[11px] text-slate-400 pb-1">${isEr ? 'Wähle deinen Wunsch für den Höhepunkt:' : 'Wähle alle freigegebenen Zonen:'}</p>
             ${cumHtml}
           </div>
         `;
