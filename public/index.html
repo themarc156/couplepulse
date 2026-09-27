@@ -2117,6 +2117,20 @@
         fulfilled: false
       };
 
+      // Flüster-Notiz automatisch auch in der Tages-Flüsterbox synchronisieren
+      if (note) {
+        const shoutMsg = {
+          id: Date.now(),
+          from: state.currentUser,
+          text: `${selected.emoji} ${selected.title}: "${note}"`,
+          timestamp: Date.now()
+        };
+        if (!state.shoutboxMessages) state.shoutboxMessages = [];
+        state.shoutboxMessages.push(shoutMsg);
+        LiveStream.sendData({ type: 'shoutbox_message', message: shoutMsg });
+        renderAllShoutboxes();
+      }
+
       closeCravingModal();
       LiveStream.sendData({ type: 'new_craving', craving: newCraving });
       alert(`✓ Signal "${selected.emoji} ${selected.title}" an Partner gesendet!`);
