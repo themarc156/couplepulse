@@ -743,18 +743,11 @@
             <span class="text-[10px] font-bold text-slate-400 uppercase">Neue Karte anlegen:</span>
             <button onclick="restoreDefaultDeck()" class="text-[9px] text-rose-400 hover:underline">🔄 Standard (35 Karten) laden</button>
           </div>
-          <div class="grid grid-cols-2 gap-2">
-            <select id="new-card-stage" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-200">
-              <option value="1">💋 Stufe 1</option>
-              <option value="2">🔥 Stufe 2</option>
-              <option value="3">⚡ Stufe 3</option>
-            </select>
-            <select id="new-card-role" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-200">
-              <option value="any">👫 Beide / Neutral</option>
-              <option value="er_gives">👑 Er verwöhnt Sie</option>
-              <option value="sie_gives">👑 Sie verwöhnt Ihn</option>
-            </select>
-          </div>
+          <select id="new-card-stage" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-200">
+            <option value="1">💋 Stufe 1: Tease & Küsse</option>
+            <option value="2">🔥 Stufe 2: Hands-On & Intim</option>
+            <option value="3">⚡ Stufe 3: Toys & Ekstase</option>
+          </select>
           <input id="new-card-text" type="text" placeholder="Aufgabentext..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
           <div class="flex gap-2">
             <input id="new-card-timer" type="number" placeholder="Timer (Sek., 0=Aus)" class="w-1/2 bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-200">
@@ -808,53 +801,42 @@
     ];
 
     const defaultMasterDeck = [
-      // ==========================================
-      // STUFE 1 (TEASE & KÜSSE)
-      // ==========================================
-      { id: 'joker_freifahrt_1', role: 'any', text: "🃏 Freifahrtschein: Bestimme frei eine beliebige Berührung oder Aktion für 60 Sekunden – für dich, deinen Partner oder euch beide.", stage: 1, timer: 60, tags: ['joker'] },
-      { id: 'd1_01', role: 'any', text: "Küss deinen Partner intensiv überall an Hals, Nacken und den Ohrläppchen.", stage: 1, timer: 60, tags: ['touch', 'tease'] },
-      { id: 'd1_05', role: 'any', text: "Zieh dich vor den Augen deines Partners langsam bis auf die Unterwäsche aus.", stage: 1, timer: 0, tags: ['tease'] },
-      { id: 'dom_11', role: 'any', text: "Zieh dich komplett aus und präsentiere deinen nackten Körper in einer Position der Wahl deines Partners.", stage: 1, timer: 0, tags: ['command'] },
-      { id: 'c1_06', role: 'any', text: "💑 Beide: Setzt euch einander gegenüber und spielt gegenseitig mit den Fingern an den nackten Brustwarzen des Partners.", stage: 1, timer: 60, tags: ['mutual', 'touch'] },
-      { id: 'c1_10_er', role: 'er_gives', text: "Greife unter ihr Top / an ihre Brüste und knete sie mit vollem, warmem Griff.", stage: 1, timer: 60, tags: ['touch'] },
-      { id: 'dom_27', role: 'any', text: "Nimm die Hand deines Partners und führe sie genau dorthin, wo du jetzt seine/ihre Berührung spüren willst.", stage: 1, timer: 0, tags: ['touch'] },
-      { id: 'd1_35', role: 'any', text: "💑 Beide: Umschlingt und streichelt euch innig – intensives Knutschen am ganzen Oberkörper.", stage: 1, timer: 60, tags: ['touch', 'sensual'] },
-      { id: 'd2_20', role: 'any', text: "Freie Kuss-Wahl: Küss deinen Partner 60 Sekunden lang überall dort, wo du willst.", stage: 1, timer: 60, tags: ['oral', 'touch'] },
-      { id: 'd2_13', role: 'any', text: "Verbinde deinem Partner die Augen und bringe ihn/sie in eine Position deiner Wahl. Verwöhne mit Küssen & sanften Berührungen.", stage: 1, timer: 90, tags: ['restraint', 'sensual', 'touch'] },
-
-      // ==========================================
-      // STUFE 2 (HANDS-ON & INTIM)
-      // ==========================================
-      { id: 'joker_freifahrt_2', role: 'any', text: "🃏 Freifahrtschein: Bestimme frei eine beliebige Berührung oder Aktion für 60 Sekunden – für dich, deinen Partner oder euch beide.", stage: 2, timer: 60, tags: ['joker'] },
-      { id: 'joker_echo_2', role: 'any', text: "🔁 Highlight-Echo: Wähle eine Aufgabe aus den bisherigen Runden des heutigen Abends und wiederhole sie genau jetzt.", stage: 2, timer: 60, tags: ['joker'] },
-      { id: 'joker_tausch_2', role: 'any', text: "🔄 Rollentausch: Die Rollen wechseln sofort! Dein Partner muss die letzte Aktion jetzt für 60 Sekunden an DIR ausführen.", stage: 2, timer: 60, tags: ['joker'] },
-      { id: 'dom_38_sie', role: 'sie_gives', text: "Verwöhne seinen Schwanz & seine Hoden nur mit Mund & Zunge. Keine Hände!", stage: 2, timer: 60, tags: ['oral'] },
-      { id: 'c2_23_sie', role: 'sie_gives', text: "Führe langsame, kreisende Daumenbewegungen auf seiner Eichelspitze aus – nutze austretende Lusttropfen als Gleitmittel.", stage: 2, timer: 60, tags: ['touch'] },
-      { id: 'c2_02_sie', role: 'sie_gives', text: "Verwöhne seine Eichelspitze im Wechsel mit deiner Zunge und deinen nackten Brustwarzen.", stage: 2, timer: 60, tags: ['touch', 'sensual'] },
-      { id: 'c3_18_sie', role: 'sie_gives', text: "Titjob: Stimuliere seinen Schaft sanft und gleitend zwischen deinen nackten Brüsten.", stage: 2, timer: 90, tags: ['touch'] },
-      { id: 'sie_oral_tease_er', role: 'er_gives', text: "Liebkose ihre Schamlippen und ihren Kitzler mit warmen, langsamen Zungenzügen.", stage: 2, timer: 60, tags: ['oral'] },
-      { id: 'sie_hands_tease_er', role: 'er_gives', text: "Öffne ihre Schamlippen und massiere ihren Kitzler mit feuchten, kreisenden Fingerkuppen.", stage: 2, timer: 60, tags: ['touch'] },
-      { id: 'c2_01_er', role: 'er_gives', text: "Sie beugt sich über dein Gesicht: Schnappe nur mit dem Mund nach ihren Brüsten und sauge fordernd.", stage: 2, timer: 60, tags: ['restraint', 'oral'] },
-      { id: 'c2_16', role: 'any', text: "💑 Beide: Eure Hände wandern zwischen die Beine des Partners. Ihr stimuliert euch gegenseitig mit gleichem Tempo und gleicher Intensität.", stage: 2, timer: 60, tags: ['mutual', 'touch'] },
-
-      // ==========================================
-      // STUFE 3 (TOYS, EKSTASE & DOMINANZ)
-      // ==========================================
-      { id: 'joker_freifahrt_3', role: 'any', text: "🃏 Freifahrtschein: Bestimme frei eine beliebige Berührung oder Aktion für 60 Sekunden – für dich, deinen Partner oder euch beide.", stage: 3, timer: 60, tags: ['joker'] },
-      { id: 'joker_echo_3', role: 'any', text: "🔁 Highlight-Echo: Wähle eine Aufgabe aus den bisherigen Runden des heutigen Abends und wiederhole sie genau jetzt.", stage: 3, timer: 60, tags: ['joker'] },
-      { id: 'joker_tausch_3', role: 'any', text: "🔄 Rollentausch: Die Rollen wechseln sofort! Dein Partner muss die letzte Aktion jetzt für 60 Sekunden an DIR ausführen.", stage: 3, timer: 60, tags: ['joker'] },
-      { id: 'c3_07_sie', role: 'sie_gives', text: "Nimm seinen Schwanz tief in den Mund und sauge fordernd, während du ihn langsam wieder hinausgleiten lässt.", stage: 3, timer: 90, tags: ['oral'] },
-      { id: 'd3_10_sie', role: 'sie_gives', text: "Nutze einen geölten Finger oder Toy, um zärtlich seine Prostata zu stimulieren.", stage: 3, timer: 90, tags: ['toy', 'anal'] },
-      { id: 'dom_26_sie', role: 'sie_gives', text: "Face-Sitting: Setze dich auf sein Gesicht und bestimme Tempo und Druck seiner Zunge.", stage: 3, timer: 90, tags: ['command', 'restraint'] },
-      { id: 'c3_15_er', role: 'er_gives', text: "Verwöhne sie mit einem intensiven Fingerspiel an Kitzler und G-Zone mit steigendem Tempo.", stage: 3, timer: 90, tags: ['touch'] },
-      { id: 'd3_23_er', role: 'er_gives', text: "Dringe mit 2 Fingern sanft in sie ein, während dein Daumen rhythmisch ihre Klitoris massiert.", stage: 3, timer: 90, tags: ['touch'] },
-      { id: 'c3_09_er', role: 'er_gives', text: "Führe deinen Schwanz oder ein Toy sanft in sie ein, während sie ihren Kitzler berührt.", stage: 3, timer: 60, tags: ['mutual', 'toy'] },
-      { id: 'c3_11', role: 'any', text: "💑 Beide (Plug): Führt euch gegenseitig einen Butt Plug ein und genießt das intensive Gefühl.", stage: 3, timer: 90, tags: ['toy', 'anal', 'mutual'] },
-      { id: 'c3_24', role: 'any', text: "💑 Beide (Hingabe): Umschlingt und streichelt euch – ihr dürft euch küssen, aber noch nicht zum Höhepunkt kommen.", stage: 3, timer: 60, tags: ['touch', 'mutual'] },
-      { id: 'd3_08', role: 'any', text: "Po & Anal: Verwöhne den Po deines Partners mit Küssen & sanften Berührungen.", stage: 3, timer: 60, tags: ['oral', 'anal'] },
-      { id: 'dom_35', role: 'any', text: "Leg deinen Partner über dein Knie: Du bestimmst über feste Klapse auf den Po oder sinnliche Streicheleinheiten.", stage: 3, timer: 60, tags: ['command', 'spanking'] },
-      { id: 'dom_14', role: 'any', text: "Orgasmus-Verbot: Dein Partner darf ab jetzt nur noch nach deiner ausdrücklichen Erlaubnis kommen.", stage: 3, timer: 0, tags: ['command'] },
-      { id: 'c3_21', role: 'any', text: "Hemmungslos: Verwöhne deinen Partner 90 Sekunden lang hemmungslos mit Zunge und Lippen.", stage: 3, timer: 90, tags: ['oral'] }
+      { id: 'joker_freifahrt_1', text: "🃏 Freifahrtschein: Bestimme frei eine beliebige Berührung oder Aktion für 60 Sekunden – für dich, deinen Partner oder euch beide.", stage: 1, timer: 60, tags: ['joker'] },
+      { id: 'd1_01', text: "Küss deinen Partner intensiv überall an Hals, Nacken und den Ohrläppchen.", stage: 1, timer: 60, tags: ['touch', 'tease'] },
+      { id: 'd1_05', text: "Zieh dich vor den Augen deines Partners langsam bis auf die Unterwäsche aus.", stage: 1, timer: 0, tags: ['tease'] },
+      { id: 'dom_11', text: "Zieh dich komplett aus und präsentiere deinen nackten Körper in einer Position seiner/ihrer Wahl.", stage: 1, timer: 0, tags: ['command'] },
+      { id: 'c1_06', text: "💑 Beide: Setzt euch einander gegenüber und spielt gegenseitig mit den Fingern an den nackten Brustwarzen des Partners.", stage: 1, timer: 60, tags: ['mutual', 'touch'] },
+      { id: 'c1_10', text: "👑 Verwöhne Sie: Greife unter ihr Top / an ihre Brüste und knete sie mit vollem, warmem Griff.", stage: 1, timer: 60, tags: ['touch'] },
+      { id: 'dom_27', text: "Zeig deinem Partner mit seiner Hand, wo du jetzt seine Berührung oder Zunge spüren willst.", stage: 1, timer: 0, tags: ['touch'] },
+      { id: 'd1_35', text: "💑 Beide: Umschlingt und streichelt euch innig – intensives Knutschen am ganzen Oberkörper.", stage: 1, timer: 60, tags: ['touch', 'sensual'] },
+      { id: 'd2_20', text: "Freie Kuss-Wahl: Küss deinen Partner 60 Sekunden lang überall dort, wo du willst.", stage: 1, timer: 60, tags: ['oral', 'touch'] },
+      { id: 'd2_13', text: "Verbinde deinem Partner die Augen und bring ihn in eine Position deiner Wahl. Verwöhne ihn mit Küssen & sanften Berührungen.", stage: 1, timer: 90, tags: ['restraint', 'sensual', 'touch'] },
+      { id: 'joker_freifahrt_2', text: "🃏 Freifahrtschein: Bestimme frei eine beliebige Berührung oder Aktion für 60 Sekunden – für dich, deinen Partner oder euch beide.", stage: 2, timer: 60, tags: ['joker'] },
+      { id: 'joker_echo_2', text: "🔁 Highlight-Echo: Wähle eine Aufgabe aus den bisherigen Runden des heutigen Abends und wiederhole sie genau jetzt.", stage: 2, timer: 60, tags: ['joker'] },
+      { id: 'joker_tausch_2', text: "🔄 Rollentausch: Die Rollen wechseln sofort! Dein Partner muss die letzte Aktion jetzt für 60 Sekunden an DIR ausführen.", stage: 2, timer: 60, tags: ['joker'] },
+      { id: 'dom_38', text: "👑 Verwöhne Ihn: Verwöhne seinen Schwanz & seine Eier nur mit Mund & Zunge. Keine Hände!", stage: 2, timer: 60, tags: ['oral'] },
+      { id: 'c2_23', text: "👑 Verwöhne Ihn: Führe langsame, kreisende Daumenbewegungen auf seiner Eichelspitze aus – nutze austretende Lusttropfen als Gleitmittel.", stage: 2, timer: 60, tags: ['touch'] },
+      { id: 'c2_02', text: "👑 Verwöhne Ihn: Verwöhne seine Eichelspitze im Wechsel mit deiner Zunge und deinen nackten Brustwarzen.", stage: 2, timer: 60, tags: ['touch', 'sensual'] },
+      { id: 'c3_18', text: "👑 Verwöhne Ihn (Titjob): Stimuliere seinen Schaft zwischen deinen nackten Brüsten.", stage: 2, timer: 90, tags: ['touch'] },
+      { id: 'sie_oral_tease', text: "👑 Verwöhne Sie (Oral): Liebkose ihre Schamlippen und ihren Kitzler mit warmen, langsamen Zungenzügen.", stage: 2, timer: 60, tags: ['oral'] },
+      { id: 'sie_hands_tease', text: "👑 Verwöhne Sie (Hands-on): Öffne ihre Schamlippen und massiere ihren Kitzler mit feuchten, kreisenden Fingerkuppen.", stage: 2, timer: 60, tags: ['touch'] },
+      { id: 'c2_01', text: "Ohne Hände: Sie beugt sich über sein Gesicht. Er darf nur mit dem Mund nach ihren Brüsten schnappen und fordernd saugen.", stage: 2, timer: 60, tags: ['restraint', 'oral'] },
+      { id: 'c2_16', text: "💑 Beide: Eure Hände wandern zwischen die Beine des Partners. Ihr stimuliert euch gegenseitig mit gleichem Tempo und gleicher Intensität.", stage: 2, timer: 60, tags: ['mutual', 'touch'] },
+      { id: 'joker_freifahrt_3', text: "🃏 Freifahrtschein: Bestimme frei eine beliebige Berührung oder Aktion für 60 Sekunden – für dich, deinen Partner oder euch beide.", stage: 3, timer: 60, tags: ['joker'] },
+      { id: 'joker_echo_3', text: "🔁 Highlight-Echo: Wähle eine Aufgabe aus den bisherigen Runden des heutigen Abends und wiederhole sie genau jetzt.", stage: 3, timer: 60, tags: ['joker'] },
+      { id: 'joker_tausch_3', text: "🔄 Rollentausch: Die Rollen wechseln sofort! Dein Partner muss die letzte Aktion jetzt für 60 Sekunden an DIR ausführen.", stage: 3, timer: 60, tags: ['joker'] },
+      { id: 'c3_07', text: "👑 Verwöhne Ihn (Oral Deep): Nimm seinen Schwanz tief in den Mund und sauge fordernd, während du ihn langsam wieder hinausgleiten lässt.", stage: 3, timer: 90, tags: ['oral'] },
+      { id: 'd3_10', text: "👑 Verwöhne Ihn (Prostata): Nutze einen Finger oder einen Dildo um zärtlich seine Prostata zu massieren.", stage: 3, timer: 90, tags: ['toy', 'anal'] },
+      { id: 'c3_15', text: "👑 Verwöhne Sie (Fingerspiel): Gib ihr ein ausgiebiges Fingerspiel mit steigender Intensität.", stage: 3, timer: 90, tags: ['touch'] },
+      { id: 'd3_23', text: "👑 Verwöhne Sie: Er verwöhnt Dich mit 2 Fingern während sein Daumen Deine Klitoris massiert.", stage: 3, timer: 90, tags: ['touch'] },
+      { id: 'c3_09', text: "💑 Beide: Sie verwöhnt ihren Kitzler während er mit einem Dildo oder seinem Schwanz in sie eindringt.", stage: 3, timer: 60, tags: ['mutual', 'toy'] },
+      { id: 'c3_11', text: "💑 Beide (Plug): Führt euch gegenseitig einen Butt Plug ein und genießt das intensive Gefühl.", stage: 3, timer: 90, tags: ['toy', 'anal', 'mutual'] },
+      { id: 'c3_24', text: "💑 Beide (Hingabe): Umschlingt und streichelt euch - ihr dürft euch küssen, aber nicht ineinander eindringen.", stage: 3, timer: 60, tags: ['touch', 'mutual'] },
+      { id: 'd3_08', text: "Po & Anal: Verwöhne den Po des Partners mit Küssen. Wenn Du magst, verwöhne auch das Arschloch mit der Zunge oder steck zärtlich einen Finger hinein.", stage: 3, timer: 60, tags: ['oral', 'anal'] },
+      { id: 'dom_26', text: "Face-Sitting: Sie setzt sich auf sein Gesicht und fordert seine Zunge.", stage: 3, timer: 90, tags: ['command', 'restraint'] },
+      { id: 'dom_35', text: "Leg deinen Partner über's Knie: Du bestimmst über feste Klapse auf den Po oder sanfte Streicheleinheiten.", stage: 3, timer: 60, tags: ['command', 'spanking'] },
+      { id: 'dom_14', text: "Orgasmus-Verbot: Heute musst Du Deinen Partner erst um Erlaubnis bitten bevor Du kommen darfst.", stage: 3, timer: 0, tags: ['command'] },
+      { id: 'c3_21', text: "Hemmungslos: Verwöhne Deinen Partner 3 Minuten lang hemmungslos mit Zunge und Lippen.", stage: 3, timer: 90, tags: ['oral'] }
     ];
 
     const penaltyChallenges = [
@@ -2500,15 +2482,9 @@
       playSensualSound('heartbeat');
     }
 
-    function getFilteredCardsForStage(stage, currentTurn) {
-      const turn = currentTurn || state.game.currentTurn;
+    function getFilteredCardsForStage(stage) {
       return state.game.cards.filter(c => {
         if (c.stage !== stage) return false;
-
-        // Strenger Richtungs-Filter: Passt die Karte zur aktiven Rolle?
-        if (c.role === 'er_gives' && turn !== 'Er') return false;
-        if (c.role === 'sie_gives' && turn !== 'Sie') return false;
-
         if (!state.game.filters.allowToys && c.tags && c.tags.includes('toy')) return false;
         if (!state.game.filters.allowSpanking && c.tags && (c.tags.includes('spanking') || c.tags.includes('restraint'))) return false;
 
@@ -2525,15 +2501,12 @@
     }
 
     function getNextCard(stage) {
-      const turn = state.game.currentTurn;
-      const key = `${stage}_${turn}`;
-      if (!state.game.drawPiles) state.game.drawPiles = {};
-      if (!state.game.drawPiles[key] || state.game.drawPiles[key].length === 0) {
-        const pool = getFilteredCardsForStage(stage, turn);
-        if (pool.length === 0) return { id: 'empty', role: 'any', text: "Keine passenden Karten für diese Stufe & Rolle verfügbar.", timer: 0, tags: [] };
-        state.game.drawPiles[key] = [...pool].sort(() => Math.random() - 0.5);
+      if (!state.game.drawPiles[stage] || state.game.drawPiles[stage].length === 0) {
+        const pool = getFilteredCardsForStage(stage);
+        if (pool.length === 0) return { id: 'empty', text: "Keine Karten für diese Stufe/Filter verfügbar.", timer: 0, tags: [] };
+        state.game.drawPiles[stage] = [...pool].sort(() => Math.random() - 0.5);
       }
-      return state.game.drawPiles[key].pop();
+      return state.game.drawPiles[stage].pop();
     }
 
     function drawCurrentTurnCard() {
@@ -2757,14 +2730,12 @@
 
     function saveNewCard() {
       const stage = parseInt(document.getElementById('new-card-stage').value) || 1;
-      const role = document.getElementById('new-card-role').value || 'any';
       const text = document.getElementById('new-card-text').value.trim();
       const timer = parseInt(document.getElementById('new-card-timer').value) || 0;
 
       if (!text) { alert("Bitte Text eingeben."); return; }
 
-      state.game.cards.push({ id: 'custom_' + Date.now(), role, text, stage, timer, tags: ['custom'] });
-      state.game.drawPiles = {};
+      state.game.cards.push({ id: 'custom_' + Date.now(), text, stage, timer, tags: ['custom'] });
       saveState();
       renderCardManagerList();
       document.getElementById('new-card-text').value = '';
