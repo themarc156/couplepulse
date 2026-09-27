@@ -241,7 +241,7 @@
           <div class="flex items-center gap-2">
             <button onclick="toggleAudioMute()" id="btn-audio-mute" class="text-[11px] p-1.5 bg-slate-900 border border-slate-800 rounded-lg text-slate-300" title="Sound An/Aus">🔊</button>
             <button onclick="openFilterModal()" class="text-[10px] text-amber-400 bg-amber-950/50 border border-amber-800/40 px-2 py-1 rounded-lg font-bold">⚙️ Filter</button>
-            <button onclick="openCardManagerModal()" id="btn-deck-count" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-2 py-1 rounded-lg font-bold">✏️ Deck (35)</button>
+            <button onclick="openCardManagerModal()" id="btn-deck-count" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-2 py-1 rounded-lg font-bold">✏️ Deck (33)</button>
             <button onclick="resetGame()" class="text-[10px] text-slate-500 hover:text-slate-300 px-1 py-1">Reset</button>
           </div>
         </div>
@@ -731,7 +731,7 @@
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
           <div>
             <h3 class="font-bold text-sm text-purple-200">✏️ Deck verwalten & bearbeiten</h3>
-            <span id="deck-total-summary" class="text-[10px] text-slate-400">35 Karten geladen</span>
+            <span id="deck-total-summary" class="text-[10px] text-slate-400">33 Karten geladen</span>
           </div>
           <button onclick="closeCardManagerModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold">✕</button>
         </div>
@@ -741,7 +741,7 @@
         <div class="space-y-2 pt-2 border-t border-slate-800">
           <div class="flex justify-between items-center">
             <span class="text-[10px] font-bold text-slate-400 uppercase">Neue Karte anlegen:</span>
-            <button onclick="restoreDefaultDeck()" class="text-[9px] text-rose-400 hover:underline">🔄 Standard (35 Karten) laden</button>
+            <button onclick="restoreDefaultDeck()" class="text-[9px] text-rose-400 hover:underline">🔄 Standard (33 Karten) laden</button>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <select id="new-card-stage" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-200">
@@ -809,7 +809,7 @@
 
     const defaultMasterDeck = [
       // ==========================================
-      // STUFE 1 (TEASE & KÜSSE)
+      // STUFE 1 (TEASE & KÜSSE) [10 Karten]
       // ==========================================
       { id: 'joker_freifahrt_1', role: 'any', text: "🃏 Freifahrtschein: Bestimme frei eine beliebige Berührung oder Aktion für 60 Sekunden – für dich, deinen Partner oder euch beide.", stage: 1, timer: 60, tags: ['joker'] },
       { id: 'd1_01', role: 'any', text: "Küss deinen Partner intensiv überall an Hals, Nacken und den Ohrläppchen.", stage: 1, timer: 60, tags: ['touch', 'tease'] },
@@ -823,11 +823,10 @@
       { id: 'd2_13', role: 'any', text: "Verbinde deinem Partner die Augen und bringe ihn/sie in eine Position deiner Wahl. Verwöhne mit Küssen & sanften Berührungen.", stage: 1, timer: 90, tags: ['restraint', 'sensual', 'touch'] },
 
       // ==========================================
-      // STUFE 2 (HANDS-ON & INTIM)
+      // STUFE 2 (HANDS-ON & INTIM) [10 Karten]
       // ==========================================
       { id: 'joker_freifahrt_2', role: 'any', text: "🃏 Freifahrtschein: Bestimme frei eine beliebige Berührung oder Aktion für 60 Sekunden – für dich, deinen Partner oder euch beide.", stage: 2, timer: 60, tags: ['joker'] },
       { id: 'joker_echo_2', role: 'any', text: "🔁 Highlight-Echo: Wähle eine Aufgabe aus den bisherigen Runden des heutigen Abends und wiederhole sie genau jetzt.", stage: 2, timer: 60, tags: ['joker'] },
-      { id: 'joker_tausch_2', role: 'any', text: "🔄 Rollentausch: Die Rollen wechseln sofort! Dein Partner muss die letzte Aktion jetzt für 60 Sekunden an DIR ausführen.", stage: 2, timer: 60, tags: ['joker'] },
       { id: 'dom_38_sie', role: 'sie_gives', text: "Verwöhne seinen Schwanz & seine Hoden nur mit Mund & Zunge. Keine Hände!", stage: 2, timer: 60, tags: ['oral'] },
       { id: 'c2_23_sie', role: 'sie_gives', text: "Führe langsame, kreisende Daumenbewegungen auf seiner Eichelspitze aus – nutze austretende Lusttropfen als Gleitmittel.", stage: 2, timer: 60, tags: ['touch'] },
       { id: 'c2_02_sie', role: 'sie_gives', text: "Verwöhne seine Eichelspitze im Wechsel mit deiner Zunge und deinen nackten Brustwarzen.", stage: 2, timer: 60, tags: ['touch', 'sensual'] },
@@ -838,11 +837,10 @@
       { id: 'c2_16', role: 'any', text: "💑 Beide: Eure Hände wandern zwischen die Beine des Partners. Ihr stimuliert euch gegenseitig mit gleichem Tempo und gleicher Intensität.", stage: 2, timer: 60, tags: ['mutual', 'touch'] },
 
       // ==========================================
-      // STUFE 3 (TOYS, EKSTASE & DOMINANZ)
+      // STUFE 3 (TOYS, EKSTASE & DOMINANZ) [13 Karten]
       // ==========================================
       { id: 'joker_freifahrt_3', role: 'any', text: "🃏 Freifahrtschein: Bestimme frei eine beliebige Berührung oder Aktion für 60 Sekunden – für dich, deinen Partner oder euch beide.", stage: 3, timer: 60, tags: ['joker'] },
       { id: 'joker_echo_3', role: 'any', text: "🔁 Highlight-Echo: Wähle eine Aufgabe aus den bisherigen Runden des heutigen Abends und wiederhole sie genau jetzt.", stage: 3, timer: 60, tags: ['joker'] },
-      { id: 'joker_tausch_3', role: 'any', text: "🔄 Rollentausch: Die Rollen wechseln sofort! Dein Partner muss die letzte Aktion jetzt für 60 Sekunden an DIR ausführen.", stage: 3, timer: 60, tags: ['joker'] },
       { id: 'c3_07_sie', role: 'sie_gives', text: "Nimm seinen Schwanz tief in den Mund und sauge fordernd, während du ihn langsam wieder hinausgleiten lässt.", stage: 3, timer: 90, tags: ['oral'] },
       { id: 'd3_10_sie', role: 'sie_gives', text: "Nutze einen geölten Finger oder Toy, um zärtlich seine Prostata zu stimulieren.", stage: 3, timer: 90, tags: ['toy', 'anal'] },
       { id: 'dom_26_sie', role: 'sie_gives', text: "Face-Sitting: Setze dich auf sein Gesicht und bestimme Tempo und Druck seiner Zunge.", stage: 3, timer: 90, tags: ['command', 'restraint'] },
@@ -1041,8 +1039,8 @@
       if (!state.shoutboxMessages) state.shoutboxMessages = [];
       if (!state.game) state.game = { stage: 1, currentTurn: 'Er', roundsCount: 0, scores: { Er: 0, Sie: 0 }, jokers: { Er: 1, Sie: 1 }, audioMuted: false, filters: { allowToys: true, allowSpanking: true, syncKopfkino: true }, cards: JSON.parse(JSON.stringify(defaultMasterDeck)), drawPiles: {} };
       
-      // AUTOMATISCHE DECK-MIGRATION: Alte Karten ohne 'role' im Browser-Speicher sofort mit dem rollen-sauberen Master-Deck überschreiben
-      const hasOldCards = !state.game.cards || state.game.cards.length === 0 || state.game.cards.some(c => !c.role);
+      // AUTOMATISCHE DECK-MIGRATION: Alte Karten ohne 'role' oder entfernte Rollentausch-Karten im Browser-Speicher sofort mit dem bereinigten Master-Deck überschreiben
+      const hasOldCards = !state.game.cards || state.game.cards.length === 0 || state.game.cards.some(c => !c.role || c.id === 'joker_tausch_2' || c.id === 'joker_tausch_3');
       if (hasOldCards) {
         state.game.cards = JSON.parse(JSON.stringify(defaultMasterDeck));
         state.game.drawPiles = {};
@@ -2789,13 +2787,13 @@
     }
 
     function restoreDefaultDeck() {
-      if (confirm("Möchtest du das Standard-Deck (35 Meister-Karten mit strikter Rollen-Trennung) wiederherstellen?")) {
+      if (confirm("Möchtest du das Standard-Deck (33 Meister-Karten mit strikter Rollen-Trennung) wiederherstellen?")) {
         state.game.cards = JSON.parse(JSON.stringify(defaultMasterDeck));
         state.game.drawPiles = {};
         saveState();
         renderCardManagerList();
         playSensualSound('chime');
-        alert("✓ Standard-Deck sauber geladen und synchronisiert!");
+        alert("✓ Standard-Deck (33 Karten) sauber geladen und synchronisiert!");
       }
     }
 
