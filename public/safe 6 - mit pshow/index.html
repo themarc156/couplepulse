@@ -118,6 +118,24 @@
         </button>
       </section>
 
+      <!-- LIVE-BANNER: EINGEHENDER LIVE-STREAM VOM PARTNER -->
+      <section id="incoming-stream-banner" class="hidden bg-gradient-to-r from-purple-950 to-pink-950 border border-purple-500/70 rounded-2xl p-3.5 glow-purple space-y-2 animate-pulse">
+        <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
+          <span>👁️ Live-Tease gestartet!</span>
+          <span class="bg-purple-900/80 px-2 py-0.5 rounded-full text-[10px] border border-purple-500/40 font-bold">LIVE 🔴</span>
+        </div>
+        <div class="text-xs text-slate-200 bg-slate-950/60 p-2 rounded-xl border border-purple-800/40">
+          <span id="incoming-stream-sender" class="font-bold text-pink-300">Partner</span> überträgt gerade eine private Peepshow für dich...
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button onclick="LiveStream.joinAsViewer()" class="flex-1 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg shadow-purple-950 active:scale-[0.98]">
+            👁️ Peepshow öffnen
+          </button>
+          <button onclick="LiveStream.declineStream()" class="py-2 px-3 bg-slate-800 text-xs text-slate-400 rounded-xl">
+            ✕ Später
+          </button>
+        </div>
+      </section>
 
       <!-- LIVE-BANNER: EINGEHENDES SPONTAN-SIGNAL -->
       <section id="incoming-craving-banner" class="hidden bg-gradient-to-r from-rose-950 to-pink-950 border border-rose-600/70 rounded-2xl p-3.5 glow-rose space-y-2.5 relative overflow-hidden">
@@ -198,8 +216,12 @@
           <span>🔥</span> <span>Spontanen Wunsch senden</span>
         </button>
 
-        <button onclick="openKopfkinoModal()" class="w-full py-3.5 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 border border-purple-500/40 text-purple-200 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] glow-purple">
+        <button onclick="openKopfkinoModal()" class="w-full py-3 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 border border-purple-500/40 text-purple-200 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] glow-purple">
           <span>🧠</span> <span>Kopfkino & Abend-Match</span>
+        </button>
+
+        <button onclick="LiveStream.startAsSender()" class="w-full py-2.5 bg-gradient-to-r from-purple-950 via-slate-900 to-pink-950 border border-purple-500/30 text-purple-300 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+          <span>👁️</span> <span>Live-Peepshow starten</span>
         </button>
       </div>
 
@@ -520,6 +542,74 @@
       </div>
     </div>
 
+    <!-- UPGRADED LIVE-STREAM STUDIO -->
+    <div id="stream-overlay" class="hidden absolute inset-0 bg-slate-950 z-50 flex flex-col justify-between p-3.5">
+      <div class="flex justify-between items-center z-20 bg-slate-950/80 backdrop-blur-md p-2.5 rounded-2xl border border-slate-800 shadow-xl">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+          <span id="stream-role-label" class="text-xs font-bold uppercase tracking-wider text-rose-300">Live-Stream</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button id="btn-flip-cam" onclick="LiveStream.flipCamera()" class="p-1.5 bg-slate-800 text-xs rounded-xl text-slate-300 hover:text-white">🔄</button>
+          <button id="btn-stream-mute" onclick="LiveStream.toggleAudio()" class="px-2 py-1 bg-slate-800 text-xs rounded-xl text-slate-300">🔇 Stumm</button>
+          <button onclick="LiveStream.endStream()" class="px-3 py-1 bg-rose-600 hover:bg-rose-500 text-xs font-bold uppercase rounded-xl transition-all">✕ Ende</button>
+        </div>
+      </div>
+
+      <div class="relative flex-1 my-2 rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 flex items-center justify-center shadow-inner">
+        <video id="remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
+        <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+        <div id="pip-container" class="hidden absolute bottom-3 right-3 w-28 h-40 rounded-2xl overflow-hidden border-2 border-rose-500/80 shadow-2xl bg-black z-20 transition-all">
+          <video id="pip-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+          <div class="absolute top-1 left-1.5 bg-black/60 px-1.5 py-0.5 rounded text-[8px] font-bold text-rose-300">DU</div>
+        </div>
+        <div id="floating-reactions-box" class="absolute inset-0 pointer-events-none flex flex-col justify-end p-6 space-y-2 items-center z-30"></div>
+        <div id="floating-whisper-box" class="absolute inset-x-4 top-16 pointer-events-none flex flex-col items-center space-y-2 z-30"></div>
+        <div id="stream-status-overlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center space-y-2 z-20">
+          <span class="text-3xl animate-pulse">👁️</span>
+          <span id="stream-status-text" class="text-xs font-semibold text-slate-300">Verbindung wird aufgebaut...</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-950/90 backdrop-blur-md p-3 rounded-2xl border border-slate-800 space-y-2.5 z-20 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-1.5 text-[11px] font-bold text-slate-400">
+          <div class="flex gap-3">
+            <button id="tab-ctrl-emoji" onclick="LiveStream.switchControlTab('emoji')" class="text-rose-400">✨ Emojis</button>
+            <button id="tab-ctrl-regie" onclick="LiveStream.switchControlTab('regie')" class="hover:text-slate-200">🎬 Regie</button>
+            <button id="tab-ctrl-whisper" onclick="LiveStream.switchControlTab('whisper')" class="hover:text-slate-200">💬 Flüstern</button>
+          </div>
+          <button id="btn-toggle-2way" onclick="LiveStream.toggleViewerCamera()" class="px-2.5 py-1 bg-purple-950 hover:bg-purple-900 border border-purple-500/50 text-[10px] font-bold text-purple-200 rounded-lg transition-all">
+            📹 Eigene Kamera an
+          </button>
+        </div>
+
+        <div id="ctrl-panel-emoji" class="flex justify-around gap-1 text-xl py-0.5">
+          <button onclick="LiveStream.sendReaction('🔥', 'fire')" class="p-2 bg-slate-900 rounded-xl">🔥</button>
+          <button onclick="LiveStream.sendReaction('❤️', 'heart')" class="p-2 bg-slate-900 rounded-xl">❤️</button>
+          <button onclick="LiveStream.sendReaction('😈', 'devil')" class="p-2 bg-slate-900 rounded-xl">😈</button>
+          <button onclick="LiveStream.sendReaction('💋', 'kiss')" class="p-2 bg-slate-900 rounded-xl">💋</button>
+          <button onclick="LiveStream.sendReaction('💦', 'splash')" class="p-2 bg-slate-900 rounded-xl">💦</button>
+        </div>
+
+        <div id="ctrl-panel-regie" class="hidden grid grid-cols-2 gap-1.5 text-xs font-semibold py-0.5">
+          <button onclick="LiveStream.sendRegie('⬇️ Kamera tiefer')" class="py-1.5 px-2 bg-slate-900 text-amber-300 border border-slate-800 rounded-xl text-left">⬇️ Kamera tiefer</button>
+          <button onclick="LiveStream.sendRegie('⏳ Langsamer...')" class="py-1.5 px-2 bg-slate-900 text-indigo-300 border border-slate-800 rounded-xl text-left">⏳ Langsamer...</button>
+          <button onclick="LiveStream.sendRegie('✨ Zieh dich aus')" class="py-1.5 px-2 bg-slate-900 text-pink-300 border border-slate-800 rounded-xl text-left">✨ Zieh dich aus</button>
+          <button onclick="LiveStream.sendRegie('🔥 Berühr dich da...')" class="py-1.5 px-2 bg-slate-900 text-rose-400 border border-slate-800 rounded-xl text-left">🔥 Berühr dich da...</button>
+        </div>
+
+        <div id="ctrl-panel-whisper" class="hidden space-y-2 py-0.5">
+          <div class="flex gap-1.5 overflow-x-auto pb-1 text-[10px] text-slate-300">
+            <button onclick="LiveStream.sendWhisper('Du machst mich so an... 🔥')" class="whitespace-nowrap px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg">Du machst mich an... 🔥</button>
+            <button onclick="LiveStream.sendWhisper('Komm gleich ins Schlafzimmer 🚪')" class="whitespace-nowrap px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg">Komm ins Schlafzimmer 🚪</button>
+          </div>
+          <div class="flex gap-1.5">
+            <input id="stream-whisper-input" type="text" placeholder="Flüstertext senden..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
+            <button onclick="LiveStream.sendCustomWhisper()" class="px-3 py-1.5 bg-rose-600 text-white font-bold text-xs rounded-xl">Senden</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- MODAL: SPONTANER WUNSCH -->
     <div id="craving-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end justify-center p-0">
@@ -1070,11 +1160,19 @@
     }
 
     // =========================================================================
-    // PEERJS LIVE DATA SYNC (DATEN- & SIGNALKANAL)
+    // PEERJS LIVE DATA SYNC & STREAMING
     // =========================================================================
     const LiveStream = {
       peer: null,
+      primaryCall: null,
+      secondaryCall: null,
       dataConn: null,
+      localStream: null,
+      viewerStream: null,
+      isSender: false,
+      isViewerCameraOn: false,
+      currentFacingMode: 'user',
+      audioMuted: true,
 
       initPeer() {
         if (this.peer && !this.peer.destroyed) { try { this.peer.destroy(); } catch (e) {} }
@@ -1089,12 +1187,41 @@
           debug: 1
         });
 
-        this.peer.on('open', () => { this.connectData(); });
+        this.peer.on('open', (id) => { this.connectData(); });
 
         this.peer.on('connection', (conn) => {
           this.dataConn = conn;
           conn.on('data', (data) => this.handleIncomingData(data));
           conn.on('close', () => { this.dataConn = null; });
+        });
+
+        this.peer.on('call', (call) => {
+          if (this.localStream && !this.secondaryCall) {
+            this.secondaryCall = call;
+            call.answer();
+            call.on('stream', (s) => {
+              document.getElementById('pip-container').classList.remove('hidden');
+              document.getElementById('pip-video').srcObject = s;
+              document.getElementById('pip-video').play().catch(e => {});
+            });
+            return;
+          }
+
+          this.primaryCall = call;
+          this.isSender = false;
+          this.showViewerOverlay();
+          call.answer();
+
+          call.on('stream', (remoteStream) => {
+            const rVideo = document.getElementById('remote-video');
+            rVideo.srcObject = remoteStream;
+            rVideo.muted = this.audioMuted;
+            rVideo.play().catch(e => {});
+            document.getElementById('stream-status-overlay').classList.add('hidden');
+            playSensualSound('chime');
+          });
+
+          call.on('close', () => this.closeOverlay());
         });
       },
 
@@ -1130,8 +1257,50 @@
         }
       },
 
+      async startAsSender() {
+        try {
+          this.localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.currentFacingMode }, audio: true });
+          this.isSender = true;
+          this.showSenderOverlay();
+          document.getElementById('local-video').srcObject = this.localStream;
+          document.getElementById('local-video').play().catch(e => {});
+          document.getElementById('stream-status-text').innerText = 'Warte auf Partner...';
+
+          const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
+          const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
+          const partnerId = `cp_${safeRoom}_${targetUser}`;
+
+          this.connectData();
+          this.primaryCall = this.peer.call(partnerId, this.localStream);
+          if (this.primaryCall) {
+            this.primaryCall.on('stream', (s) => {
+              document.getElementById('pip-container').classList.remove('hidden');
+              document.getElementById('pip-video').srcObject = s;
+              document.getElementById('pip-video').play().catch(e => {});
+            });
+            document.getElementById('stream-status-overlay').classList.add('hidden');
+          }
+        } catch (e) {
+          alert('Kamera-Fehler: ' + e.message);
+          this.closeOverlay();
+        }
+      },
+
+      joinAsViewer() { this.showViewerOverlay(); },
+      declineStream() { document.getElementById('incoming-stream-banner').classList.add('hidden'); },
+
       handleIncomingData(data) {
-        if (data.type === 'new_craving') {
+        if (data.type === 'reaction') {
+          this.showFloatingReaction(data.emoji);
+          this.triggerHaptic(data.hapticType);
+        } else if (data.type === 'regie') {
+          this.showFloatingWhisper(`🎬 ${data.text}`);
+        } else if (data.type === 'whisper') {
+          this.showFloatingWhisper(`💬 "${data.text}"`);
+          playSensualSound('heartbeat');
+        } else if (data.type === 'stream_ended') {
+          this.closeOverlay();
+        } else if (data.type === 'new_craving') {
           state.activeCraving = data.craving;
           saveState();
           playSensualSound('chime');
@@ -1214,6 +1383,104 @@
           playSensualSound('chime');
           showFeedbackBanner(`🎉 Euer gemeinsamer Abend ("${data.title}") wurde als erfüllt markiert!`);
         }
+      },
+
+      triggerHaptic(type) { if (navigator.vibrate) navigator.vibrate(100); },
+
+      async toggleViewerCamera() {
+        const btn = document.getElementById('btn-toggle-2way');
+        if (!this.isViewerCameraOn) {
+          try {
+            this.viewerStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            document.getElementById('pip-container').classList.remove('hidden');
+            document.getElementById('pip-video').srcObject = this.viewerStream;
+            document.getElementById('pip-video').play();
+            const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
+            const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
+            this.secondaryCall = this.peer.call(`cp_${safeRoom}_${targetUser}`, this.viewerStream);
+            this.isViewerCameraOn = true;
+            btn.innerText = '✕ Kamera aus';
+          } catch (e) { alert(e.message); }
+        } else {
+          if (this.viewerStream) this.viewerStream.getTracks().forEach(t => t.stop());
+          if (this.secondaryCall) this.secondaryCall.close();
+          document.getElementById('pip-container').classList.add('hidden');
+          this.isViewerCameraOn = false;
+          btn.innerText = '📹 Eigene Kamera an';
+        }
+      },
+
+      async flipCamera() {
+        if (!this.localStream) return;
+        this.currentFacingMode = this.currentFacingMode === 'user' ? 'environment' : 'user';
+        this.localStream.getTracks().forEach(t => t.stop());
+        this.localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.currentFacingMode }, audio: true });
+        document.getElementById('local-video').srcObject = this.localStream;
+      },
+
+      switchControlTab(tab) {
+        ['emoji', 'regie', 'whisper'].forEach(t => {
+          document.getElementById(`tab-ctrl-${t}`).className = (t === tab) ? 'text-rose-400 font-bold' : 'text-slate-400';
+          document.getElementById(`ctrl-panel-${t}`).classList.toggle('hidden', t !== tab);
+        });
+      },
+
+      sendReaction(emoji, type) {
+        this.showFloatingReaction(emoji);
+        this.sendData({ type: 'reaction', emoji, hapticType: type });
+      },
+      sendRegie(text) {
+        this.showFloatingWhisper(`🎬 ${text}`);
+        this.sendData({ type: 'regie', text });
+      },
+      sendWhisper(text) {
+        this.showFloatingWhisper(`💬 "${text}"`);
+        this.sendData({ type: 'whisper', text });
+      },
+      sendCustomWhisper() {
+        const inp = document.getElementById('stream-whisper-input');
+        if (inp.value.trim()) { this.sendWhisper(inp.value.trim()); inp.value = ''; }
+      },
+
+      showFloatingReaction(emoji) {
+        const box = document.getElementById('floating-reactions-box');
+        const span = document.createElement('div');
+        span.className = 'floating-reaction text-3xl'; span.innerText = emoji;
+        box.appendChild(span); setTimeout(() => span.remove(), 2200);
+      },
+      showFloatingWhisper(text) {
+        const box = document.getElementById('floating-whisper-box');
+        const pill = document.createElement('div');
+        pill.className = 'floating-whisper bg-slate-950/85 border border-rose-500/50 px-3 py-1 rounded-full text-xs text-rose-200';
+        pill.innerText = text; box.appendChild(pill); setTimeout(() => pill.remove(), 3500);
+      },
+
+      showSenderOverlay() {
+        document.getElementById('stream-overlay').classList.remove('hidden');
+        document.getElementById('local-video').classList.remove('hidden');
+        document.getElementById('remote-video').classList.add('hidden');
+        document.getElementById('btn-toggle-2way').classList.add('hidden');
+        document.getElementById('btn-flip-cam').classList.remove('hidden');
+      },
+      showViewerOverlay() {
+        document.getElementById('stream-overlay').classList.remove('hidden');
+        document.getElementById('local-video').classList.add('hidden');
+        document.getElementById('remote-video').classList.remove('hidden');
+        document.getElementById('btn-toggle-2way').classList.remove('hidden');
+        document.getElementById('btn-flip-cam').classList.add('hidden');
+      },
+      toggleAudio() {
+        this.audioMuted = !this.audioMuted;
+        document.getElementById('btn-stream-mute').innerText = this.audioMuted ? '🔇 Stumm' : '🔊 Ton';
+        document.getElementById('remote-video').muted = this.audioMuted;
+      },
+      closeOverlay() { document.getElementById('stream-overlay').classList.add('hidden'); document.getElementById('pip-container').classList.add('hidden'); },
+      endStream() {
+        if (this.localStream) this.localStream.getTracks().forEach(t => t.stop());
+        if (this.viewerStream) this.viewerStream.getTracks().forEach(t => t.stop());
+        this.sendData({ type: 'stream_ended' });
+        this.primaryCall?.close(); this.secondaryCall?.close();
+        this.closeOverlay();
       }
     };
 
