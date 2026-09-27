@@ -1039,15 +1039,8 @@
       if (!state.kopfkino.cumCatalog || state.kopfkino.cumCatalog.length === 0) state.kopfkino.cumCatalog = defaultCumLocations;
       if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
       if (!state.shoutboxMessages) state.shoutboxMessages = [];
-      if (!state.game) state.game = { stage: 1, currentTurn: 'Er', roundsCount: 0, scores: { Er: 0, Sie: 0 }, jokers: { Er: 1, Sie: 1 }, audioMuted: false, filters: { allowToys: true, allowSpanking: true, syncKopfkino: true }, cards: JSON.parse(JSON.stringify(defaultMasterDeck)), drawPiles: {} };
-      
-      // AUTOMATISCHE DECK-MIGRATION: Alte Karten ohne 'role' im Browser-Speicher sofort mit dem rollen-sauberen Master-Deck überschreiben
-      const hasOldCards = !state.game.cards || state.game.cards.length === 0 || state.game.cards.some(c => !c.role);
-      if (hasOldCards) {
-        state.game.cards = JSON.parse(JSON.stringify(defaultMasterDeck));
-        state.game.drawPiles = {};
-      }
-
+      if (!state.game) state.game = { stage: 1, currentTurn: 'Er', roundsCount: 0, scores: { Er: 0, Sie: 0 }, jokers: { Er: 1, Sie: 1 }, audioMuted: false, filters: { allowToys: true, allowSpanking: true, syncKopfkino: true }, cards: JSON.parse(JSON.stringify(defaultMasterDeck)), drawPiles: { 1: [], 2: [], 3: [] } };
+      if (!state.game.cards || state.game.cards.length === 0) state.game.cards = JSON.parse(JSON.stringify(defaultMasterDeck));
       if (!state.vault) state.vault = { currentTab: 'memories', memories: [], fantasies: [] };
       if (!state.vault.memories) state.vault.memories = [];
       if (!state.vault.fantasies) state.vault.fantasies = [];
@@ -2512,18 +2505,9 @@
       return state.game.cards.filter(c => {
         if (c.stage !== stage) return false;
 
-        // 1. Rollen-Prüfung nach Attribut
+        // Strenger Richtungs-Filter: Passt die Karte zur aktiven Rolle?
         if (c.role === 'er_gives' && turn !== 'Er') return false;
         if (c.role === 'sie_gives' && turn !== 'Sie') return false;
-
-        // 2. Textbasierter Sicherheitsfilter (falls noch alte Custom-Karten vorliegen)
-        const textLower = (c.text || '').toLowerCase();
-        if (turn === 'Er' && (textLower.includes('seinen schwanz') || textLower.includes('seine eier') || textLower.includes('seine prostata'))) {
-          return false;
-        }
-        if (turn === 'Sie' && (textLower.includes('ihre schamlippen') || textLower.includes('ihren kitzler') || textLower.includes('ihre brüste') || textLower.includes('ihr top'))) {
-          return false;
-        }
 
         if (!state.game.filters.allowToys && c.tags && c.tags.includes('toy')) return false;
         if (!state.game.filters.allowSpanking && c.tags && (c.tags.includes('spanking') || c.tags.includes('restraint'))) return false;
@@ -2789,13 +2773,11 @@
     }
 
     function restoreDefaultDeck() {
-      if (confirm("Möchtest du das Standard-Deck (35 Meister-Karten mit strikter Rollen-Trennung) wiederherstellen?")) {
+      if (confirm("Möchtest du das Standard-Deck (35 Meister-Karten) wiederherstellen?")) {
         state.game.cards = JSON.parse(JSON.stringify(defaultMasterDeck));
-        state.game.drawPiles = {};
         saveState();
         renderCardManagerList();
         playSensualSound('chime');
-        alert("✓ Standard-Deck sauber geladen und synchronisiert!");
       }
     }
 
