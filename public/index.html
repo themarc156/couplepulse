@@ -660,42 +660,75 @@
       </div>
     </div>
 
-    <!-- MODAL: KARTEN-VERWALTUNG (LUST-DUELL DECK) -->
+    <!-- MODAL: KARTEN- & STRAFEN-VERWALTUNG -->
     <div id="card-manager-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl max-h-[88vh] flex flex-col justify-between">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-          <div>
-            <h3 class="font-bold text-sm text-purple-200">✏️ Deck verwalten & bearbeiten</h3>
-            <span id="deck-total-summary" class="text-[10px] text-slate-400">35 Karten geladen</span>
+      <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-3 shadow-2xl max-h-[88vh] flex flex-col justify-between">
+        
+        <!-- HEADER & TABS -->
+        <div class="space-y-2 shrink-0">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+            <div>
+              <h3 class="font-bold text-sm text-purple-200">✏️ Inhalte bearbeiten</h3>
+              <span id="deck-total-summary" class="text-[10px] text-slate-400">32 Aufgaben & 8 Strafen geladen</span>
+            </div>
+            <button onclick="closeCardManagerModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-1">✕</button>
           </div>
-          <button onclick="closeCardManagerModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold">✕</button>
+
+          <div class="grid grid-cols-2 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-bold">
+            <button id="tab-mgr-cards" onclick="switchCardManagerTab('cards')" class="py-1.5 rounded-lg bg-purple-600 text-white shadow transition-all">
+              🎴 Aufgaben (<span id="mgr-count-cards">32</span>)
+            </button>
+            <button id="tab-mgr-penalties" onclick="switchCardManagerTab('penalties')" class="py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all">
+              🛑 Strafen (<span id="mgr-count-penalties">8</span>)
+            </button>
+          </div>
         </div>
 
-        <div id="custom-cards-list" class="space-y-2 overflow-y-auto pr-1 text-xs flex-1 my-1"></div>
+        <!-- PANEL 1: AUFGABEN-DECK -->
+        <div id="manager-panel-cards" class="flex-1 min-h-0 flex flex-col justify-between space-y-2">
+          <div id="custom-cards-list" class="space-y-2 overflow-y-auto pr-1 text-xs flex-1 my-1 no-scrollbar"></div>
 
-        <div class="space-y-2 pt-2 border-t border-slate-800">
-          <div class="flex justify-between items-center">
-            <span class="text-[10px] font-bold text-slate-400 uppercase">Neue Karte anlegen:</span>
-            <button onclick="restoreDefaultDeck()" class="text-[9px] text-rose-400 hover:underline">🔄 Standard (35 Karten) laden</button>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <select id="new-card-stage" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-200">
-              <option value="1">💋 Stufe 1</option>
-              <option value="2">🔥 Stufe 2</option>
-              <option value="3">⚡ Stufe 3</option>
-            </select>
-            <select id="new-card-role" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-200">
-              <option value="any">👫 Beide / Neutral</option>
-              <option value="er_gives">👑 Er verwöhnt Sie</option>
-              <option value="sie_gives">👑 Sie verwöhnt Ihn</option>
-            </select>
-          </div>
-          <input id="new-card-text" type="text" placeholder="Aufgabentext..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
-          <div class="flex gap-2">
-            <input id="new-card-timer" type="number" placeholder="Timer (Sek., 0=Aus)" class="w-1/2 bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-200">
-            <button onclick="saveNewCard()" class="flex-1 py-2 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow">Hinzufügen</button>
+          <div class="space-y-2 pt-2 border-t border-slate-800 shrink-0">
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-bold text-slate-400 uppercase">Neue Karte anlegen:</span>
+              <button onclick="restoreDefaultDeck()" class="text-[9px] text-rose-400 hover:underline">🔄 Standard (32 Karten) laden</button>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <select id="new-card-stage" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-200">
+                <option value="1">💋 Stufe 1 (Unterwäsche)</option>
+                <option value="2">🔥 Stufe 2 (Nackt)</option>
+                <option value="3">⚡ Stufe 3 (Ekstase)</option>
+              </select>
+              <select id="new-card-role" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-200">
+                <option value="any">👫 Beide / Neutral</option>
+                <option value="er_gives">👑 Er verwöhnt Sie</option>
+                <option value="sie_gives">👑 Sie verwöhnt Ihn</option>
+              </select>
+            </div>
+            <input id="new-card-text" type="text" placeholder="Aufgabentext..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+            <div class="flex gap-2">
+              <input id="new-card-timer" type="number" placeholder="Timer (Sek., 0=Aus)" class="w-1/2 bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-200">
+              <button onclick="saveNewCard()" class="flex-1 py-2 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-95">Hinzufügen</button>
+            </div>
           </div>
         </div>
+
+        <!-- PANEL 2: STRAFEN-VERWALTUNG -->
+        <div id="manager-panel-penalties" class="hidden flex-1 min-h-0 flex flex-col justify-between space-y-2">
+          <div id="custom-penalties-list" class="space-y-2 overflow-y-auto pr-1 text-xs flex-1 my-1 no-scrollbar"></div>
+
+          <div class="space-y-2 pt-2 border-t border-slate-800 shrink-0">
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-bold text-rose-400 uppercase">Neue Strafe anlegen:</span>
+              <button onclick="restoreDefaultPenalties()" class="text-[9px] text-rose-400 hover:underline">🔄 Standard (8 Strafen) laden</button>
+            </div>
+            <div class="flex gap-2">
+              <input id="new-penalty-text" type="text" placeholder="z. B. 10 Po-Klapse oder Geheimnis beichten..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
+              <button onclick="saveNewPenalty()" class="px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold text-xs rounded-xl shadow active:scale-95 shrink-0">Hinzufügen</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -788,7 +821,7 @@
       { id: 'c3_21', role: 'any', text: "Hemmungslos: Verwöhne deinen Partner 90 Sekunden lang hemmungslos mit Zunge und Lippen.", stage: 3, timer: 90, tags: ['oral'] }
     ];
 
-    const penaltyChallenges = [
+    const defaultPenalties = [
       "5 feste Klapse auf den nackten Hintern!",
       "Ein Kleidungsstück sofort nur mit den Zähnen ausziehen.",
       "Auf Knien um Vergebung bitten und die Oberschenkel des Partners küssen.",
@@ -981,9 +1014,13 @@
       if (!state.shoutboxMessages) state.shoutboxMessages = [];
       state.shoutboxMessages = state.shoutboxMessages.filter(m => m.from !== 'System' && !m.text.includes('Neuer Tag gestartet'));
 
-      if (!state.game) state.game = { stage: 1, currentTurn: 'Er', roundsCount: 0, scores: { Er: 0, Sie: 0 }, jokers: { Er: 1, Sie: 1 }, audioMuted: false, filters: { allowToys: true, allowSpanking: true, syncKopfkino: true }, cards: JSON.parse(JSON.stringify(defaultMasterDeck)), drawPiles: {} };
+      if (!state.game) state.game = { stage: 1, currentTurn: 'Er', roundsCount: 0, scores: { Er: 0, Sie: 0 }, targetScore: 7, isCriticalHit: false, audioMuted: false, filters: { allowToys: true, allowSpanking: true, syncKopfkino: true }, cards: JSON.parse(JSON.stringify(defaultMasterDeck)), penalties: [...defaultPenalties], drawPiles: {} };
       
-      // AUTOMATISCHE DECK-MIGRATION: Veraltetes Deck (Joker oder falsche Kartenzahl) sofort mit dem sauberen 32-Karten-Deck synchronisieren
+      if (!state.game.penalties || state.game.penalties.length === 0) {
+        state.game.penalties = [...defaultPenalties];
+      }
+
+      // AUTOMATISCHE DECK-MIGRATION: Veraltetes Deck sofort mit dem sauberen 32-Karten-Deck synchronisieren
       const isDeckOutdated = !state.game.cards || state.game.cards.length !== defaultMasterDeck.length || state.game.cards.some(c => !c.role || (c.tags && c.tags.includes('joker')));
       if (isDeckOutdated) {
         state.game.cards = JSON.parse(JSON.stringify(defaultMasterDeck));
@@ -3410,7 +3447,8 @@
     }
 
     function triggerPenalty() {
-      const pen = penaltyChallenges[Math.floor(Math.random() * penaltyChallenges.length)];
+      const penaltiesList = (state.game.penalties && state.game.penalties.length > 0) ? state.game.penalties : defaultPenalties;
+      const pen = penaltiesList[Math.floor(Math.random() * penaltiesList.length)];
       const textEl = document.getElementById('penalty-task-text');
       if (textEl) textEl.innerText = pen;
       
@@ -3561,15 +3599,45 @@
       saveState();
     }
 
+    let currentManagerTab = 'cards';
+
     function openCardManagerModal() {
-      renderCardManagerList();
+      switchCardManagerTab('cards');
       document.getElementById('card-manager-modal').classList.remove('hidden');
     }
-    function closeCardManagerModal() { document.getElementById('card-manager-modal').classList.add('hidden'); }
+
+    function closeCardManagerModal() {
+      document.getElementById('card-manager-modal').classList.add('hidden');
+    }
+
+    function switchCardManagerTab(tab) {
+      currentManagerTab = tab;
+      const tabCards = document.getElementById('tab-mgr-cards');
+      const tabPenalties = document.getElementById('tab-mgr-penalties');
+      const panelCards = document.getElementById('manager-panel-cards');
+      const panelPenalties = document.getElementById('manager-panel-penalties');
+
+      if (tab === 'cards') {
+        tabCards.className = 'py-1.5 rounded-lg bg-purple-600 text-white shadow transition-all';
+        tabPenalties.className = 'py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all';
+        panelCards.classList.remove('hidden');
+        panelPenalties.classList.add('hidden');
+        renderCardManagerList();
+      } else {
+        tabCards.className = 'py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all';
+        tabPenalties.className = 'py-1.5 rounded-lg bg-rose-600 text-white shadow transition-all';
+        panelCards.classList.add('hidden');
+        panelPenalties.classList.remove('hidden');
+        renderPenaltiesManagerList();
+      }
+    }
 
     function renderCardManagerList() {
       const container = document.getElementById('custom-cards-list');
-      document.getElementById('deck-total-summary').innerText = `${state.game.cards.length} Karten geladen`;
+      const countEl = document.getElementById('mgr-count-cards');
+      if (countEl) countEl.innerText = state.game.cards.length;
+
+      document.getElementById('deck-total-summary').innerText = `${state.game.cards.length} Aufgaben & ${(state.game.penalties || []).length} Strafen geladen`;
       document.getElementById('btn-deck-count').innerText = `✏️ Deck (${state.game.cards.length})`;
 
       container.innerHTML = state.game.cards.map((c, idx) => `
@@ -3644,6 +3712,74 @@
         drawCurrentTurnCard();
         playSensualSound('chime');
         alert("✓ Standard-Deck (32 Karten) sauber geladen!");
+      }
+    }
+
+    // =========================================================================
+    // STRAFEN-VERWALTUNG (EDIT, DELETE, ADD, RESTORE)
+    // =========================================================================
+    function renderPenaltiesManagerList() {
+      if (!state.game.penalties) state.game.penalties = [...defaultPenalties];
+      const container = document.getElementById('custom-penalties-list');
+      const countEl = document.getElementById('mgr-count-penalties');
+      if (countEl) countEl.innerText = state.game.penalties.length;
+
+      document.getElementById('deck-total-summary').innerText = `${state.game.cards.length} Aufgaben & ${state.game.penalties.length} Strafen geladen`;
+
+      container.innerHTML = state.game.penalties.map((p, idx) => `
+        <div class="bg-slate-950 border border-slate-855 p-2.5 rounded-xl flex items-center justify-between gap-2">
+          <div class="text-slate-200 text-xs leading-tight flex-1">
+            <span class="text-rose-400 font-bold">#${idx + 1}:</span> ${p}
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="editPenalty(${idx})" class="text-purple-400 hover:text-purple-200 text-xs px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg font-bold" title="Bearbeiten">✏️</button>
+            <button onclick="deletePenalty(${idx})" class="text-rose-400 hover:text-rose-200 text-xs px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg font-bold" title="Löschen">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function editPenalty(idx) {
+      const currentText = state.game.penalties[idx];
+      const newText = prompt("Strafen-Text bearbeiten:", currentText);
+      if (newText === null) return;
+      if (!newText.trim()) { alert("Text darf nicht leer sein."); return; }
+
+      state.game.penalties[idx] = newText.trim();
+      saveState();
+      renderPenaltiesManagerList();
+      playSensualSound('chime');
+    }
+
+    function deletePenalty(idx) {
+      if (confirm("Diese Strafe wirklich löschen?")) {
+        state.game.penalties.splice(idx, 1);
+        saveState();
+        renderPenaltiesManagerList();
+      }
+    }
+
+    function saveNewPenalty() {
+      const input = document.getElementById('new-penalty-text');
+      if (!input) return;
+      const text = input.value.trim();
+      if (!text) { alert("Bitte einen Strafen-Text eingeben."); return; }
+
+      if (!state.game.penalties) state.game.penalties = [...defaultPenalties];
+      state.game.penalties.push(text);
+      saveState();
+      renderPenaltiesManagerList();
+      input.value = '';
+      playSensualSound('chime');
+    }
+
+    function restoreDefaultPenalties() {
+      if (confirm("Möchtest du die Standard-Strafen (8 Herausforderungen) wiederherstellen?")) {
+        state.game.penalties = [...defaultPenalties];
+        saveState();
+        renderPenaltiesManagerList();
+        playSensualSound('chime');
+        alert("✓ Standard-Strafen (8 Stück) sauber geladen!");
       }
     }
 
