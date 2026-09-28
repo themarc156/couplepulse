@@ -98,6 +98,18 @@
       </div>
     </header>
 
+    <!-- GLOBAL APPS TOAST (SCHICK, ANIMIERT & NICHT-BLOCKIEREND) -->
+    <div id="global-toast" class="hidden absolute top-14 inset-x-4 z-50 transition-all duration-300 transform -translate-y-4 opacity-0 pointer-events-none">
+      <div id="global-toast-card" class="bg-gradient-to-r from-purple-950/95 via-slate-900/95 to-rose-950/95 border border-purple-500/60 rounded-2xl p-3.5 shadow-2xl backdrop-blur-md flex items-center gap-3 pointer-events-auto glow-purple">
+        <span id="global-toast-icon" class="text-2xl animate-bounce shrink-0">✨</span>
+        <div class="flex-1 min-w-0">
+          <div id="global-toast-title" class="text-xs font-black uppercase tracking-wider text-purple-200">Erfolgreich gespeichert</div>
+          <div id="global-toast-desc" class="text-[11px] text-slate-300 leading-snug mt-0.5">Deine Vorlieben für heute Abend sind eingeloggt.</div>
+        </div>
+        <button onclick="hideToast()" class="text-slate-400 hover:text-white text-base font-bold px-1 shrink-0">✕</button>
+      </div>
+    </div>
+
     <!-- ================================================================= -->
     <!-- VIEW 1: PULSE (DYNAMISCHE CHAT-TIMELINE & ACTIONS) -->
     <!-- ================================================================= -->
@@ -1155,6 +1167,46 @@
       }
     }
 
+    let toastTimeout = null;
+
+    function showToast(title, desc = '', icon = '✨') {
+      const toast = document.getElementById('global-toast');
+      const toastIcon = document.getElementById('global-toast-icon');
+      const toastTitle = document.getElementById('global-toast-title');
+      const toastDesc = document.getElementById('global-toast-desc');
+
+      if (!toast) return;
+
+      toastIcon.innerText = icon;
+      toastTitle.innerText = title;
+      toastDesc.innerText = desc;
+      toastDesc.classList.toggle('hidden', !desc);
+
+      clearTimeout(toastTimeout);
+      toast.classList.remove('hidden');
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('-translate-y-4', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+      });
+
+      playSensualSound('chime');
+
+      toastTimeout = setTimeout(() => {
+        hideToast();
+      }, 4000);
+    }
+
+    function hideToast() {
+      const toast = document.getElementById('global-toast');
+      if (!toast) return;
+      toast.classList.remove('translate-y-0', 'opacity-100');
+      toast.classList.add('-translate-y-4', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 300);
+    }
+
     function resetGlobalDay() {
       if (confirm("Möchtest du den Tag komplett zurücksetzen? (Abend-Match, Vorlieben, Bewertungen und Spielstand werden genullt, Katalog bleibt erhalten)")) {
         wizardEditing = false;
@@ -1172,11 +1224,10 @@
         state.kopfkino.isUnlocked = false;
         state.shoutboxMessages = [];
         state.game.scores = { Er: 0, Sie: 0 };
-        state.game.jokers = { Er: 1, Sie: 1 };
         state.game.roundsCount = 0;
         state.game.drawPiles = {};
         saveState(); 
-        alert("✨ Tag erfolgreich zurückgesetzt!");
+        showToast("✨ Tag zurückgesetzt!", "Match, Vorlieben und Spielstand wurden genullt.", "🔄");
       }
     }
 
@@ -2225,13 +2276,13 @@
       });
 
       triggerPushNotification(state.currentUser);
-      playSensualSound('chime');
 
       if (state.kopfkino.isUnlocked) {
-        alert("✨ Perfekt! Beide haben gewählt. Euer Abend-Match steht fest!");
+        showToast("✨ Volltreffer!", "Beide haben gewählt – euer Abend-Fahrplan ist freigeschaltet!", "🔥");
         switchAppView('match');
       } else {
-        alert("✓ Deine Vorlieben wurden gespeichert! Du wirst benachrichtigt, sobald dein Partner fertig ist.");
+        const partner = state.currentUser === 'Er' ? 'Sie' : 'Er';
+        showToast("🔒 Vorlieben eingeloggt!", `Gespeichert! Sobald ${partner} fertig ist, wird euer Match enthüllt.`, "✨");
         switchAppView('pulse');
       }
     }
@@ -3119,7 +3170,7 @@
       closeCravingModal();
       LiveStream.sendData({ type: 'new_craving', craving: newCraving });
       triggerPushNotification(state.currentUser, true);
-      alert(`✓ Signal "${selected.emoji} ${selected.title}" an Partner gesendet!`);
+      showToast("🚀 Signal gesendet!", `"${selected.emoji} ${selected.title}" wurde an Partner übertragen.`, selected.emoji);
       saveState();
     }
 
