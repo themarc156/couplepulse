@@ -268,89 +268,89 @@
     <!-- ================================================================= -->
     <!-- VIEW 3: LUST-DUELL (GAME) -->
     <!-- ================================================================= -->
-    <main id="view-game" class="hidden w-full p-4 space-y-3.5 flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
+    <main id="view-game" class="hidden w-full p-4 space-y-3.5 flex-1 flex flex-col justify-between">
       
       <!-- SUB-HEADER DUELL -->
-      <div class="space-y-2 shrink-0">
+      <div class="space-y-2">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1.5">
-            <span id="session-rounds-badge" class="text-[10px] text-slate-400 bg-slate-900 border border-slate-800 px-2 py-1 rounded-lg font-mono">
-              Runde #1
-            </span>
-            <button onclick="openFilterModal()" class="text-[10px] text-amber-300 bg-amber-950/60 border border-amber-500/50 px-2 py-1 rounded-lg font-bold flex items-center gap-1">
-              <span>🏁 Ziel:</span> <span id="display-target-score">7 ⚡</span>
-            </button>
-          </div>
-          <div class="flex items-center gap-1.5">
+          <span id="session-rounds-badge" class="text-[10px] text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-full font-mono">
+            Runde #1
+          </span>
+          <div class="flex items-center gap-2">
             <button onclick="toggleAudioMute()" id="btn-audio-mute" class="text-[11px] p-1.5 bg-slate-900 border border-slate-800 rounded-lg text-slate-300" title="Sound An/Aus">🔊</button>
             <button onclick="openFilterModal()" class="text-[10px] text-amber-400 bg-amber-950/50 border border-amber-800/40 px-2 py-1 rounded-lg font-bold">⚙️ Filter</button>
-            <button onclick="openCardManagerModal()" id="btn-deck-count" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-2 py-1 rounded-lg font-bold">✏️ Deck (32)</button>
+            <button onclick="openCardManagerModal()" id="btn-deck-count" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-2 py-1 rounded-lg font-bold">✏️ Deck (33)</button>
             <button onclick="resetGame()" class="text-[10px] text-slate-500 hover:text-slate-300 px-1 py-1">Reset</button>
+          </div>
+        </div>
+
+        <!-- LIVE PUNKTESTAND & FINALE-BUTTON IN EINER LEISTE -->
+        <div class="flex justify-between items-center bg-slate-900/90 border border-slate-855 px-2.5 py-1.5 rounded-xl text-xs font-bold font-mono">
+          <span class="text-[10px] uppercase tracking-wider text-slate-400 font-sans">Punkte:</span>
+          <div class="flex items-center gap-1.5">
+            <span id="score-pill-er" class="px-2 py-0.5 rounded-lg bg-amber-950/80 border border-amber-500/50 text-amber-300 text-[11px]">Er: 0 ⚡</span>
+            <span id="score-pill-sie" class="px-2 py-0.5 rounded-lg bg-pink-950/80 border border-pink-500/50 text-pink-300 text-[11px]">Sie: 0 ⚡</span>
+            <button onclick="triggerFinale()" class="px-2.5 py-1 bg-amber-950/80 hover:bg-amber-900/90 border border-amber-500/60 text-amber-300 font-sans font-bold text-[10px] rounded-lg flex items-center gap-1 transition-all active:scale-95 shadow glow-amber" title="Finale einläuten">
+              <span>💦</span> <span>Finale</span>
+            </button>
           </div>
         </div>
       </div>
 
       <!-- STUFEN-WAHL (KOMPAKT & GRIFFIG) -->
-      <div class="space-y-1 shrink-0">
+      <div class="space-y-1">
         <div class="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">
           <span>Stufe:</span>
-          <span id="current-stage-title" class="text-rose-400 font-bold">Stufe 1 (Unterwäsche)</span>
+          <span id="current-stage-title" class="text-rose-400 font-bold">Stufe 1 aktiv</span>
         </div>
         <div class="grid grid-cols-3 gap-2 text-xs font-bold">
-          <button onclick="selectStage(1)" id="btn-stage-1" class="py-2 rounded-xl border border-rose-500 bg-rose-950/60 text-rose-200 glow-rose transition-all flex items-center justify-center gap-1">
+          <button onclick="selectStage(1)" id="btn-stage-1" class="py-2.5 rounded-xl border border-rose-500 bg-rose-950/60 text-rose-200 glow-rose transition-all flex items-center justify-center gap-1">
             <span>💋</span> <span>Stufe 1</span>
           </button>
-          <button onclick="selectStage(2)" id="btn-stage-2" class="py-2 rounded-xl border border-slate-800 bg-slate-900 text-slate-500 transition-all flex items-center justify-center gap-1">
+          <button onclick="selectStage(2)" id="btn-stage-2" class="py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-500 transition-all flex items-center justify-center gap-1">
             <span>🔥</span> <span>Stufe 2</span>
           </button>
-          <button onclick="selectStage(3)" id="btn-stage-3" class="py-2 rounded-xl border border-slate-800 bg-slate-900 text-slate-500 transition-all flex items-center justify-center gap-1">
+          <button onclick="selectStage(3)" id="btn-stage-3" class="py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-500 transition-all flex items-center justify-center gap-1">
             <span>⚡</span> <span>Stufe 3</span>
           </button>
         </div>
       </div>
 
       <!-- 3D KARTEN-FLIP CONTAINER -->
-      <div class="perspective-1000 my-auto flex-1 min-h-0 flex items-center justify-center">
+      <div class="perspective-1000 my-auto flex-1 flex items-center justify-center min-h-[250px]">
         <div id="flip-card-inner" class="w-full relative transform-style-3d card-flip">
           
-          <div id="active-card-face" class="w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[240px] transition-all">
+          <div id="active-card-face" class="w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/70 rounded-3xl p-5 space-y-3 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[250px] transition-all">
             
-            <!-- DYNAMISCHE RICHTUNGS- & PUNKTE-LEISTE -->
-            <div id="card-direction-bar" onclick="toggleActiveTurnManual()" class="bg-slate-950/90 border border-amber-500/40 rounded-2xl p-2 flex items-center justify-between text-xs font-black tracking-wide cursor-pointer hover:scale-[1.01] active:scale-95 transition-all shrink-0" title="Tippen um Rollen zu tauschen">
-              <div id="card-sender-pill" class="flex items-center gap-1 bg-amber-500 text-slate-950 px-2 py-1 rounded-xl shadow font-bold text-[11px]">
+            <!-- DYNAMISCHE RICHTUNGS-LEISTE -->
+            <div id="card-direction-bar" onclick="toggleActiveTurnManual()" class="bg-slate-950/80 border border-amber-500/40 rounded-2xl p-2.5 flex items-center justify-between text-xs font-black tracking-wide cursor-pointer hover:scale-[1.01] active:scale-95 transition-all" title="Tippen um Rollen zu tauschen">
+              <div id="card-sender-pill" class="flex items-center gap-1.5 bg-amber-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold">
                 <span id="card-sender-icon">👑</span>
-                <span id="card-sender-name">ER:</span>
-                <span id="card-sender-score" class="font-mono font-black">0 ⚡</span>
-                <span id="card-sender-role" class="text-[9px] opacity-80">(Gibt)</span>
+                <span id="card-sender-name">ER</span>
+                <span id="card-sender-role" class="text-[9px] opacity-90">(Verwöhnt)</span>
               </div>
               
-              <span id="card-arrow-icon" class="text-amber-400 text-sm font-bold animate-pulse">──▶</span>
+              <span id="card-arrow-icon" class="text-amber-400 text-base font-bold animate-pulse">────▶</span>
 
-              <div id="card-receiver-pill" class="flex items-center gap-1 bg-slate-900 border border-slate-800 text-slate-200 px-2 py-1 rounded-xl text-[11px]">
+              <div id="card-receiver-pill" class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl">
                 <span id="card-receiver-icon">🧘</span>
-                <span id="card-receiver-name">SIE:</span>
-                <span id="card-receiver-score" class="font-mono font-black">0 ⚡</span>
-                <span id="card-receiver-role" class="text-[9px] text-slate-400">(Nimmt)</span>
+                <span id="card-receiver-name">SIE</span>
+                <span id="card-receiver-role" class="text-[9px] text-slate-400">(Empfängt)</span>
               </div>
             </div>
-
-            <!-- KRITISCHER TREFFER BADGE (GOLD-KARTE) -->
-            <div id="card-crit-badge" class="hidden py-1 px-3 bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-black text-[10px] uppercase tracking-wider rounded-full shadow-lg glow-amber animate-pulse mx-auto shrink-0">
-              ⭐ GOLD-KARTE (PUNKTE ZÄHLEN DOPPELT!) ⭐
-            </div>
             
-            <div id="card-text" class="text-sm md:text-base font-bold text-slate-100 leading-relaxed my-auto px-1">
+            <div id="card-text" class="text-sm md:text-base font-bold text-slate-100 leading-relaxed my-auto">
               Tippe unten auf "Karte aufdecken", um das Spiel zu starten... 🔥
             </div>
 
             <!-- RADIALER SVG-TIMER -->
-            <div id="card-timer-container" class="hidden pt-1.5 border-t border-slate-800/80 flex flex-col items-center space-y-1.5 shrink-0">
-              <div class="relative w-16 h-16 flex items-center justify-center">
+            <div id="card-timer-container" class="hidden pt-2 border-t border-slate-800/80 flex flex-col items-center space-y-2">
+              <div class="relative w-20 h-20 flex items-center justify-center">
                 <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                   <path class="text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                   <path id="timer-progress-ring" class="text-amber-500 transition-all duration-1000 ease-linear" stroke-dasharray="100, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                 </svg>
-                <div id="timer-display" class="absolute font-mono font-black text-amber-400 text-xs">01:00</div>
+                <div id="timer-display" class="absolute font-mono font-black text-amber-400 text-sm">01:00</div>
               </div>
               <div class="flex gap-2">
                 <button onclick="toggleTimer()" id="btn-timer-toggle" class="px-3 py-1 bg-amber-500 text-slate-950 text-[10px] font-bold rounded-lg shadow">Pause</button>
@@ -358,36 +358,29 @@
               </div>
             </div>
 
+            <!-- JOKER & WEIGERUNG -->
+            <div id="card-sub-actions" class="hidden pt-1 flex justify-between items-center text-[10px] border-t border-slate-855">
+              <button onclick="useJoker()" id="btn-joker" class="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1">
+                <span>🃏</span> <span>Joker (Neu ziehen)</span>
+              </button>
+              <button onclick="triggerPenalty()" class="text-slate-500 hover:text-rose-400 underline">
+                🛑 Weigerung (0 Pkt.)
+              </button>
+            </div>
+
           </div>
         </div>
       </div>
 
-      <!-- HAUPTAKTIONEN (BEWERTUNG & WEIGERUNG) -->
-      <div id="action-buttons-container" class="space-y-2 pt-1 shrink-0">
+      <!-- HAUPTAKTIONEN (SCHLANK & DIREKT) -->
+      <div id="action-buttons-container" class="space-y-2 pt-1">
         <button onclick="drawCurrentTurnCard()" id="btn-draw-card" class="w-full py-4 bg-gradient-to-r from-amber-500 via-rose-600 to-pink-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-rose-900/40 active:scale-[0.98] transition-all glow-rose">
           ✨ Karte für Er aufdecken ✨
         </button>
         
         <div id="post-draw-buttons" class="hidden space-y-2">
-          <div class="text-[10px] font-bold text-center text-slate-300 uppercase tracking-wider">
-            Wie intensiv war es für <span id="post-draw-receiver-name" class="text-rose-400 font-black">Sie</span>?
-          </div>
-          <div class="grid grid-cols-3 gap-1.5">
-            <button onclick="rateAndCompleteCard(1)" class="py-2.5 px-1 bg-slate-900 hover:bg-slate-850 border border-indigo-500/50 rounded-xl text-indigo-200 font-bold text-xs flex flex-col items-center gap-0.5 active:scale-95 transition-all shadow">
-              <span>✨ Nett</span>
-              <span id="rate-score-1" class="text-[10px] text-indigo-400 font-mono">+1 ⚡</span>
-            </button>
-            <button onclick="rateAndCompleteCard(2)" class="py-2.5 px-1 bg-amber-950/60 hover:bg-amber-900/70 border border-amber-500/60 rounded-xl text-amber-200 font-bold text-xs flex flex-col items-center gap-0.5 active:scale-95 transition-all shadow-lg glow-amber">
-              <span>🔥 Heiß</span>
-              <span id="rate-score-2" class="text-[10px] text-amber-400 font-mono">+2 ⚡</span>
-            </button>
-            <button onclick="rateAndCompleteCard(3)" class="py-2.5 px-1 bg-rose-950/60 hover:bg-rose-900/70 border border-rose-500/60 rounded-xl text-rose-200 font-bold text-xs flex flex-col items-center gap-0.5 active:scale-95 transition-all shadow-lg glow-rose">
-              <span>🌋 Ekstase</span>
-              <span id="rate-score-3" class="text-[10px] text-rose-400 font-mono">+3 ⚡</span>
-            </button>
-          </div>
-          <button onclick="triggerPenalty()" class="w-full py-2.5 bg-slate-950 hover:bg-rose-950/50 border border-rose-900/60 text-rose-400 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95">
-            <span>🛑</span> <span>Aufgabe verweigern (Strafe ziehen)</span>
+          <button onclick="completeCurrentCard()" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg glow-emerald active:scale-[0.98] transition-all flex items-center justify-center gap-1.5">
+            <span>✓ Erfüllt</span> <span class="font-mono">(+1 Punkt ⚡ & Wechsel)</span>
           </button>
         </div>
       </div>
@@ -594,20 +587,6 @@
         </div>
 
         <div class="space-y-2.5 text-xs">
-          <!-- ZIELPUNKTE EINSTELLUNG -->
-          <div class="space-y-1.5 p-2.5 bg-slate-950 rounded-xl border border-slate-800">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-amber-300 block text-xs">🏁 Ziel-Punkte fürs Finale:</span>
-              <span id="modal-target-score-display" class="text-[10px] text-amber-400 font-mono font-bold">7 ⚡</span>
-            </div>
-            <div class="grid grid-cols-4 gap-1.5 text-center text-xs font-bold pt-0.5">
-              <button type="button" onclick="setGameTargetScore(5)" id="btn-target-5" class="py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">5 ⚡</button>
-              <button type="button" onclick="setGameTargetScore(7)" id="btn-target-7" class="py-2 rounded-lg bg-amber-500 text-slate-950 font-black">7 ⚡</button>
-              <button type="button" onclick="setGameTargetScore(10)" id="btn-target-10" class="py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">10 ⚡</button>
-              <button type="button" onclick="setGameTargetScore(0)" id="btn-target-0" class="py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">∞ Offen</button>
-            </div>
-          </div>
-
           <label class="flex items-center justify-between p-2.5 bg-slate-950 rounded-xl border border-slate-800 cursor-pointer">
             <div class="space-y-0.5">
               <span class="font-bold text-slate-200 block">🧸 Toys & Hilfsmittel</span>
@@ -723,36 +702,38 @@
 
     const defaultMasterDeck = [
       // ==========================================
-      // STUFE 1 (UNTERWÄSCHE, DUFT & TEASING) [10 Karten]
+      // STUFE 1 (TEASE & KÜSSE) [10 Karten]
       // ==========================================
-      { id: 'd1_01', role: 'any', text: "Küss deinen Partner intensiv überall an Hals, Nacken und den Ohrläppchen – beide bleiben in Unterwäsche.", stage: 1, timer: 60, tags: ['touch', 'tease'] },
-      { id: 'd1_02', role: 'any', text: "Atme und küsse deinen Partner durch den Stoff der Unterwäsche direkt auf den Intimbereich – ohne den Stoff wegzuziehen.", stage: 1, timer: 60, tags: ['touch', 'tease'] },
-      { id: 'd1_03_er', role: 'er_gives', text: "Fahre mit deinen Händen über ihren bekleideten Po und ihre Oberschenkel, während deine Lippen ihren Nacken erkunden.", stage: 1, timer: 60, tags: ['touch', 'tease'] },
-      { id: 'd1_04_sie', role: 'sie_gives', text: "Streiche mit deinen Fingernägeln und warmen Händen langsam über seine bekleidete Beule in den Boxershorts.", stage: 1, timer: 60, tags: ['touch', 'tease'] },
-      { id: 'd1_05_er', role: 'er_gives', text: "Greife unter ihr Top oder sanft über ihren BH und knete ihre Brüste mit vollem, warmem Griff.", stage: 1, timer: 60, tags: ['touch'] },
-      { id: 'd1_06_sie', role: 'sie_gives', text: "Setze dich auf seinen Schoß (beide in Unterwäsche) und reibe dich langsam an ihm, während ihr euch küsst.", stage: 1, timer: 60, tags: ['touch', 'tease'] },
-      { id: 'd1_07', role: 'any', text: "Küsse deinen Partner langsam von den Knien über die Innenseite der Oberschenkel bis knapp an den Saum der Unterwäsche.", stage: 1, timer: 60, tags: ['touch', 'tease'] },
-      { id: 'd1_08', role: 'any', text: "💑 Beide: Umschlingt und streichelt euch innig über die Wäsche – intensives Knutschen am ganzen Oberkörper.", stage: 1, timer: 60, tags: ['mutual', 'touch'] },
-      { id: 'd1_09', role: 'any', text: "Verbinde deinem Partner die Augen mit einem Tuch und necke seinen Körper nur mit warmen Atemzügen und sanften Fingertipps.", stage: 1, timer: 60, tags: ['sensual', 'touch'] },
-      { id: 'd1_10', role: 'any', text: "Flüstere deinem Partner mit den Lippen an seinem Ohr genau ins Detail, was du in Stufe 2 nackt mit ihm anstellen wirst.", stage: 1, timer: 0, tags: ['tease'] },
+      { id: 'joker_freifahrt_1', role: 'any', text: "🃏 Freifahrtschein: Bestimme frei eine beliebige Berührung oder Aktion für 60 Sekunden – für dich, deinen Partner oder euch beide.", stage: 1, timer: 60, tags: ['joker'] },
+      { id: 'd1_01', role: 'any', text: "Küss deinen Partner intensiv überall an Hals, Nacken und den Ohrläppchen.", stage: 1, timer: 60, tags: ['touch', 'tease'] },
+      { id: 'd1_05', role: 'any', text: "Zieh dich vor den Augen deines Partners langsam bis auf die Unterwäsche aus.", stage: 1, timer: 0, tags: ['tease'] },
+      { id: 'dom_11', role: 'any', text: "Zieh dich komplett aus und präsentiere deinen nackten Körper in einer Position der Wahl deines Partners.", stage: 1, timer: 0, tags: ['command'] },
+      { id: 'c1_06', role: 'any', text: "💑 Beide: Setzt euch einander gegenüber und spielt gegenseitig mit den Fingern an den nackten Brustwarzen des Partners.", stage: 1, timer: 60, tags: ['mutual', 'touch'] },
+      { id: 'c1_10_er', role: 'er_gives', text: "Greife unter ihr Top / an ihre Brüste und knete sie mit vollem, warmem Griff.", stage: 1, timer: 60, tags: ['touch'] },
+      { id: 'dom_27', role: 'any', text: "Nimm die Hand deines Partners und führe sie genau dorthin, wo du jetzt seine/ihre Berührung spüren willst.", stage: 1, timer: 0, tags: ['touch'] },
+      { id: 'd1_35', role: 'any', text: "💑 Beide: Umschlingt und streichelt euch innig – intensives Knutschen am ganzen Oberkörper.", stage: 1, timer: 60, tags: ['touch', 'sensual'] },
+      { id: 'd2_20', role: 'any', text: "Freie Kuss-Wahl: Küss deinen Partner 60 Sekunden lang überall dort, wo du willst.", stage: 1, timer: 60, tags: ['oral', 'touch'] },
+      { id: 'd2_13', role: 'any', text: "Verbinde deinem Partner die Augen und bringe ihn/sie in eine Position deiner Wahl. Verwöhne mit Küssen & sanften Berührungen.", stage: 1, timer: 90, tags: ['restraint', 'sensual', 'touch'] },
 
       // ==========================================
-      // STUFE 2 (HÜLLENLOS & PETTING) [10 Karten]
+      // STUFE 2 (HANDS-ON & INTIM) [10 Karten]
       // ==========================================
-      { id: 'd2_01', role: 'any', text: "Zieht euch jetzt vollständig aus. Präsentiere deinen nackten Körper und lass dich 60 Sekunden lang intensiv bestaunen und berühren.", stage: 2, timer: 60, tags: ['tease'] },
-      { id: 'dom_38_sie', role: 'sie_gives', text: "Verwöhne seinen nackten Schwanz & seine Hoden nur mit Mund & Zunge. Keine Hände!", stage: 2, timer: 60, tags: ['oral'] },
+      { id: 'joker_freifahrt_2', role: 'any', text: "🃏 Freifahrtschein: Bestimme frei eine beliebige Berührung oder Aktion für 60 Sekunden – für dich, deinen Partner oder euch beide.", stage: 2, timer: 60, tags: ['joker'] },
+      { id: 'joker_echo_2', role: 'any', text: "🔁 Highlight-Echo: Wähle eine Aufgabe aus den bisherigen Runden des heutigen Abends und wiederhole sie genau jetzt.", stage: 2, timer: 60, tags: ['joker'] },
+      { id: 'dom_38_sie', role: 'sie_gives', text: "Verwöhne seinen Schwanz & seine Hoden nur mit Mund & Zunge. Keine Hände!", stage: 2, timer: 60, tags: ['oral'] },
       { id: 'c2_23_sie', role: 'sie_gives', text: "Führe langsame, kreisende Daumenbewegungen auf seiner Eichelspitze aus – nutze austretende Lusttropfen als Gleitmittel.", stage: 2, timer: 60, tags: ['touch'] },
       { id: 'c2_02_sie', role: 'sie_gives', text: "Verwöhne seine Eichelspitze im Wechsel mit deiner Zunge und deinen nackten Brustwarzen.", stage: 2, timer: 60, tags: ['touch', 'sensual'] },
       { id: 'c3_18_sie', role: 'sie_gives', text: "Titjob: Stimuliere seinen Schaft sanft und gleitend zwischen deinen nackten Brüsten.", stage: 2, timer: 90, tags: ['touch'] },
-      { id: 'sie_oral_tease_er', role: 'er_gives', text: "Liebkose ihre nackten Schamlippen und ihren Kitzler mit warmen, langsamen Zungenzügen.", stage: 2, timer: 60, tags: ['oral'] },
+      { id: 'sie_oral_tease_er', role: 'er_gives', text: "Liebkose ihre Schamlippen und ihren Kitzler mit warmen, langsamen Zungenzügen.", stage: 2, timer: 60, tags: ['oral'] },
       { id: 'sie_hands_tease_er', role: 'er_gives', text: "Öffne ihre Schamlippen und massiere ihren Kitzler mit feuchten, kreisenden Fingerkuppen.", stage: 2, timer: 60, tags: ['touch'] },
-      { id: 'c2_01_er', role: 'er_gives', text: "Sie beugt sich über dein Gesicht: Schnappe nur mit dem Mund nach ihren nackten Brüsten und sauge fordernd.", stage: 2, timer: 60, tags: ['oral'] },
-      { id: 'c2_16', role: 'any', text: "💑 Beide: Eure Hände wandern zwischen die nackten Beine des Partners. Stimuliert euch gegenseitig mit gleichem Tempo.", stage: 2, timer: 60, tags: ['mutual', 'touch'] },
-      { id: 'd2_20', role: 'any', text: "Massiere den Intimbereich deines Partners mit warmem Massageöl und sanft kreisenden Bewegungen.", stage: 2, timer: 90, tags: ['touch', 'sensual'] },
+      { id: 'c2_01_er', role: 'er_gives', text: "Sie beugt sich über dein Gesicht: Schnappe nur mit dem Mund nach ihren Brüsten und sauge fordernd.", stage: 2, timer: 60, tags: ['restraint', 'oral'] },
+      { id: 'c2_16', role: 'any', text: "💑 Beide: Eure Hände wandern zwischen die Beine des Partners. Ihr stimuliert euch gegenseitig mit gleichem Tempo und gleicher Intensität.", stage: 2, timer: 60, tags: ['mutual', 'touch'] },
 
       // ==========================================
-      // STUFE 3 (EKSTASE, TOYS & FINALE-DRIVE) [12 Karten]
+      // STUFE 3 (TOYS, EKSTASE & DOMINANZ) [13 Karten]
       // ==========================================
+      { id: 'joker_freifahrt_3', role: 'any', text: "🃏 Freifahrtschein: Bestimme frei eine beliebige Berührung oder Aktion für 60 Sekunden – für dich, deinen Partner oder euch beide.", stage: 3, timer: 60, tags: ['joker'] },
+      { id: 'joker_echo_3', role: 'any', text: "🔁 Highlight-Echo: Wähle eine Aufgabe aus den bisherigen Runden des heutigen Abends und wiederhole sie genau jetzt.", stage: 3, timer: 60, tags: ['joker'] },
       { id: 'c3_07_sie', role: 'sie_gives', text: "Nimm seinen Schwanz tief in den Mund und sauge fordernd, während du ihn langsam wieder hinausgleiten lässt.", stage: 3, timer: 90, tags: ['oral'] },
       { id: 'd3_10_sie', role: 'sie_gives', text: "Nutze einen geölten Finger oder Toy, um zärtlich seine Prostata zu stimulieren.", stage: 3, timer: 90, tags: ['toy', 'anal'] },
       { id: 'dom_26_sie', role: 'sie_gives', text: "Face-Sitting: Setze dich auf sein Gesicht und bestimme Tempo und Druck seiner Zunge.", stage: 3, timer: 90, tags: ['command', 'restraint'] },
@@ -803,8 +784,7 @@
         currentTurn: 'Er',
         roundsCount: 0,
         scores: { Er: 0, Sie: 0 },
-        targetScore: 7,
-        isCriticalHit: false,
+        jokers: { Er: 1, Sie: 1 },
         audioMuted: false,
         filters: { allowToys: true, allowSpanking: true, syncKopfkino: true },
         cards: JSON.parse(JSON.stringify(defaultMasterDeck)),
@@ -814,8 +794,8 @@
         timerInterval: null,
         isTimerRunning: false,
         currentCard: null
-      }
-    };
+      },
+      };
 
     let selectedCravingLevel = 'fummeln';
     let activeReviewItem = null;
@@ -3075,60 +3055,31 @@
     function clearEveningReservation() { state.eveningReservation = null; saveState(); }
 
     // =========================================================================
-    // LUST-DUELL ENGINE (GAME & BEWERTUNGS-SYSTEM)
+    // LUST-DUELL ENGINE (GAME)
     // =========================================================================
-    function setGameTargetScore(score) {
-      state.game.targetScore = score;
-      [5, 7, 10, 0].forEach(val => {
-        const btn = document.getElementById(`btn-target-${val}`);
-        if (!btn) return;
-        if (val === score) {
-          btn.className = 'py-2 rounded-lg bg-amber-500 text-slate-950 font-black';
-        } else {
-          btn.className = 'py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300';
-        }
-      });
-      updateGameScoreUI();
-      saveState();
-      playSensualSound('chime');
-    }
-
     function updateGameScoreUI() {
-      const roundsEl = document.getElementById('session-rounds-badge');
-      if (roundsEl) roundsEl.innerText = `Runde #${state.game.roundsCount + 1}`;
-
-      const targetDisplay = document.getElementById('display-target-score');
-      if (targetDisplay) targetDisplay.innerText = state.game.targetScore > 0 ? `${state.game.targetScore} ⚡` : '∞ Offen';
-
-      const modalTarget = document.getElementById('modal-target-score-display');
-      if (modalTarget) modalTarget.innerText = state.game.targetScore > 0 ? `${state.game.targetScore} ⚡` : '∞ Offen';
-
-      const sScore = document.getElementById('card-sender-score');
-      const rScore = document.getElementById('card-receiver-score');
-      const sender = state.game.currentTurn;
-      const receiver = sender === 'Er' ? 'Sie' : 'Er';
-
-      if (sScore) sScore.innerText = `${state.game.scores[sender]} ⚡`;
-      if (rScore) rScore.innerText = `${state.game.scores[receiver]} ⚡`;
+      document.getElementById('score-pill-er').innerText = `Er: ${state.game.scores.Er} ⚡`;
+      document.getElementById('score-pill-sie').innerText = `Sie: ${state.game.scores.Sie} ⚡`;
+      document.getElementById('session-rounds-badge').innerText = `Runde #${state.game.roundsCount + 1}`;
     }
 
     function selectStage(stage) {
       state.game.stage = stage;
-      const titles = { 1: 'Stufe 1 (Unterwäsche)', 2: 'Stufe 2 (Nackt & Petting)', 3: 'Stufe 3 (Ekstase & Toys)' };
+      const titles = { 1: 'Stufe 1 aktiv', 2: 'Stufe 2 aktiv', 3: 'Stufe 3 aktiv' };
       document.getElementById('current-stage-title').innerText = titles[stage];
 
       [1, 2, 3].forEach(s => {
         const btn = document.getElementById(`btn-stage-${s}`);
         if (s === stage) {
-          btn.className = 'py-2 rounded-xl border border-rose-500 bg-rose-950/60 text-rose-200 glow-rose transition-all flex items-center justify-center gap-1';
+          btn.className = 'py-2.5 rounded-xl border border-rose-500 bg-rose-950/60 text-rose-200 glow-rose transition-all flex items-center justify-center gap-1';
         } else {
-          btn.className = 'py-2 rounded-xl border border-slate-800 bg-slate-900 text-slate-500 transition-all flex items-center justify-center gap-1';
+          btn.className = 'py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-500 transition-all flex items-center justify-center gap-1';
         }
       });
       playSensualSound('heartbeat');
     }
 
-    function updateRoleVisuals(user, isCrit = false) {
+    function updateRoleVisuals(user, isJoker = false) {
       const isEr = (user === 'Er');
       const cardBox = document.getElementById('active-card-face');
       const senderPill = document.getElementById('card-sender-pill');
@@ -3139,41 +3090,47 @@
       const receiverRole = document.getElementById('card-receiver-role');
       const arrowIcon = document.getElementById('card-arrow-icon');
       const mainDrawBtn = document.getElementById('btn-draw-card');
-      const receiverText = document.getElementById('post-draw-receiver-name');
 
-      if (isCrit) {
-        cardBox.className = 'w-full bg-gradient-to-b from-amber-950/70 via-slate-900 to-slate-950 border-2 border-amber-400 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[240px] transition-all';
+      if (isJoker) {
+        cardBox.className = 'w-full bg-gradient-to-br from-pink-950/80 via-slate-900 to-purple-950/80 border-2 border-pink-500 rounded-3xl p-5 space-y-3 shadow-2xl glow-joker text-center flex flex-col justify-between min-h-[250px] transition-all';
       } else if (isEr) {
-        cardBox.className = 'w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[240px] transition-all';
+        cardBox.className = 'w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/70 rounded-3xl p-5 space-y-3 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[250px] transition-all';
       } else {
-        cardBox.className = 'w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-pink-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-rose text-center flex flex-col justify-between min-h-[240px] transition-all';
+        cardBox.className = 'w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-pink-500/70 rounded-3xl p-5 space-y-3 shadow-2xl glow-rose text-center flex flex-col justify-between min-h-[250px] transition-all';
       }
 
       if (isEr) {
-        senderPill.className = 'flex items-center gap-1 bg-amber-500 text-slate-950 px-2 py-1 rounded-xl shadow font-bold text-[11px]';
-        senderName.innerText = 'ER:';
-        senderRole.innerText = '(Gibt)';
-        receiverPill.className = 'flex items-center gap-1 bg-slate-900 border border-slate-800 text-slate-200 px-2 py-1 rounded-xl text-[11px]';
-        receiverName.innerText = 'SIE:';
-        receiverRole.innerText = '(Nimmt)';
-        arrowIcon.className = 'text-amber-400 text-sm font-bold animate-pulse';
+        senderPill.className = 'flex items-center gap-1.5 bg-amber-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold';
+        senderName.innerText = 'ER';
+        senderRole.innerText = '(Verwöhnt)';
+        receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl';
+        receiverName.innerText = 'SIE';
+        receiverRole.innerText = '(Empfängt)';
+        arrowIcon.className = 'text-amber-400 text-base font-bold animate-pulse';
         mainDrawBtn.className = 'w-full py-4 bg-gradient-to-r from-amber-500 via-amber-600 to-rose-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-amber-900/40 active:scale-[0.98] transition-all glow-amber';
         mainDrawBtn.innerText = `✨ Karte für Er aufdecken ✨`;
-        if (receiverText) receiverText.innerText = 'Sie';
       } else {
-        senderPill.className = 'flex items-center gap-1 bg-pink-500 text-slate-950 px-2 py-1 rounded-xl shadow font-bold text-[11px]';
-        senderName.innerText = 'SIE:';
-        senderRole.innerText = '(Gibt)';
-        receiverPill.className = 'flex items-center gap-1 bg-slate-900 border border-slate-800 text-slate-200 px-2 py-1 rounded-xl text-[11px]';
-        receiverName.innerText = 'ER:';
-        receiverRole.innerText = '(Nimmt)';
-        arrowIcon.className = 'text-pink-400 text-sm font-bold animate-pulse';
+        senderPill.className = 'flex items-center gap-1.5 bg-pink-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold';
+        senderName.innerText = 'SIE';
+        senderRole.innerText = '(Verwöhnt)';
+        receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl';
+        receiverName.innerText = 'ER';
+        receiverRole.innerText = '(Empfängt)';
+        arrowIcon.className = 'text-pink-400 text-base font-bold animate-pulse';
         mainDrawBtn.className = 'w-full py-4 bg-gradient-to-r from-pink-500 via-rose-600 to-purple-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-pink-900/40 active:scale-[0.98] transition-all glow-rose';
         mainDrawBtn.innerText = `✨ Karte für Sie aufdecken ✨`;
-        if (receiverText) receiverText.innerText = 'Er';
       }
 
-      updateGameScoreUI();
+      const jokerCount = state.game.jokers[user];
+      const jokerBtn = document.getElementById('btn-joker');
+      if (jokerBtn) {
+        if (jokerCount > 0) {
+          jokerBtn.classList.remove('hidden');
+          jokerBtn.innerText = `🃏 Joker nutzen (${user} hat ${jokerCount})`;
+        } else {
+          jokerBtn.classList.add('hidden');
+        }
+      }
     }
 
     function toggleActiveTurnManual() {
@@ -3230,39 +3187,21 @@
     function drawCurrentTurnCard() {
       const card = getNextCard(state.game.stage);
       state.game.currentCard = card;
-
-      // ca. 22% Chance auf Gold-Karte (Kritischer Treffer)
-      state.game.isCriticalHit = (Math.random() < 0.22);
+      const isJoker = (card.tags || []).includes('joker');
 
       const flipInner = document.getElementById('flip-card-inner');
       flipInner.classList.add('rotate-y-180');
 
-      if (state.game.isCriticalHit) {
-        playSensualSound('gong');
-        triggerHaptic([100, 50, 150]);
-      } else {
-        playSensualSound('chime');
-        triggerHaptic(60);
-      }
+      if (isJoker) { playSensualSound('gong'); triggerHaptic([100, 50, 100]); }
+      else { playSensualSound('chime'); triggerHaptic(60); }
 
       setTimeout(() => {
-        updateRoleVisuals(state.game.currentTurn, state.game.isCriticalHit);
+        updateRoleVisuals(state.game.currentTurn, isJoker);
         document.getElementById('card-text').innerText = card.text;
-
-        const critBadge = document.getElementById('card-crit-badge');
-        if (critBadge) {
-          if (state.game.isCriticalHit) critBadge.classList.remove('hidden');
-          else critBadge.classList.add('hidden');
-        }
-
-        // Punktwerte der Bewertungs-Buttons anpassen (verdoppeln bei Gold-Karte)
-        const mult = state.game.isCriticalHit ? 2 : 1;
-        document.getElementById('rate-score-1').innerText = `+${1 * mult} ⚡`;
-        document.getElementById('rate-score-2').innerText = `+${2 * mult} ⚡`;
-        document.getElementById('rate-score-3').innerText = `+${3 * mult} ⚡`;
 
         document.getElementById('btn-draw-card').classList.add('hidden');
         document.getElementById('post-draw-buttons').classList.remove('hidden');
+        document.getElementById('card-sub-actions').classList.remove('hidden');
 
         stopTimer();
         if (card.timer && card.timer > 0) {
@@ -3280,24 +3219,18 @@
       }, 250);
     }
 
-    function rateAndCompleteCard(baseRating) {
-      const mult = state.game.isCriticalHit ? 2 : 1;
-      const points = baseRating * mult;
-      const turn = state.game.currentTurn;
+    function useJoker() {
+      const user = state.game.currentTurn;
+      if (state.game.jokers[user] <= 0) return;
+      state.game.jokers[user]--;
+      playSensualSound('chime');
+      drawCurrentTurnCard();
+    }
 
-      state.game.scores[turn] += points;
+    function completeCurrentCard() {
+      state.game.scores[state.game.currentTurn]++;
       state.game.roundsCount++;
       updateGameScoreUI();
-      playSensualSound('chime');
-
-      // Prüfen, ob das Punkteziel erreicht wurde -> Automatisches Finale
-      if (state.game.targetScore > 0 && state.game.scores[turn] >= state.game.targetScore) {
-        setTimeout(() => {
-          triggerFinale();
-        }, 400);
-        return;
-      }
-
       advanceToNextTurn();
     }
 
@@ -3313,17 +3246,15 @@
     function advanceToNextTurn() {
       stopTimer();
       document.getElementById('card-timer-container').classList.add('hidden');
-      const critBadge = document.getElementById('card-crit-badge');
-      if (critBadge) critBadge.classList.add('hidden');
+      document.getElementById('card-sub-actions').classList.add('hidden');
 
       state.game.currentTurn = (state.game.currentTurn === 'Er') ? 'Sie' : 'Er';
-      state.game.isCriticalHit = false;
       updateRoleVisuals(state.game.currentTurn, false);
 
       document.getElementById('card-text').innerText = `${state.game.currentTurn} ist jetzt an der Reihe!`;
       document.getElementById('btn-draw-card').classList.remove('hidden');
       document.getElementById('post-draw-buttons').classList.add('hidden');
-      playSensualSound('heartbeat');
+      playSensualSound('chime');
       saveState();
     }
 
@@ -3503,17 +3434,16 @@
     function resetGame() {
       if (confirm("Spiel komplett zurücksetzen? (Punkte & Runden werden genullt)")) {
         state.game.scores = { Er: 0, Sie: 0 };
+        state.game.jokers = { Er: 1, Sie: 1 };
         state.game.roundsCount = 0;
-        state.game.isCriticalHit = false;
         state.game.drawPiles = { 1: [], 2: [], 3: [] };
         updateGameScoreUI();
         stopTimer();
         document.getElementById('card-text').innerText = 'Tippe unten auf "Karte aufdecken", um das Spiel zu starten... 🔥';
         document.getElementById('card-timer-container').classList.add('hidden');
-        const critBadge = document.getElementById('card-crit-badge');
-        if (critBadge) critBadge.classList.add('hidden');
         document.getElementById('btn-draw-card').classList.remove('hidden');
         document.getElementById('post-draw-buttons').classList.add('hidden');
+        document.getElementById('card-sub-actions').classList.add('hidden');
         selectStage(1);
         updateRoleVisuals('Er', false);
         playSensualSound('chime');
