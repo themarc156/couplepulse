@@ -1096,6 +1096,9 @@
       currentFacingMode: 'user',
       audioMuted: true,
       zoomLevel: 1,
+      panX: 0,
+      panY: 0,
+      lastTapTime: 0,
       isTheaterMode: false,
 
       initPeer() {
@@ -1203,10 +1206,12 @@
         const levels = [1, 1.5, 2, 'fit'];
         const currentIdx = levels.indexOf(this.zoomLevel);
         this.zoomLevel = levels[(currentIdx + 1) % levels.length];
+        this.panX = 0;
+        this.panY = 0;
         this.applyZoom();
       },
 
-      applyZoom() {
+      applyZoom(isDragging = false) {
         const rVideo = document.getElementById('remote-video');
         const lVideo = document.getElementById('local-video');
         const btn = document.getElementById('btn-stream-zoom');
@@ -1214,14 +1219,27 @@
 
         [rVideo, lVideo].forEach(v => {
           if (!v) return;
+          v.style.transition = isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)';
           if (this.zoomLevel === 'fit') {
             v.style.objectFit = 'contain';
-            v.style.transform = 'scale(1)';
+            v.style.transform = 'translate(0px, 0px) scale(1)';
           } else {
             v.style.objectFit = 'cover';
-            v.style.transform = `scale(${this.zoomLevel})`;
+            v.style.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.zoomLevel})`;
           }
         });
+      },
+
+      clampPan(containerWidth, containerHeight) {
+        if (this.zoomLevel <= 1 || this.zoomLevel === 'fit') {
+          this.panX = 0;
+          this.panY = 0;
+          return;
+        }
+        const maxPanX = (containerWidth * (this.zoomLevel - 1)) / 2;
+        const maxPanY = (containerHeight * (this.zoomLevel - 1)) / 2;
+        this.panX = Math.max(-maxPanX, Math.min(maxPanX, this.panX));
+        this.panY = Math.max(-maxPanY, Math.min(maxPanY, this.panY));
       },
 
       toggleTheaterMode() {
@@ -1248,35 +1266,104 @@
 
         let initialDist = 0;
         let startScale = 1;
+        let startPanX = 0;
+        let startPanY = 0;
+        let startTouchX = 0;
+        let startTouchY = 0;
 
         container.addEventListener('touchstart', (e) => {
+          const now = Date.now();
+          const rect = container.getBoundingClientRect();
+
+          // 1. Gezielter Doppel-Tipp (Double-Tap auf gewünschten Bereich)
+          if (e.touches.length === 1) {
+            if (now - this.lastTapTime < 300) {
+              e.preventDefault();
+              const touch = e.touches[0];
+              const tapX = touch.clientX - rect.left;
+              const tapY = touch.clientY - rect.top;
+
+              if (this.zoomLevel > 1) {
+                this.zoomLevel = 1;
+                this.panX = 0;
+                this.panY = 0;
+              } else {
+                this.zoomLevel = 2.2;
+                const offsetX = tapX - rect.width / 2;
+                const offsetY = tapY - rect.height / 2;
+                this.panX = -offsetX * 1.2;
+                this.panY = -offsetY * 1.2;
+                this.clampPan(rect.width, rect.height);
+              }
+              this.applyZoom(false);
+              this.lastTapTime = 0;
+              return;
+            }
+            this.lastTapTime = now;
+
+            // 1-Finger Drag & Pan Vorbereitung
+            startTouchX = e.touches[0].clientX;
+            startTouchY = e.touches[0].clientY;
+            startPanX = this.panX;
+            startPanY = this.panY;
+          }
+
+          // 2. Zwei-Finger Pinch Vorbereitung
           if (e.touches.length === 2) {
             initialDist = Math.hypot(
               e.touches[0].pageX - e.touches[1].pageX,
               e.touches[0].pageY - e.touches[1].pageY
             );
-            startScale = typeof LiveStream.zoomLevel === 'number' ? LiveStream.zoomLevel : 1;
+            startScale = typeof this.zoomLevel === 'number' ? this.zoomLevel : 1;
+            startPanX = this.panX;
+            startPanY = this.panY;
+            startTouchX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            startTouchY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
           }
-        }, { passive: true });
+        }, { passive: false });
 
         container.addEventListener('touchmove', (e) => {
+          const rect = container.getBoundingClientRect();
+
+          // 1-Finger Verschieben (Pan) wenn hineingezoomt
+          if (e.touches.length === 1 && typeof this.zoomLevel === 'number' && this.zoomLevel > 1) {
+            e.preventDefault();
+            const deltaX = e.touches[0].clientX - startTouchX;
+            const deltaY = e.touches[0].clientY - startTouchY;
+            this.panX = startPanX + deltaX;
+            this.panY = startPanY + deltaY;
+            this.clampPan(rect.width, rect.height);
+            this.applyZoom(true);
+          }
+
+          // 2-Finger Pinch to Zoom
           if (e.touches.length === 2 && initialDist > 0) {
+            e.preventDefault();
             const currentDist = Math.hypot(
               e.touches[0].pageX - e.touches[1].pageX,
               e.touches[0].pageY - e.touches[1].pageY
             );
             const factor = currentDist / initialDist;
-            let newScale = Math.min(3, Math.max(1, startScale * factor));
+            let newScale = Math.min(4, Math.max(1, startScale * factor));
             newScale = Math.round(newScale * 10) / 10;
-            LiveStream.zoomLevel = newScale;
-            LiveStream.applyZoom();
+            this.zoomLevel = newScale;
+
+            const currentMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            const currentMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            this.panX = startPanX + (currentMidX - startTouchX);
+            this.panY = startPanY + (currentMidY - startTouchY);
+            this.clampPan(rect.width, rect.height);
+            this.applyZoom(true);
           }
-        }, { passive: true });
+        }, { passive: false });
 
         container.addEventListener('touchend', (e) => {
-          if (e.touches.length < 2) {
-            initialDist = 0;
+          if (e.touches.length < 2) initialDist = 0;
+          if (this.zoomLevel <= 1) {
+            this.panX = 0;
+            this.panY = 0;
           }
+          this.applyZoom(false);
         }, { passive: true });
       },
 
@@ -1485,6 +1572,8 @@
         this.isStreaming = false;
         this.isSender = false;
         this.zoomLevel = 1;
+        this.panX = 0;
+        this.panY = 0;
 
         if (this.isTheaterMode) {
           this.toggleTheaterMode();
