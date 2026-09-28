@@ -362,13 +362,9 @@
         </div>
       </div>
 
-      <!-- HAUPTAKTIONEN (BEWERTUNG & WEIGERUNG) -->
+      <!-- HAUPTAKTIONEN (BEWERTUNG & WEIGERUNG DIREKT AKTIV) -->
       <div id="action-buttons-container" class="space-y-2 pt-1 shrink-0">
-        <button onclick="drawCurrentTurnCard()" id="btn-draw-card" class="w-full py-4 bg-gradient-to-r from-amber-500 via-rose-600 to-pink-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-rose-900/40 active:scale-[0.98] transition-all glow-rose">
-          ✨ Karte für Er aufdecken ✨
-        </button>
-        
-        <div id="post-draw-buttons" class="hidden space-y-2">
+        <div id="post-draw-buttons" class="space-y-2">
           <div id="post-draw-prompt" class="text-[10px] font-bold text-center text-slate-300 uppercase tracking-wider">
             Wie intensiv war es für <span id="post-draw-receiver-name" class="text-rose-400 font-black">Sie</span>?
           </div>
@@ -3153,7 +3149,9 @@
           btn.className = 'py-2 rounded-xl border border-slate-800 bg-slate-900 text-slate-500 transition-all flex items-center justify-center gap-1';
         }
       });
-      playSensualSound('heartbeat');
+      
+      // Bei Stufenwechsel sofort die passende Karte aus der neuen Stufe aufdecken
+      drawCurrentTurnCard();
     }
 
     function updateRoleVisuals(user, isCrit = false) {
@@ -3235,8 +3233,7 @@
 
     function toggleActiveTurnManual() {
       state.game.currentTurn = (state.game.currentTurn === 'Er') ? 'Sie' : 'Er';
-      updateRoleVisuals(state.game.currentTurn, false);
-      playSensualSound('heartbeat');
+      drawCurrentTurnCard();
     }
 
     function getFilteredCardsForStage(stage, currentTurn) {
@@ -3292,7 +3289,7 @@
       state.game.isCriticalHit = (Math.random() < 0.22);
 
       const flipInner = document.getElementById('flip-card-inner');
-      flipInner.classList.add('rotate-y-180');
+      if (flipInner) flipInner.classList.add('rotate-y-180');
 
       if (state.game.isCriticalHit) {
         playSensualSound('gong');
@@ -3304,7 +3301,8 @@
 
       setTimeout(() => {
         updateRoleVisuals(state.game.currentTurn, state.game.isCriticalHit);
-        document.getElementById('card-text').innerText = card.text;
+        const cardTextEl = document.getElementById('card-text');
+        if (cardTextEl) cardTextEl.innerText = card.text;
 
         const critBadge = document.getElementById('card-crit-badge');
         if (critBadge) {
@@ -3314,23 +3312,27 @@
 
         // Punktwerte der Bewertungs-Buttons anpassen (verdoppeln bei Gold-Karte)
         const mult = state.game.isCriticalHit ? 2 : 1;
-        document.getElementById('rate-score-1').innerText = `+${1 * mult} ⚡`;
-        document.getElementById('rate-score-2').innerText = `+${2 * mult} ⚡`;
-        document.getElementById('rate-score-3').innerText = `+${3 * mult} ⚡`;
-
-        document.getElementById('btn-draw-card').classList.add('hidden');
-        document.getElementById('post-draw-buttons').classList.remove('hidden');
+        const r1 = document.getElementById('rate-score-1');
+        const r2 = document.getElementById('rate-score-2');
+        const r3 = document.getElementById('rate-score-3');
+        if (r1) r1.innerText = `+${1 * mult} ⚡`;
+        if (r2) r2.innerText = `+${2 * mult} ⚡`;
+        if (r3) r3.innerText = `+${3 * mult} ⚡`;
 
         stopTimer();
-        if (card.timer && card.timer > 0) {
-          document.getElementById('card-timer-container').classList.remove('hidden');
-          prepareTimer(card.timer);
-        } else {
-          document.getElementById('card-timer-container').classList.add('hidden');
+        const timerBox = document.getElementById('card-timer-container');
+        if (timerBox) {
+          if (card.timer && card.timer > 0) {
+            timerBox.classList.remove('hidden');
+            prepareTimer(card.timer);
+          } else {
+            timerBox.classList.add('hidden');
+          }
         }
 
-        flipInner.classList.remove('rotate-y-180');
-      }, 250);
+        if (flipInner) flipInner.classList.remove('rotate-y-180');
+        saveState();
+      }, 200);
     }
 
     function rateAndCompleteCard(baseRating) {
@@ -3405,20 +3407,12 @@
 
     function advanceToNextTurn() {
       stopTimer();
-      document.getElementById('card-timer-container').classList.add('hidden');
       const critBadge = document.getElementById('card-crit-badge');
       if (critBadge) critBadge.classList.add('hidden');
 
-      state.game.currentCard = null;
+      // Wechselt sofort zum Partner und flippt nahtlos die nächste Karte
       state.game.currentTurn = (state.game.currentTurn === 'Er') ? 'Sie' : 'Er';
-      state.game.isCriticalHit = false;
-      updateRoleVisuals(state.game.currentTurn, false);
-
-      document.getElementById('card-text').innerText = `${state.game.currentTurn} ist jetzt an der Reihe!`;
-      document.getElementById('btn-draw-card').classList.remove('hidden');
-      document.getElementById('post-draw-buttons').classList.add('hidden');
-      playSensualSound('heartbeat');
-      saveState();
+      drawCurrentTurnCard();
     }
 
     function startTimer(seconds, displayId, ringId, onComplete) {
@@ -3629,20 +3623,23 @@
       if (confirm("Spiel komplett zurücksetzen? (Punkte & Runden werden genullt)")) {
         state.game.scores = { Er: 0, Sie: 0 };
         state.game.roundsCount = 0;
+        state.game.currentTurn = 'Er';
+        state.game.stage = 1;
         state.game.isCriticalHit = false;
         state.game.drawPiles = { 1: [], 2: [], 3: [] };
         updateGameScoreUI();
         stopTimer();
-        document.getElementById('card-text').innerText = 'Tippe unten auf "Karte aufdecken", um das Spiel zu starten... 🔥';
-        document.getElementById('card-timer-container').classList.add('hidden');
         const critBadge = document.getElementById('card-crit-badge');
         if (critBadge) critBadge.classList.add('hidden');
-        document.getElementById('btn-draw-card').classList.remove('hidden');
-        document.getElementById('post-draw-buttons').classList.add('hidden');
-        selectStage(1);
-        updateRoleVisuals('Er', false);
-        playSensualSound('chime');
-        saveState();
+        const titles = { 1: 'Stufe 1 (Unterwäsche)', 2: 'Stufe 2 (Nackt & Petting)', 3: 'Stufe 3 (Ekstase & Toys)' };
+        document.getElementById('current-stage-title').innerText = titles[1];
+        [1, 2, 3].forEach(s => {
+          const btn = document.getElementById(`btn-stage-${s}`);
+          if (btn) btn.className = s === 1 
+            ? 'py-2 rounded-xl border border-rose-500 bg-rose-950/60 text-rose-200 glow-rose transition-all flex items-center justify-center gap-1'
+            : 'py-2 rounded-xl border border-slate-800 bg-slate-900 text-slate-500 transition-all flex items-center justify-center gap-1';
+        });
+        drawCurrentTurnCard();
       }
     }
 
@@ -3653,8 +3650,7 @@
     loadState();
     LiveStream.initPeer();
     setupVisualViewportSync();
-    selectStage(1);
-    updateRoleVisuals('Er', false);
+    selectStage(state.game.stage || 1);
   </script>
 </body>
 </html>
