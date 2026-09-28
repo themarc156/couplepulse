@@ -2,7 +2,7 @@
 <html lang="de" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#020617">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -457,9 +457,9 @@
     </div>
 
 
-    <!-- MODAL: KURZE LUST-PAUSE (CLEAN & DIREKT) -->
-    <div id="craving-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-end justify-center p-0">
-      <div class="bg-slate-900 border-t border-slate-800 w-full rounded-t-3xl p-4 space-y-3 max-h-[85vh] overflow-y-auto shadow-2xl">
+    <!-- MODAL: KURZE LUST-PAUSE (KEYBOARD-OPTIMIERT) -->
+    <div id="craving-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-end justify-center p-0">
+      <div id="craving-modal-sheet" class="bg-slate-900 border-t border-slate-800 w-full rounded-t-3xl p-4 space-y-3 max-h-[85vh] overflow-y-auto shadow-2xl">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
           <h3 class="font-bold text-xs text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
             <span>🔥</span> Kurze Lust-Pause
@@ -487,11 +487,11 @@
 
         <!-- OPTIONALE NOTIZ / ORT -->
         <div class="pt-0.5">
-          <input id="craving-note-input" type="text" placeholder="Flüster-Nachricht...(optional)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
+          <input id="craving-note-input" onfocus="scrollCravingModalIntoView()" onkeydown="if(event.key==='Enter'){event.preventDefault();sendQuickCraving();}" type="text" placeholder="Flüster-Notiz oder Ort (z. B. Badewanne 🛁 / Komm sofort...)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
         </div>
 
         <!-- SENDE-BUTTON -->
-        <button onclick="sendQuickCraving()" class="w-full py-3 bg-gradient-to-r from-rose-600 via-pink-600 to-amber-600 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-rose-900/40 active:scale-[0.98] transition-all">
+        <button id="btn-send-craving" onclick="sendQuickCraving()" class="w-full py-3 bg-gradient-to-r from-rose-600 via-pink-600 to-amber-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-rose-900/40 active:scale-[0.98] transition-all">
           🚀 Lust-Pause jetzt senden
         </button>
       </div>
@@ -1968,6 +1968,15 @@
       selectCravingLevel('fummeln');
       document.getElementById('craving-note-input').value = '';
       document.getElementById('craving-modal').classList.remove('hidden'); 
+    }
+
+    function scrollCravingModalIntoView() {
+      setTimeout(() => {
+        const btn = document.getElementById('btn-send-craving');
+        const sheet = document.getElementById('craving-modal-sheet');
+        if (sheet) sheet.scrollTop = sheet.scrollHeight;
+        if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 250);
     }
 
     function closeCravingModal() { document.getElementById('craving-modal').classList.add('hidden'); }
