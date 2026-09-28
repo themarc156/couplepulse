@@ -91,98 +91,103 @@
     </header>
 
     <!-- ================================================================= -->
-    <!-- VIEW 1: PULSE (HEUTE & JETZT - ERGONOMISCH UNTEN/MITTE ZENTRIERT) -->
+    <!-- VIEW 1: PULSE (DYNAMISCHE CHAT-TIMELINE & ACTIONS) -->
     <!-- ================================================================= -->
-    <main id="view-pulse" class="w-full p-4 space-y-3 flex-1 flex flex-col justify-end">
+    <main id="view-pulse" class="w-full p-4 space-y-3 flex-1 flex flex-col justify-between overflow-hidden">
 
-      <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK -->
-      <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950 to-purple-950 border border-rose-500/70 rounded-2xl p-3.5 glow-rose space-y-2 animate-pulse">
-        <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
-          <span>💖 Rückmeldung vom Partner</span>
-          <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Schließen</button>
-        </div>
-        <div id="incoming-feedback-text" class="text-sm font-bold text-slate-100 bg-slate-950/70 p-2.5 rounded-xl border border-rose-800/40"></div>
-      </section>
+      <!-- BENACHRICHTIGUNGS-BEREICH (EXPANDIERT NUR BEI AKTIVEN ALARMEN) -->
+      <div class="space-y-2 shrink-0">
+        <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK -->
+        <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950 to-purple-950 border border-rose-500/70 rounded-2xl p-3 glow-rose space-y-2 animate-pulse">
+          <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
+            <span>💖 Rückmeldung vom Partner</span>
+            <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Schließen</button>
+          </div>
+          <div id="incoming-feedback-text" class="text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-rose-800/40"></div>
+        </section>
 
-      <!-- BANNER: ABEND-MATCH BEREIT / EINLADUNG -->
-      <section id="kopfkino-match-ready-banner" class="hidden bg-gradient-to-r from-purple-950 via-indigo-950 to-pink-950 border border-purple-500/70 rounded-2xl p-3.5 glow-purple space-y-2 animate-pulse">
-        <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
-          <span id="kopfkino-banner-title">✨ Unser Abend-Match ist bereit!</span>
-          <span class="bg-purple-900/80 px-2 py-0.5 rounded-full text-[10px] border border-purple-500/40 font-bold">MATCH 🔥</span>
-        </div>
-        <div id="kopfkino-banner-desc" class="text-xs text-slate-200 bg-slate-950/60 p-2 rounded-xl border border-purple-800/40">
-          Beide haben gewählt. Enthüllt jetzt euer gemeinsames Match & den Abend-Fahrplan!
-        </div>
-        <button onclick="openKopfkinoModal()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg active:scale-[0.98]">
-          🔍 Abend-Match ansehen
-        </button>
-      </section>
+        <!-- BANNER: ABEND-MATCH BEREIT / EINLADUNG -->
+        <section id="kopfkino-match-ready-banner" class="hidden bg-gradient-to-r from-purple-950 via-indigo-950 to-pink-950 border border-purple-500/70 rounded-2xl p-3 glow-purple space-y-2 animate-pulse">
+          <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
+            <span id="kopfkino-banner-title">✨ Unser Abend-Match ist bereit!</span>
+            <span class="bg-purple-900/80 px-2 py-0.5 rounded-full text-[10px] border border-purple-500/40 font-bold">MATCH 🔥</span>
+          </div>
+          <div id="kopfkino-banner-desc" class="text-xs text-slate-200 bg-slate-950/60 p-2 rounded-xl border border-purple-800/40">
+            Beide haben gewählt. Enthüllt jetzt euer gemeinsames Match & den Abend-Fahrplan!
+          </div>
+          <button onclick="openKopfkinoModal()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg active:scale-[0.98]">
+            🔍 Abend-Match ansehen
+          </button>
+        </section>
 
-
-      <!-- LIVE-BANNER: EINGEHENDES SPONTAN-SIGNAL -->
-      <section id="incoming-craving-banner" class="hidden bg-gradient-to-r from-rose-950 to-pink-950 border border-rose-600/70 rounded-2xl p-3.5 glow-rose space-y-2.5 relative overflow-hidden">
-        <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
-          <span>⚡ Spontaner Impuls vom Partner</span>
-          <span id="incoming-time-badge" class="bg-rose-900/80 px-2 py-0.5 rounded-full text-[10px] border border-rose-500/40">JETZT ⚡</span>
-        </div>
-        
-        <div class="bg-slate-950/90 border border-rose-800/50 rounded-xl p-3 space-y-2">
-          <div id="craving-locked-view" class="text-center py-1.5 space-y-2">
-            <div class="text-xs text-rose-200 font-medium">Ein spontanes Verlangen wartet auf dich! 🎁</div>
-            <button onclick="toggleCravingReveal()" class="w-full py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md active:scale-[0.98] transition-all">
-              ✨ Signal aufdecken ✨
-            </button>
+        <!-- LIVE-BANNER: EINGEHENDES SPONTAN-SIGNAL -->
+        <section id="incoming-craving-banner" class="hidden bg-gradient-to-r from-rose-950 to-pink-950 border border-rose-600/70 rounded-2xl p-3.5 glow-rose space-y-2 relative overflow-hidden">
+          <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
+            <span>⚡ Spontaner Impuls vom Partner</span>
+            <span id="incoming-time-badge" class="bg-rose-900/80 px-2 py-0.5 rounded-full text-[10px] border border-rose-500/40">JETZT ⚡</span>
           </div>
           
-          <div id="craving-hidden-view" class="hidden space-y-2">
-            <div id="incoming-craving-text" class="text-xs font-semibold text-slate-100 leading-relaxed"></div>
+          <div class="bg-slate-950/90 border border-rose-800/50 rounded-xl p-2.5 space-y-1.5">
+            <div id="craving-locked-view" class="text-center py-1 space-y-1.5">
+              <div class="text-xs text-rose-200 font-medium">Ein spontanes Verlangen wartet auf dich! 🎁</div>
+              <button onclick="toggleCravingReveal()" class="w-full py-2 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md active:scale-[0.98] transition-all">
+                ✨ Signal aufdecken ✨
+              </button>
+            </div>
+            
+            <div id="craving-hidden-view" class="hidden space-y-1.5">
+              <div id="incoming-craving-text" class="text-xs font-semibold text-slate-100 leading-relaxed"></div>
+            </div>
           </div>
-        </div>
-        
-        <div class="space-y-1.5 pt-0.5">
-          <div class="flex gap-2">
-            <button onclick="respondCraving('accepted')" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-xs font-bold uppercase rounded-xl transition-all shadow-lg shadow-rose-900/50 active:scale-[0.98]">
-              ❤️ Bin sofort da!
-            </button>
-            <button onclick="respondCraving('later')" class="py-2.5 px-3 bg-slate-800 text-xs font-medium rounded-xl text-slate-300">
-              ⏳ In 10 Min
+          
+          <div class="space-y-1.5 pt-0.5">
+            <div class="flex gap-2">
+              <button onclick="respondCraving('accepted')" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-xs font-bold uppercase rounded-xl transition-all shadow-lg shadow-rose-900/50 active:scale-[0.98]">
+                ❤️ Bin sofort da!
+              </button>
+              <button onclick="respondCraving('later')" class="py-2.5 px-3 bg-slate-800 text-xs font-medium rounded-xl text-slate-300">
+                ⏳ In 10 Min
+              </button>
+            </div>
+            <button onclick="respondCraving('evening')" class="w-full py-2 bg-indigo-950 hover:bg-indigo-900 border border-indigo-600/50 text-indigo-300 text-xs font-semibold rounded-xl transition-all">
+              🌙 Heute Abend (sobald Zeit ist!)
             </button>
           </div>
-          <button onclick="respondCraving('evening')" class="w-full py-2 bg-indigo-950 hover:bg-indigo-900 border border-indigo-600/50 text-indigo-300 text-xs font-semibold rounded-xl transition-all">
-            🌙 Heute Abend (sobald Zeit ist!)
-          </button>
-        </div>
-      </section>
+        </section>
 
-      <!-- BANNER: ABEND-RESERVIERUNG -->
-      <section id="evening-reservation-banner" class="hidden bg-gradient-to-r from-slate-900 to-indigo-950 border border-indigo-500/60 rounded-2xl p-3 glow-indigo space-y-1">
-        <div class="flex justify-between items-center text-xs font-bold text-indigo-300 uppercase tracking-wider">
-          <span class="flex items-center gap-1.5"><span>🌙</span> Für heute Abend reserviert</span>
-          <button onclick="clearEveningReservation()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Erledigt</button>
-        </div>
-        <div id="evening-reservation-text" class="text-xs text-slate-200 bg-slate-950/60 p-2 rounded-xl border border-indigo-900/40"></div>
-      </section>
+        <!-- BANNER: ABEND-RESERVIERUNG -->
+        <section id="evening-reservation-banner" class="hidden bg-gradient-to-r from-slate-900 to-indigo-950 border border-indigo-500/60 rounded-2xl p-2.5 glow-indigo space-y-1">
+          <div class="flex justify-between items-center text-xs font-bold text-indigo-300 uppercase tracking-wider">
+            <span class="flex items-center gap-1.5"><span>🌙</span> Für heute Abend reserviert</span>
+            <button onclick="clearEveningReservation()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Erledigt</button>
+          </div>
+          <div id="evening-reservation-text" class="text-xs text-slate-200 bg-slate-950/60 p-2 rounded-xl border border-indigo-900/40"></div>
+        </section>
+      </div>
 
-      <!-- ZENTRALE FLÜSTER-SHOUTBOX (HOMESCREEN - MITTE/UNTEN) -->
-      <section class="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-3 space-y-2 glow-purple">
-        <div class="flex items-center">
+      <!-- DYNAMISCHE FLÜSTERBOX (FÜLLT DEN GESAMTEN FREIEN PLATZ ELASTISCH AUS) -->
+      <section class="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-3 flex-1 flex flex-col justify-between overflow-hidden glow-purple min-h-[220px]">
+        <div class="flex justify-between items-center border-b border-slate-800/80 pb-1.5 shrink-0">
           <span class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
             <span>💬</span> Flüsterbox
           </span>
+          <span class="text-[9px] text-purple-400/80 font-mono">Live Sync ✨</span>
         </div>
 
-        <div id="home-shoutbox-messages" class="space-y-1.5 max-h-36 overflow-y-auto pr-1 text-xs"></div>
+        <!-- SCROLLBARE NACHRICHTEN-LISTE -->
+        <div id="home-shoutbox-messages" class="space-y-2 flex-1 overflow-y-auto pr-1 text-xs my-2"></div>
 
-        <div class="pt-1 border-t border-slate-800/80">
+        <!-- EINGABEZEILE -->
+        <div class="pt-1.5 border-t border-slate-800/80 shrink-0">
           <div class="flex gap-1.5 items-center">
-            <input id="home-shout-input" type="text" placeholder="Flüsternachricht, Emojis oder Gedanke..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+            <input id="home-shout-input" onkeydown="if(event.key==='Enter'){event.preventDefault();sendShoutboxMessage('home-shout-input');}" type="text" placeholder="Flüsternachricht, Emojis oder Gedanke..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
             <button onclick="sendShoutboxMessage('home-shout-input')" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-[0.98]">Senden</button>
           </div>
         </div>
       </section>
 
-      <!-- HAUPT-AKTIONEN (DAUMENZONE) -->
-      <div class="space-y-2 pt-1">
+      <!-- HAUPT-AKTIONEN (FEST AM UNTEREN RAND IM DAUMENBEREICH) -->
+      <div class="space-y-2 pt-1 shrink-0">
         <button onclick="openCravingModal()" class="w-full py-3.5 bg-gradient-to-r from-amber-600 via-rose-600 to-pink-600 text-xs uppercase font-bold tracking-wider rounded-xl shadow-lg shadow-rose-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 glow-rose">
           <span>🔥</span> <span>Kurze Lust-Pause</span>
         </button>
@@ -1138,11 +1143,23 @@
       const modalBox = document.getElementById('modal-shoutbox-messages');
       const messages = (state.shoutboxMessages || []).filter(m => m.from !== 'System');
 
+      if (messages.length === 0) {
+        const emptyHtml = `
+          <div class="text-slate-500 italic text-center py-6 text-xs flex flex-col items-center justify-center gap-1.5 h-full opacity-70">
+            <span class="text-2xl">✨</span>
+            <span>Eure private Flüsterbox ist bereit.<br>Hinterlasst euch Gedanken, Küsse & Signale!</span>
+          </div>
+        `;
+        if (homeBox) homeBox.innerHTML = emptyHtml;
+        if (modalBox) modalBox.innerHTML = emptyHtml;
+        return;
+      }
+
       const html = messages.map(m => {
         const isMe = m.from === state.currentUser;
         return `
           <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
-            <div class="max-w-[80%] rounded-2xl px-3 py-1.5 text-xs ${isMe ? 'bg-slate-800/95 border border-slate-700 text-slate-100 rounded-br-none shadow' : 'bg-slate-950/90 border border-slate-800 text-slate-200 rounded-bl-none'}">
+            <div class="max-w-[85%] rounded-2xl px-3 py-1.5 text-xs ${isMe ? 'bg-slate-800/95 border border-slate-700 text-slate-100 rounded-br-none shadow' : 'bg-slate-950/90 border border-slate-800 text-slate-200 rounded-bl-none'}">
               <span class="text-[9px] block ${isMe ? 'text-purple-300' : 'text-rose-400'} font-bold mb-0.5">${m.from}</span>
               <span class="leading-relaxed whitespace-pre-wrap">${m.text}</span>
             </div>
@@ -1150,8 +1167,14 @@
         `;
       }).join('');
 
-      if (homeBox) { homeBox.innerHTML = html; homeBox.scrollTop = homeBox.scrollHeight; }
-      if (modalBox) { modalBox.innerHTML = html; modalBox.scrollTop = modalBox.scrollHeight; }
+      if (homeBox) { 
+        homeBox.innerHTML = html; 
+        setTimeout(() => { homeBox.scrollTop = homeBox.scrollHeight; }, 50);
+      }
+      if (modalBox) { 
+        modalBox.innerHTML = html; 
+        setTimeout(() => { modalBox.scrollTop = modalBox.scrollHeight; }, 50);
+      }
     }
 
     function sendShoutboxMessage(inputId) {
