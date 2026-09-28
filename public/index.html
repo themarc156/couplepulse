@@ -2018,10 +2018,10 @@
         fulfilled: false
       };
 
-      // Lust-Pause immer formatiert in der Flüsterbox festhalten
+      // Lust-Pause immer formatiert in der Flüsterbox festhalten (ohne Stufen-Emoji)
       const shoutText = note 
-        ? `🔥 Lust-Pause erbeten: ${selected.emoji} ${selected.title} – "${note}"`
-        : `🔥 Lust-Pause erbeten: ${selected.emoji} ${selected.title}`;
+        ? `🔥 Lust-Pause erbeten: ${selected.title} – "${note}"`
+        : `🔥 Lust-Pause erbeten: ${selected.title}`;
 
       const shoutMsg = {
         id: Date.now(),
