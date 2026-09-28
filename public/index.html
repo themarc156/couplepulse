@@ -59,14 +59,18 @@
       animation: whisperIn 3.5s ease-in-out forwards;
       pointer-events: none;
     }
+
+    /* Scrollbars unsichtbar halten bei voller Scroll-Funktion */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-slate-900 md:bg-black text-slate-100 min-h-screen font-sans select-none antialiased flex justify-center items-start">
+<body class="bg-slate-900 md:bg-black text-slate-100 h-[100dvh] overflow-hidden font-sans select-none antialiased flex justify-center items-start">
 
   <!-- ================================================================= -->
   <!-- SINGLE PAGE APP CONTAINER -->
   <!-- ================================================================= -->
-  <div class="w-full max-w-md min-h-screen bg-slate-950 md:border-x md:border-slate-800/80 md:shadow-[0_0_60px_-15px_rgba(0,0,0,0.9)] flex flex-col justify-between relative overflow-hidden pb-24">
+  <div class="w-full max-w-md h-[100dvh] bg-slate-950 md:border-x md:border-slate-800/80 md:shadow-[0_0_60px_-15px_rgba(0,0,0,0.9)] flex flex-col justify-between relative overflow-hidden pb-20">
 
     <!-- TOP BAR (GLOBAL) -->
     <header id="global-app-header" class="border-b border-slate-855 sticky top-0 bg-slate-950/95 backdrop-blur z-30">
@@ -93,7 +97,7 @@
     <!-- ================================================================= -->
     <!-- VIEW 1: PULSE (DYNAMISCHE CHAT-TIMELINE & ACTIONS) -->
     <!-- ================================================================= -->
-    <main id="view-pulse" class="w-full p-4 space-y-3 flex-1 flex flex-col justify-between overflow-hidden">
+    <main id="view-pulse" class="w-full p-4 space-y-3 flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
 
       <!-- BENACHRICHTIGUNGS-BEREICH (EXPANDIERT NUR BEI AKTIVEN ALARMEN) -->
       <div class="space-y-2 shrink-0">
@@ -166,7 +170,7 @@
       </div>
 
       <!-- DYNAMISCHE FLÜSTERBOX (FÜLLT DEN GESAMTEN FREIEN PLATZ ELASTISCH AUS) -->
-      <section class="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-3 flex-1 flex flex-col justify-between overflow-hidden glow-purple min-h-[220px]">
+      <section class="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-3 flex-1 min-h-0 flex flex-col justify-between overflow-hidden glow-purple">
         <div class="flex justify-between items-center border-b border-slate-800/80 pb-1.5 shrink-0">
           <span class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
             <span>💬</span> Flüsterbox
@@ -174,8 +178,8 @@
           <span class="text-[9px] text-purple-400/80 font-mono">Live Sync ✨</span>
         </div>
 
-        <!-- SCROLLBARE NACHRICHTEN-LISTE -->
-        <div id="home-shoutbox-messages" class="space-y-2 flex-1 overflow-y-auto pr-1 text-xs my-2"></div>
+        <!-- SCROLLBARE NACHRICHTEN-LISTE (OHNE SICHTBAREN SCROLLBALKEN) -->
+        <div id="home-shoutbox-messages" class="space-y-2 flex-1 min-h-0 overflow-y-auto text-xs my-2 no-scrollbar"></div>
 
         <!-- EINGABEZEILE -->
         <div class="pt-1.5 border-t border-slate-800/80 shrink-0">
@@ -1776,7 +1780,7 @@
             <span class="text-[9px] font-bold text-purple-300 uppercase tracking-wider block flex items-center gap-1.5">
               <span>💬</span> Flüsterbox
             </span>
-            <div id="modal-shoutbox-messages" class="space-y-1 max-h-24 overflow-y-auto pr-1 text-xs"></div>
+            <div id="modal-shoutbox-messages" class="space-y-1 max-h-24 overflow-y-auto text-xs no-scrollbar"></div>
             <div class="flex gap-1.5 items-center">
               <input id="modal-shout-input" type="text" placeholder="Gedanke, Emojis oder Teaser..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
               <button onclick="sendShoutboxMessage('modal-shout-input')" class="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-[0.98]">Senden</button>
