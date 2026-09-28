@@ -615,9 +615,6 @@
       </div>
     </div>
 
-
-  </div>
-
   </div>
 
   <!-- UNIFIED JAVASCRIPT ENGINE (SPA) -->
@@ -1230,6 +1227,16 @@
       }
     }
 
+    async function triggerPushNotification(sender = state.currentUser) {
+      try {
+        await fetch('/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sender: sender })
+        });
+      } catch (e) {}
+    }
+
     function sendShoutboxMessage(inputId) {
       const input = document.getElementById(inputId);
       if (!input) return;
@@ -1242,6 +1249,7 @@
       input.value = '';
 
       LiveStream.sendData({ type: 'shoutbox_message', message: newMsg });
+      triggerPushNotification(state.currentUser);
       playSensualSound('heartbeat');
       saveState();
       renderAllShoutboxes();
@@ -1463,6 +1471,7 @@
         practicesCatalog: state.kopfkino.practicesCatalog
       });
 
+      triggerPushNotification(state.currentUser);
       closeKopfkinoModal();
       playSensualSound('chime');
 
@@ -2250,6 +2259,7 @@
         feedback: `💖 ${currentUser}: ${feedbackText} (${title})`
       });
 
+      triggerPushNotification(currentUser);
       saveState();
       renderAllShoutboxes();
       alert("💖 Feedback an den Partner gesendet & im gemeinsamen Archiv gespeichert!");
@@ -2354,6 +2364,7 @@
 
       closeCravingModal();
       LiveStream.sendData({ type: 'new_craving', craving: newCraving });
+      triggerPushNotification(state.currentUser);
       alert(`✓ Signal "${selected.emoji} ${selected.title}" an Partner gesendet!`);
       saveState();
     }
