@@ -100,7 +100,7 @@
     <main id="view-pulse" class="w-full p-4 space-y-3 flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
 
       <!-- BENACHRICHTIGUNGS-BEREICH (EXPANDIERT NUR BEI AKTIVEN ALARMEN) -->
-      <div id="pulse-notification-area" class="space-y-2 shrink-0">
+      <div class="space-y-2 shrink-0">
         <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK -->
         <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950 to-purple-950 border border-rose-500/70 rounded-2xl p-3 glow-rose space-y-2 animate-pulse">
           <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
@@ -190,10 +190,10 @@
           </div>
         </div>
 
-        <!-- STREAM VIDEO CONTAINER (INLINE IN DER FLÜSTERBOX MIT ZOOM & THEATER-MODUS) -->
-        <div id="stream-video-container" class="hidden relative flex-1 min-h-[190px] rounded-xl overflow-hidden bg-black border border-purple-500/50 my-1 flex items-center justify-center select-none touch-none">
-          <video id="remote-video" autoplay playsinline class="w-full h-full object-cover transition-transform duration-150 origin-center"></video>
-          <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover hidden transition-transform duration-150 origin-center"></video>
+        <!-- STREAM VIDEO CONTAINER (INLINE IN DER FLÜSTERBOX) -->
+        <div id="stream-video-container" class="hidden relative flex-1 min-h-[190px] rounded-xl overflow-hidden bg-black border border-purple-500/50 my-1 flex items-center justify-center">
+          <video id="remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
+          <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover hidden"></video>
 
           <!-- Status Overlay -->
           <div id="stream-status-overlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-xs flex flex-col items-center justify-center text-center p-3 space-y-1.5 z-10">
@@ -202,12 +202,10 @@
           </div>
 
           <!-- Video Overlays & Controls in den Ecken -->
-          <div class="absolute top-2 left-2 z-20 flex items-center gap-1.5">
+          <div class="absolute top-2 left-2 z-20">
             <span id="stream-role-badge" class="px-2 py-0.5 bg-black/75 border border-rose-500/70 rounded-md text-[9px] font-bold text-rose-300">LIVE 🔴</span>
           </div>
           <div class="absolute top-2 right-2 z-20 flex items-center gap-1.5">
-            <button id="btn-stream-zoom" onclick="LiveStream.toggleZoom()" class="px-2 py-1 bg-black/70 border border-slate-700 hover:border-purple-400 rounded-lg text-[10px] text-slate-200 font-bold shadow" title="Zoom / Bildausschnitt umschalten">🔍 1x</button>
-            <button id="btn-stream-expand" onclick="LiveStream.toggleTheaterMode()" class="p-1.5 bg-black/70 border border-slate-700 hover:border-purple-400 rounded-lg text-xs text-slate-200 shadow" title="Theater-Modus (Maximieren)">⛶</button>
             <button id="btn-stream-flip" onclick="LiveStream.flipCamera()" class="p-1.5 bg-black/70 border border-slate-700 hover:border-purple-400 rounded-lg text-xs text-slate-200 shadow" title="Kamera wechseln">🔄</button>
             <button id="btn-stream-audio" onclick="LiveStream.toggleAudio()" class="p-1.5 bg-black/70 border border-slate-700 hover:border-purple-400 rounded-lg text-xs text-slate-200 shadow" title="Ton An/Aus">🔇</button>
             <button onclick="LiveStream.endStream()" class="p-1.5 bg-rose-600 hover:bg-rose-500 rounded-lg text-xs text-white font-bold shadow" title="Stream beenden">✕</button>
@@ -230,7 +228,7 @@
       </section>
 
       <!-- HAUPT-AKTIONEN (FEST AM UNTEREN RAND IM DAUMENBEREICH) -->
-      <div id="pulse-bottom-actions" class="pt-1 shrink-0">
+      <div class="pt-1 shrink-0">
         <button onclick="openCravingModal()" class="w-full py-3.5 bg-gradient-to-r from-amber-600 via-rose-600 to-pink-600 text-xs uppercase font-bold tracking-wider rounded-xl shadow-lg shadow-rose-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 glow-rose">
           <span>🔥</span> <span>Kurze Lust-Pause</span>
         </button>
@@ -1090,7 +1088,7 @@
     }
 
     // =========================================================================
-    // PEERJS LIVE DATA SYNC & INLINE PEEPSHOW (MIT ZOOM & BANNER-SCHUTZ)
+    // PEERJS LIVE DATA SYNC & INLINE PEEPSHOW
     // =========================================================================
     const LiveStream = {
       peer: null,
@@ -1102,8 +1100,6 @@
       isSender: false,
       currentFacingMode: 'user',
       audioMuted: true,
-      zoomLevel: 1,
-      isTheaterMode: false,
 
       initPeer() {
         if (this.peer && !this.peer.destroyed) { try { this.peer.destroy(); } catch (e) {} }
@@ -1133,8 +1129,6 @@
           playSensualSound('chime');
           showFeedbackBanner(`👁️ Dein Partner streamt live! Tippe in der Flüsterbox auf "Ansehen".`);
         });
-
-        this.setupTouchZoom();
       },
 
       connectData() {
@@ -1177,90 +1171,11 @@
         }
       },
 
-      toggleZoom() {
-        const levels = [1, 1.5, 2, 'fit'];
-        const currentIdx = levels.indexOf(this.zoomLevel);
-        this.zoomLevel = levels[(currentIdx + 1) % levels.length];
-        this.applyZoom();
-      },
-
-      applyZoom() {
-        const rVideo = document.getElementById('remote-video');
-        const lVideo = document.getElementById('local-video');
-        const btn = document.getElementById('btn-stream-zoom');
-        if (btn) btn.innerText = this.zoomLevel === 'fit' ? '↔️ Fit' : `🔍 ${this.zoomLevel}x`;
-
-        [rVideo, lVideo].forEach(v => {
-          if (!v) return;
-          if (this.zoomLevel === 'fit') {
-            v.style.objectFit = 'contain';
-            v.style.transform = 'scale(1)';
-          } else {
-            v.style.objectFit = 'cover';
-            v.style.transform = `scale(${this.zoomLevel})`;
-          }
-        });
-      },
-
-      toggleTheaterMode() {
-        this.isTheaterMode = !this.isTheaterMode;
-        const bottomActions = document.getElementById('pulse-bottom-actions');
-        const btn = document.getElementById('btn-stream-expand');
-        if (bottomActions) {
-          if (this.isTheaterMode) bottomActions.classList.add('hidden');
-          else bottomActions.classList.remove('hidden');
-        }
-        if (btn) btn.innerText = this.isTheaterMode ? '🗗' : '⛶';
-      },
-
-      setupTouchZoom() {
-        const container = document.getElementById('stream-video-container');
-        if (!container || container._hasTouchZoom) return;
-        container._hasTouchZoom = true;
-
-        let initialDist = 0;
-        let startScale = 1;
-
-        container.addEventListener('touchstart', (e) => {
-          if (e.touches.length === 2) {
-            initialDist = Math.hypot(
-              e.touches[0].pageX - e.touches[1].pageX,
-              e.touches[0].pageY - e.touches[1].pageY
-            );
-            startScale = typeof LiveStream.zoomLevel === 'number' ? LiveStream.zoomLevel : 1;
-          }
-        }, { passive: true });
-
-        container.addEventListener('touchmove', (e) => {
-          if (e.touches.length === 2 && initialDist > 0) {
-            const currentDist = Math.hypot(
-              e.touches[0].pageX - e.touches[1].pageX,
-              e.touches[0].pageY - e.touches[1].pageY
-            );
-            const factor = currentDist / initialDist;
-            let newScale = Math.min(3, Math.max(1, startScale * factor));
-            newScale = Math.round(newScale * 10) / 10;
-            LiveStream.zoomLevel = newScale;
-            LiveStream.applyZoom();
-          }
-        }, { passive: true });
-
-        container.addEventListener('touchend', (e) => {
-          if (e.touches.length < 2) {
-            initialDist = 0;
-          }
-        }, { passive: true });
-      },
-
       async startAsSender() {
         try {
           this.localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.currentFacingMode }, audio: true });
           this.isStreaming = true;
           this.isSender = true;
-
-          // Benachrichtigungs-Bereich ausblenden, um vollen Platz für das Video bereitzustellen
-          const notifArea = document.getElementById('pulse-notification-area');
-          if (notifArea) notifArea.classList.add('hidden');
 
           document.getElementById('home-shoutbox-messages').classList.add('hidden');
           document.getElementById('stream-video-container').classList.remove('hidden');
@@ -1270,9 +1185,6 @@
           localVid.classList.remove('hidden');
           localVid.srcObject = this.localStream;
           localVid.play().catch(e => {});
-
-          this.zoomLevel = 1;
-          this.applyZoom();
 
           document.getElementById('stream-role-badge').innerText = 'DU STREAMST 🔴';
           document.getElementById('stream-status-text').innerText = 'Warte auf Partner...';
@@ -1302,19 +1214,11 @@
         this.isSender = false;
 
         closeFeedbackBanner();
-
-        // Benachrichtigungs-Bereich ausblenden für maximale Video-Höhe
-        const notifArea = document.getElementById('pulse-notification-area');
-        if (notifArea) notifArea.classList.add('hidden');
-
         document.getElementById('btn-stream-incoming').classList.add('hidden');
         document.getElementById('home-shoutbox-messages').classList.add('hidden');
         document.getElementById('stream-video-container').classList.remove('hidden');
         document.getElementById('local-video').classList.add('hidden');
         document.getElementById('remote-video').classList.remove('hidden');
-
-        this.zoomLevel = 1;
-        this.applyZoom();
 
         document.getElementById('stream-role-badge').innerText = 'LIVE PEEPSHOW 🔴';
         document.getElementById('stream-btn-label').innerText = 'Aus';
@@ -1377,15 +1281,6 @@
         this.incomingCall = null;
         this.isStreaming = false;
         this.isSender = false;
-        this.zoomLevel = 1;
-
-        if (this.isTheaterMode) {
-          this.toggleTheaterMode();
-        }
-
-        // Benachrichtigungs-Bereich wieder sichtbar machen
-        const notifArea = document.getElementById('pulse-notification-area');
-        if (notifArea) notifArea.classList.remove('hidden');
 
         document.getElementById('stream-video-container').classList.add('hidden');
         document.getElementById('home-shoutbox-messages').classList.remove('hidden');
