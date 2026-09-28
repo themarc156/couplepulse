@@ -919,13 +919,26 @@
       const myPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
       const partnerPrefs = state.currentUser === 'Er' ? state.kopfkino.siePreferences : state.kopfkino.erPreferences;
 
-      const isEveningConcluded = Boolean(state.kopfkino.erRated || state.kopfkino.sieRated);
+      const isEr = state.currentUser === 'Er';
+      const myRated = Boolean(isEr ? state.kopfkino.erRated : state.kopfkino.sieRated);
+      const partnerRated = Boolean(isEr ? state.kopfkino.sieRated : state.kopfkino.erRated);
 
-      if (state.kopfkino.isUnlocked && !isEveningConcluded) {
-        kopfkinoBanner.classList.remove('hidden');
-        document.getElementById('kopfkino-banner-title').innerText = '✨ Unser Abend-Match ist bereit!';
-        document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben gewählt. Entdeckt euer Match & den Abend-Fahrplan!';
-      } else if (partnerPrefs && !myPrefs && !isEveningConcluded) {
+      if (state.kopfkino.isUnlocked) {
+        if (myRated) {
+          // Ich habe bereits bewertet -> Banner für mich ausblenden
+          kopfkinoBanner.classList.add('hidden');
+        } else if (partnerRated) {
+          // Partner hat schon bewertet -> Mich zur eigenen Bewertung auffordern
+          kopfkinoBanner.classList.remove('hidden');
+          document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat den Abend bewertet!`;
+          document.getElementById('kopfkino-banner-desc').innerText = `${partner} hat eine Rückmeldung hinterlassen. Schließe das Erlebnis mit deiner Bewertung ab!`;
+        } else {
+          // Beide haben noch nicht bewertet -> Normales Match-Banner
+          kopfkinoBanner.classList.remove('hidden');
+          document.getElementById('kopfkino-banner-title').innerText = '✨ Unser Abend-Match ist bereit!';
+          document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben gewählt. Entdeckt euer Match & den Abend-Fahrplan!';
+        }
+      } else if (partnerPrefs && !myPrefs) {
         kopfkinoBanner.classList.remove('hidden');
         document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat Vorlieben eingeloggt!`;
         document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um unser Abend-Match zu enthüllen.`;
