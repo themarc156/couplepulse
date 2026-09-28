@@ -340,8 +340,14 @@
           
           <div id="card-text" class="text-sm md:text-base font-bold text-slate-100 leading-relaxed my-auto px-1"></div>
 
-          <!-- RADIALER SVG-TIMER (MANUELLER START PER KLICK) -->
-          <div id="card-timer-container" class="hidden pt-1.5 border-t border-slate-800/80 flex flex-col items-center space-y-1.5 shrink-0">
+          <!-- RADIALER SVG-TIMER (MIT STYLISCHEM ABLAUF-EFFEKT) -->
+          <div id="card-timer-container" class="hidden pt-1.5 border-t border-slate-800/80 flex flex-col items-center space-y-1.5 shrink-0 relative">
+            
+            <!-- STYLISCHES ZEIT-ABGELAUFEN TOAST-BANNER -->
+            <div id="timer-expired-banner" class="hidden py-1 px-3 bg-gradient-to-r from-rose-600 via-pink-600 to-amber-600 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg glow-rose animate-bounce flex items-center gap-1.5">
+              <span>⏳</span> <span>Zeit abgelaufen! Jetzt bewerten</span> <span>🔥</span>
+            </div>
+
             <div onclick="toggleTimer()" class="relative w-16 h-16 flex items-center justify-center cursor-pointer active:scale-95 transition-all" title="Tippen zum Starten/Pausieren">
               <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                 <path class="text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -3458,6 +3464,16 @@
       state.game.timerSeconds = seconds;
       state.game.isTimerRunning = false;
       updateTimerUI('timer-display', 'timer-progress-ring');
+
+      const expiredBanner = document.getElementById('timer-expired-banner');
+      if (expiredBanner) expiredBanner.classList.add('hidden');
+
+      const ring = document.getElementById('timer-progress-ring');
+      if (ring) {
+        ring.classList.remove('text-rose-500', 'animate-pulse');
+        ring.classList.add('text-amber-500');
+      }
+
       const toggleBtn = document.getElementById('btn-timer-toggle');
       if (toggleBtn) {
         toggleBtn.className = 'px-3.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold rounded-lg shadow active:scale-95 transition-all flex items-center gap-1';
@@ -3535,6 +3551,16 @@
     function addTimerTime(sec) {
       state.game.timerSeconds += sec;
       state.game.timerTotal += sec;
+      
+      const expiredBanner = document.getElementById('timer-expired-banner');
+      if (expiredBanner) expiredBanner.classList.add('hidden');
+      
+      const ring = document.getElementById('timer-progress-ring');
+      if (ring) {
+        ring.classList.remove('text-rose-500', 'animate-pulse');
+        ring.classList.add('text-amber-500');
+      }
+
       updateTimerUI('timer-display', 'timer-progress-ring');
       playSensualSound('chime');
     }
@@ -3542,13 +3568,24 @@
     function stopTimer() {
       clearInterval(state.game.timerInterval);
       state.game.isTimerRunning = false;
+      
+      const expiredBanner = document.getElementById('timer-expired-banner');
+      if (expiredBanner) expiredBanner.classList.add('hidden');
     }
 
     function toggleTimer() {
       state.game.isTimerRunning = !state.game.isTimerRunning;
       const toggleBtn = document.getElementById('btn-timer-toggle');
+      const expiredBanner = document.getElementById('timer-expired-banner');
+      const ring = document.getElementById('timer-progress-ring');
 
       if (state.game.isTimerRunning) {
+        if (expiredBanner) expiredBanner.classList.add('hidden');
+        if (ring) {
+          ring.classList.remove('text-rose-500', 'animate-pulse');
+          ring.classList.add('text-amber-500');
+        }
+
         if (toggleBtn) {
           toggleBtn.className = 'px-3.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] font-bold rounded-lg shadow active:scale-95 transition-all flex items-center gap-1';
           toggleBtn.innerHTML = `<span>⏸️</span> <span>Pause</span>`;
@@ -3562,13 +3599,21 @@
           if (state.game.timerSeconds <= 0) {
             clearInterval(state.game.timerInterval);
             state.game.isTimerRunning = false;
-            if (toggleBtn) {
-              toggleBtn.className = 'px-3.5 py-1 bg-emerald-600 text-white text-[10px] font-bold rounded-lg';
-              toggleBtn.innerHTML = `<span>✓</span> <span>Fertig</span>`;
+
+            // Stylischer Ablauf-Zustand (ohne natives Browser-Alert)
+            if (expiredBanner) expiredBanner.classList.remove('hidden');
+            if (ring) {
+              ring.classList.remove('text-amber-500');
+              ring.classList.add('text-rose-500', 'animate-pulse');
             }
-            playSensualSound('alarm');
-            triggerHaptic([200, 100, 200]);
-            alert("⏳ Zeit abgelaufen!");
+
+            if (toggleBtn) {
+              toggleBtn.className = 'px-3.5 py-1 bg-rose-600 text-white text-[10px] font-bold rounded-lg shadow glow-rose';
+              toggleBtn.innerHTML = `<span>✓</span> <span>Zeit um</span>`;
+            }
+
+            playSensualSound('gong');
+            triggerHaptic([150, 100, 250]);
           }
         }, 1000);
       } else {
