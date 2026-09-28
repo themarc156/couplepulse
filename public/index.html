@@ -983,13 +983,13 @@
 
       if (!state.game) state.game = { stage: 1, currentTurn: 'Er', roundsCount: 0, scores: { Er: 0, Sie: 0 }, jokers: { Er: 1, Sie: 1 }, audioMuted: false, filters: { allowToys: true, allowSpanking: true, syncKopfkino: true }, cards: JSON.parse(JSON.stringify(defaultMasterDeck)), drawPiles: {} };
       
-      // AUTOMATISCHE DECK-MIGRATION: Alte Karten ohne 'role' im Browser-Speicher sofort mit dem rollen-sauberen Master-Deck überschreiben
-      const hasOldCards = !state.game.cards || state.game.cards.length === 0 || state.game.cards.some(c => !c.role);
-      if (hasOldCards) {
+      // AUTOMATISCHE DECK-MIGRATION: Veraltetes Deck (Joker oder falsche Kartenzahl) sofort mit dem sauberen 32-Karten-Deck synchronisieren
+      const isDeckOutdated = !state.game.cards || state.game.cards.length !== defaultMasterDeck.length || state.game.cards.some(c => !c.role || (c.tags && c.tags.includes('joker')));
+      if (isDeckOutdated) {
         state.game.cards = JSON.parse(JSON.stringify(defaultMasterDeck));
         state.game.drawPiles = {};
+        state.game.currentCard = null;
       }
-
       checkKopfkinoUnlock();
       updateUI();
     }
@@ -3246,8 +3246,9 @@
 
     function getFilteredCardsForStage(stage, currentTurn) {
       const turn = currentTurn || state.game.currentTurn;
+      const targetStage = parseInt(stage) || 1;
       return state.game.cards.filter(c => {
-        if (c.stage !== stage) return false;
+        if (parseInt(c.stage) !== targetStage) return false;
 
         // 1. Rollen-Prüfung nach Attribut
         if (c.role === 'er_gives' && turn !== 'Er') return false;
@@ -3279,12 +3280,23 @@
 
     function getNextCard(stage) {
       const turn = state.game.currentTurn;
-      const key = `${stage}_${turn}`;
+      const targetStage = parseInt(stage) || 1;
+      const key = `${targetStage}_${turn}`;
       if (!state.game.drawPiles) state.game.drawPiles = {};
+      
       if (!state.game.drawPiles[key] || state.game.drawPiles[key].length === 0) {
-        const pool = getFilteredCardsForStage(stage, turn);
-        if (pool.length === 0) return { id: 'empty', role: 'any', text: "Keine passenden Karten für diese Stufe & Rolle verfügbar.", timer: 0, tags: [] };
-        state.game.drawPiles[key] = [...pool].sort(() => Math.random() - 0.5);
+        const pool = getFilteredCardsForStage(targetStage, turn);
+        if (pool.length === 0) {
+          // Fallback: Alle Karten dieser Stufe nutzen
+          const fallbackPool = state.game.cards.filter(c => parseInt(c.stage) === targetStage);
+          if (fallbackPool.length > 0) {
+            state.game.drawPiles[key] = [...fallbackPool].sort(() => Math.random() - 0.5);
+          } else {
+            return { id: 'fallback', role: 'any', text: "Küss deinen Partner intensiv und verwöhne ihn überall dort, wo er es jetzt am meisten spürt.", timer: 60, tags: ['touch'] };
+          }
+        } else {
+          state.game.drawPiles[key] = [...pool].sort(() => Math.random() - 0.5);
+        }
       }
       return state.game.drawPiles[key].pop();
     }
@@ -3299,7 +3311,7 @@
       const cardBox = document.getElementById('active-card-face');
       if (cardBox) {
         cardBox.classList.remove('card-flip-anim');
-        void cardBox.offsetWidth; // Reflow erzwingen, um Animation sauber neu zu starten
+        void cardBox.offsetWidth;
         cardBox.classList.add('card-flip-anim');
       }
 
@@ -3311,39 +3323,38 @@
         triggerHaptic(60);
       }
 
-      setTimeout(() => {
-        updateRoleVisuals(state.game.currentTurn, state.game.isCriticalHit);
-        const cardTextEl = document.getElementById('card-text');
-        if (cardTextEl && card) cardTextEl.innerText = card.text;
+      // Sofort synchronen Text & Visuals rendern
+      updateRoleVisuals(state.game.currentTurn, state.game.isCriticalHit);
+      const cardTextEl = document.getElementById('card-text');
+      if (cardTextEl && card) cardTextEl.innerText = card.text;
 
-        const critBadge = document.getElementById('card-crit-badge');
-        if (critBadge) {
-          if (state.game.isCriticalHit) critBadge.classList.remove('hidden');
-          else critBadge.classList.add('hidden');
+      const critBadge = document.getElementById('card-crit-badge');
+      if (critBadge) {
+        if (state.game.isCriticalHit) critBadge.classList.remove('hidden');
+        else critBadge.classList.add('hidden');
+      }
+
+      // Punktwerte der Bewertungs-Buttons anpassen (verdoppeln bei Gold-Karte)
+      const mult = state.game.isCriticalHit ? 2 : 1;
+      const r1 = document.getElementById('rate-score-1');
+      const r2 = document.getElementById('rate-score-2');
+      const r3 = document.getElementById('rate-score-3');
+      if (r1) r1.innerText = `+${1 * mult} ⚡`;
+      if (r2) r2.innerText = `+${2 * mult} ⚡`;
+      if (r3) r3.innerText = `+${3 * mult} ⚡`;
+
+      stopTimer();
+      const timerBox = document.getElementById('card-timer-container');
+      if (timerBox) {
+        if (card && card.timer && card.timer > 0) {
+          timerBox.classList.remove('hidden');
+          prepareTimer(card.timer);
+        } else {
+          timerBox.classList.add('hidden');
         }
+      }
 
-        // Punktwerte der Bewertungs-Buttons anpassen (verdoppeln bei Gold-Karte)
-        const mult = state.game.isCriticalHit ? 2 : 1;
-        const r1 = document.getElementById('rate-score-1');
-        const r2 = document.getElementById('rate-score-2');
-        const r3 = document.getElementById('rate-score-3');
-        if (r1) r1.innerText = `+${1 * mult} ⚡`;
-        if (r2) r2.innerText = `+${2 * mult} ⚡`;
-        if (r3) r3.innerText = `+${3 * mult} ⚡`;
-
-        stopTimer();
-        const timerBox = document.getElementById('card-timer-container');
-        if (timerBox) {
-          if (card.timer && card.timer > 0) {
-            timerBox.classList.remove('hidden');
-            prepareTimer(card.timer);
-          } else {
-            timerBox.classList.add('hidden');
-          }
-        }
-
-        saveState();
-      }, 120);
+      saveState();
     }
 
     function rateAndCompleteCard(baseRating) {
@@ -3620,13 +3631,15 @@
     }
 
     function restoreDefaultDeck() {
-      if (confirm("Möchtest du das Standard-Deck (33 Meister-Karten mit strikter Rollen-Trennung) wiederherstellen?")) {
+      if (confirm("Möchtest du das Standard-Deck (32 Meister-Karten mit Stufen-Trennung) wiederherstellen?")) {
         state.game.cards = JSON.parse(JSON.stringify(defaultMasterDeck));
         state.game.drawPiles = {};
+        state.game.currentCard = null;
         saveState();
         renderCardManagerList();
+        drawCurrentTurnCard();
         playSensualSound('chime');
-        alert("✓ Standard-Deck (33 Karten) sauber geladen und synchronisiert!");
+        alert("✓ Standard-Deck (32 Karten) sauber geladen!");
       }
     }
 
