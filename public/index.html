@@ -110,7 +110,7 @@
           <div id="incoming-feedback-text" class="text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-rose-800/40"></div>
         </section>
 
-        <!-- BANNER: ABEND-MATCH BEREIT / EINLADUNG (RUHIG & OHNE BLINKEN) -->
+        <!-- BANNER: ABEND-MATCH BEREIT / EINLADUNG / WARTE-STATUS -->
         <section id="kopfkino-match-ready-banner" class="hidden bg-gradient-to-r from-purple-950 via-indigo-950 to-pink-950 border border-purple-500/70 rounded-2xl p-3 glow-purple space-y-2">
           <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
             <span id="kopfkino-banner-title">✨ Unser Abend-Match ist bereit!</span>
@@ -119,9 +119,14 @@
           <div id="kopfkino-banner-desc" class="text-xs text-slate-200 bg-slate-950/60 p-2 rounded-xl border border-purple-800/40">
             Beide haben gewählt. Enthüllt jetzt euer gemeinsames Match & den Abend-Fahrplan!
           </div>
-          <button onclick="openKopfkinoModal()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg active:scale-[0.98]">
-            🔍 Abend-Match ansehen
-          </button>
+          <div class="flex gap-2">
+            <button onclick="openKopfkinoModal()" class="flex-1 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg active:scale-[0.98]">
+              🔍 Match-Tab öffnen
+            </button>
+            <button onclick="pokePartnerForMatch()" id="btn-banner-poke" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-purple-500/40 text-purple-300 text-xs font-bold rounded-xl active:scale-95 transition-all" title="Partner per Benachrichtigung anstupsen">
+              🔔 Anstupsen
+            </button>
+          </div>
         </section>
 
         <!-- LIVE-BANNER: EINGEHENDES SPONTAN-SIGNAL -->
@@ -988,7 +993,11 @@
       } else if (partnerPrefs && !myPrefs) {
         kopfkinoBanner.classList.remove('hidden');
         document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat Vorlieben eingeloggt!`;
-        document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um unser Abend-Match zu enthüllen.`;
+        document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um euer Abend-Match zu enthüllen.`;
+      } else if (myPrefs && !partnerPrefs) {
+        kopfkinoBanner.classList.remove('hidden');
+        document.getElementById('kopfkino-banner-title').innerText = `⏳ Warten auf ${partner}...`;
+        document.getElementById('kopfkino-banner-desc').innerHTML = `Deine Vorlieben sind eingeloggt. Stupse ${partner} an, um das Match freizuschalten!`;
       } else {
         kopfkinoBanner.classList.add('hidden');
       }
