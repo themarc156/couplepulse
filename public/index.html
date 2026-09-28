@@ -3179,51 +3179,55 @@
       const receiverIcon = document.getElementById('card-receiver-icon');
       const receiverName = document.getElementById('card-receiver-name');
       const arrowIcon = document.getElementById('card-arrow-icon');
-      const mainDrawBtn = document.getElementById('btn-draw-card');
+      const cardTextEl = document.getElementById('card-text');
 
-      if (isCrit) {
-        cardBox.className = 'w-full bg-gradient-to-b from-amber-950/70 via-slate-900 to-slate-950 border-2 border-amber-400 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[240px] transition-all';
-      } else if (isMutual) {
-        cardBox.className = 'w-full bg-gradient-to-b from-purple-950/60 via-slate-900 to-slate-950 border-2 border-purple-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-purple text-center flex flex-col justify-between min-h-[240px] transition-all';
-      } else if (isEr) {
-        cardBox.className = 'w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[240px] transition-all';
-      } else {
-        cardBox.className = 'w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-pink-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-rose text-center flex flex-col justify-between min-h-[240px] transition-all';
+      // Text immer sicher synchron befüllen
+      if (cardTextEl && card && card.text) {
+        cardTextEl.innerText = card.text;
       }
 
-      if (isMutual) {
-        senderPill.className = 'flex items-center gap-1.5 bg-purple-600 text-white px-2.5 py-1 rounded-xl shadow font-bold text-xs';
-        senderIcon.innerText = '👑';
-        senderName.innerText = 'ER:';
-        receiverPill.className = 'flex items-center gap-1.5 bg-pink-600 text-white px-2.5 py-1 rounded-xl shadow font-bold text-xs';
-        receiverIcon.innerText = '👑';
-        receiverName.innerText = 'SIE:';
-        arrowIcon.className = 'text-purple-300 text-xs font-bold';
-        arrowIcon.innerText = '⟵ 💑 ⟶';
-      } else if (isEr) {
-        senderPill.className = 'flex items-center gap-1.5 bg-amber-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs';
-        senderIcon.innerText = '👑';
-        senderName.innerText = 'ER:';
-        receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs';
-        receiverIcon.innerText = '🧘';
-        receiverName.innerText = 'SIE:';
-        arrowIcon.className = 'text-amber-400 text-sm font-bold animate-pulse';
-        arrowIcon.innerText = '────▶';
-      } else {
-        senderPill.className = 'flex items-center gap-1.5 bg-pink-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs';
-        senderIcon.innerText = '👑';
-        senderName.innerText = 'SIE:';
-        receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs';
-        receiverIcon.innerText = '🧘';
-        receiverName.innerText = 'ER:';
-        arrowIcon.className = 'text-pink-400 text-sm font-bold animate-pulse';
-        arrowIcon.innerText = '────▶';
+      if (cardBox) {
+        if (isCrit) {
+          cardBox.className = 'w-full bg-gradient-to-b from-amber-950/70 via-slate-900 to-slate-950 border-2 border-amber-400 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[240px] transition-all';
+        } else if (isMutual) {
+          cardBox.className = 'w-full bg-gradient-to-b from-purple-950/60 via-slate-900 to-slate-950 border-2 border-purple-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-purple text-center flex flex-col justify-between min-h-[240px] transition-all';
+        } else if (isEr) {
+          cardBox.className = 'w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[240px] transition-all';
+        } else {
+          cardBox.className = 'w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-pink-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-rose text-center flex flex-col justify-between min-h-[240px] transition-all';
+        }
       }
 
-      mainDrawBtn.className = isEr 
-        ? 'w-full py-4 bg-gradient-to-r from-amber-500 via-amber-600 to-rose-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-amber-900/40 active:scale-[0.98] transition-all glow-amber'
-        : 'w-full py-4 bg-gradient-to-r from-pink-500 via-rose-600 to-purple-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-pink-900/40 active:scale-[0.98] transition-all glow-rose';
-      mainDrawBtn.innerText = `✨ Karte für ${user} aufdecken ✨`;
+      if (senderPill && receiverPill && arrowIcon && senderIcon && senderName && receiverIcon && receiverName) {
+        if (isMutual) {
+          senderPill.className = 'flex items-center gap-1.5 bg-purple-600 text-white px-2.5 py-1 rounded-xl shadow font-bold text-xs';
+          senderIcon.innerText = '👑';
+          senderName.innerText = 'ER:';
+          receiverPill.className = 'flex items-center gap-1.5 bg-pink-600 text-white px-2.5 py-1 rounded-xl shadow font-bold text-xs';
+          receiverIcon.innerText = '👑';
+          receiverName.innerText = 'SIE:';
+          arrowIcon.className = 'text-purple-300 text-xs font-bold';
+          arrowIcon.innerText = '⟵ 💑 ⟶';
+        } else if (isEr) {
+          senderPill.className = 'flex items-center gap-1.5 bg-amber-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs';
+          senderIcon.innerText = '👑';
+          senderName.innerText = 'ER:';
+          receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs';
+          receiverIcon.innerText = '🧘';
+          receiverName.innerText = 'SIE:';
+          arrowIcon.className = 'text-amber-400 text-sm font-bold animate-pulse';
+          arrowIcon.innerText = '────▶';
+        } else {
+          senderPill.className = 'flex items-center gap-1.5 bg-pink-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs';
+          senderIcon.innerText = '👑';
+          senderName.innerText = 'SIE:';
+          receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs';
+          receiverIcon.innerText = '🧘';
+          receiverName.innerText = 'ER:';
+          arrowIcon.className = 'text-pink-400 text-sm font-bold animate-pulse';
+          arrowIcon.innerText = '────▶';
+        }
+      }
 
       const promptEl = document.getElementById('post-draw-prompt');
       if (promptEl) {
@@ -3674,7 +3678,11 @@
     loadState();
     LiveStream.initPeer();
     setupVisualViewportSync();
-    selectStage(state.game.stage || 1);
+    if (!state.game.currentCard) {
+      drawCurrentTurnCard();
+    } else {
+      updateRoleVisuals(state.game.currentTurn, state.game.isCriticalHit);
+    }
   </script>
 </body>
 </html>
