@@ -1082,7 +1082,7 @@
     }
 
     // =========================================================================
-    // PEERJS LIVE DATA SYNC & INLINE PEEPSHOW (MIT ZOOM & BANNER-SCHUTZ)
+    // PEERJS LIVE DATA SYNC & INLINE PEEPSHOW (NAHTLOSER ROLLENTAUSCH)
     // =========================================================================
     const LiveStream = {
       peer: null,
@@ -1092,6 +1092,7 @@
       localStream: null,
       isStreaming: false,
       isSender: false,
+      isSwapping: false,
       currentFacingMode: 'user',
       audioMuted: true,
       zoomLevel: 1,
@@ -1124,24 +1125,27 @@
 
           // Nahtloser Rollentausch während eines bereits aktiven Streams
           if (this.isStreaming) {
-            if (this.localStream) {
-              this.localStream.getTracks().forEach(t => t.stop());
-              this.localStream = null;
-            }
             this.isSender = false;
             this.updateStreamRoleUI();
 
-            document.getElementById('local-video').classList.add('hidden');
-            const rVideo = document.getElementById('remote-video');
-            rVideo.classList.remove('hidden');
-
             call.answer();
             call.on('stream', (remoteStream) => {
+              if (this.localStream) {
+                this.localStream.getTracks().forEach(t => t.stop());
+                this.localStream = null;
+              }
+              document.getElementById('local-video').classList.add('hidden');
+              const rVideo = document.getElementById('remote-video');
+              rVideo.classList.remove('hidden');
               rVideo.srcObject = remoteStream;
               rVideo.muted = this.audioMuted;
               rVideo.play().catch(e => {});
               document.getElementById('stream-status-overlay').classList.add('hidden');
               playSensualSound('chime');
+            });
+
+            call.on('close', () => {
+              if (!this.isSwapping) this.endStream();
             });
             return;
           }
@@ -1305,6 +1309,7 @@
               audio: true 
             });
 
+            this.isSwapping = true;
             this.localStream = newStream;
             this.isSender = true;
 
@@ -1323,15 +1328,28 @@
             const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
             const partnerId = `cp_${safeRoom}_${targetUser}`;
 
+            const oldCall = this.primaryCall;
+            this.primaryCall = this.peer.call(partnerId, this.localStream);
+            
             if (this.primaryCall) {
-              try { this.primaryCall.close(); } catch(e) {}
+              this.primaryCall.on('close', () => {
+                if (!this.isSwapping) this.endStream();
+              });
             }
 
             this.sendData({ type: 'stream_swap_takeover' });
-            this.primaryCall = this.peer.call(partnerId, this.localStream);
+
+            setTimeout(() => {
+              if (oldCall && oldCall !== this.primaryCall) {
+                try { oldCall.close(); } catch(e) {}
+              }
+              this.isSwapping = false;
+            }, 800);
+
             playSensualSound('chime');
             showFeedbackBanner("✨ Du hast die Kamera übernommen!");
           } catch (e) {
+            this.isSwapping = false;
             alert('Kamera-Fehler bei Übernahme: ' + e.message);
           }
         }
@@ -1385,6 +1403,7 @@
         if (!this.incomingCall) return;
         this.isStreaming = true;
         this.isSender = false;
+        this.isSwapping = false;
 
         closeFeedbackBanner();
 
@@ -1416,7 +1435,9 @@
           playSensualSound('chime');
         });
 
-        this.incomingCall.on('close', () => this.endStream());
+        this.incomingCall.on('close', () => {
+          if (!this.isSwapping) this.endStream();
+        });
       },
 
       async flipCamera() {
@@ -1451,12 +1472,13 @@
       },
 
       endStream() {
+        this.isSwapping = false;
         if (this.localStream) {
           this.localStream.getTracks().forEach(t => t.stop());
           this.localStream = null;
         }
         if (this.primaryCall) {
-          this.primaryCall.close();
+          try { this.primaryCall.close(); } catch(e) {}
           this.primaryCall = null;
         }
         this.incomingCall = null;
@@ -1488,16 +1510,13 @@
           showFeedbackBanner(`👁️ ${data.sender} hat einen Live-Stream gestartet!`);
           playSensualSound('chime');
         } else if (data.type === 'stream_swap_takeover') {
-          if (this.localStream) {
-            this.localStream.getTracks().forEach(t => t.stop());
-            this.localStream = null;
-          }
+          this.isSwapping = true;
           this.isSender = false;
           this.updateStreamRoleUI();
           document.getElementById('local-video').classList.add('hidden');
           document.getElementById('remote-video').classList.remove('hidden');
-          showFeedbackBanner("🔁 Dein Partner hat die Kamera übernommen!");
-          playSensualSound('chime');
+          showFeedbackBanner("🔁 Dein Partner übernimmt die Kamera...");
+          setTimeout(() => { this.isSwapping = false; }, 1500);
         } else if (data.type === 'stream_swap_offer') {
           if (confirm("Dein Partner lädt dich ein, jetzt die Kamera zu übernehmen! Möchtest du streamen?")) {
             this.switchStreamDirection();
