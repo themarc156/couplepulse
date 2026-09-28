@@ -77,8 +77,8 @@
           <button onclick="setCustomRoomKey()" title="Paar-Schlüssel bearbeiten" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-1.5 py-0.5 rounded-md font-mono">🔑 PIN</button>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="openPendingReviewsModal()" id="header-review-btn" class="relative p-1.5 bg-slate-900 border border-slate-800 rounded-full text-slate-300 hover:text-white text-xs hidden flex items-center justify-center">
-            💌 <span id="header-review-count" class="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+          <button onclick="openPendingReviewsModal()" id="header-review-btn" class="relative p-1.5 bg-slate-900 border border-slate-800 hover:border-rose-500/50 rounded-full text-slate-300 hover:text-white text-xs flex items-center justify-center transition-all shadow" title="Erlebnis-Archiv & Rückmeldungen">
+            💌 <span id="header-review-count" class="hidden absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold animate-pulse">0</span>
           </button>
           
           <button onclick="resetGlobalDay()" class="text-[10px] text-slate-500 hover:text-slate-300 px-1.5 py-1">Reset</button>
@@ -412,16 +412,19 @@
       </div>
     </div>
 
-    <!-- MODAL: AUSSTEHENDE BEWERTUNGEN -->
-    <div id="pending-reviews-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl">
+    <!-- MODAL: ERLEBNIS-ARCHIV & HIGHLIGHTS -->
+    <div id="pending-reviews-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl max-h-[85vh] flex flex-col justify-between">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
           <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
-            <span>💌</span> Deine Erlebnisse & Bewertungen
+            <span>💌</span> Erlebnis-Archiv & Highlights
           </h3>
           <button onclick="closePendingReviewsModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">✕</button>
         </div>
-        <div id="pending-reviews-container" class="space-y-2.5 max-h-[60vh] overflow-y-auto text-xs"></div>
+        <div id="pending-reviews-container" class="space-y-2.5 overflow-y-auto pr-1 text-xs flex-1 my-1"></div>
+        <button onclick="closePendingReviewsModal()" class="w-full py-2.5 bg-slate-950 border border-slate-800 text-slate-300 font-semibold text-xs rounded-xl active:scale-[0.98]">
+          Schließen
+        </button>
       </div>
     </div>
 
@@ -898,14 +901,15 @@
     function updateUI() {
       const partner = state.currentUser === 'Er' ? 'Sie' : 'Er';
 
-      const reviewBtn = document.getElementById('header-review-btn');
       const reviewCount = document.getElementById('header-review-count');
       const pendingCount = (state.pendingReviews || []).filter(r => r.from === state.currentUser).length;
-      if (pendingCount > 0) {
-        reviewBtn.classList.remove('hidden');
-        reviewCount.innerText = pendingCount;
-      } else {
-        reviewBtn.classList.add('hidden');
+      if (reviewCount) {
+        if (pendingCount > 0) {
+          reviewCount.classList.remove('hidden');
+          reviewCount.innerText = pendingCount;
+        } else {
+          reviewCount.classList.add('hidden');
+        }
       }
 
       const kopfkinoBanner = document.getElementById('kopfkino-match-ready-banner');
@@ -1073,8 +1077,18 @@
           playSensualSound('chime');
           saveState();
         } else if (data.type === 'craving_feedback') {
+          if (data.entry) {
+            if (!state.completedReviews) state.completedReviews = [];
+            state.completedReviews.unshift(data.entry);
+          }
+          if (data.shoutMsg) {
+            if (!state.shoutboxMessages) state.shoutboxMessages = [];
+            state.shoutboxMessages.push(data.shoutMsg);
+            renderAllShoutboxes();
+          }
           showFeedbackBanner(data.feedback);
           playSensualSound('chime');
+          saveState();
         } else if (data.type === 'catalog_sync') {
           state.kopfkino.practicesCatalog = data.practicesCatalog;
           if (data.cumCatalog) state.kopfkino.cumCatalog = data.cumCatalog;
@@ -1751,9 +1765,6 @@
     }
 
     function markKopfkinoFulfilled() {
-      if (!confirm("Möchtet ihr euer Abend-Erlebnis als erfüllt markieren und bewerten?")) {
-        return;
-      }
       const matchTitle = currentMatchHighlightTitles.length > 0 ? currentMatchHighlightTitles.slice(0, 2).join(' + ') : 'Gemeinsames Abend-Erlebnis';
       LiveStream.sendData({ type: 'kopfkino_fulfilled_event', title: matchTitle });
 
@@ -1885,7 +1896,7 @@
     }
 
     // =========================================================================
-    // BEWERTUNGEN & FEEDBACK
+    // BEWERTUNGEN & HIGHLIGHT-ARCHIV
     // =========================================================================
     function openPendingReviewsModal() {
       const modal = document.getElementById('pending-reviews-modal');
@@ -1896,50 +1907,73 @@
       const history = state.completedReviews || [];
 
       if (pending.length === 0 && history.length === 0) {
-        container.innerHTML = `<div class="text-slate-500 italic text-center py-4">Keine Erlebnisse oder Bewertungen vorhanden ✨</div>`;
+        container.innerHTML = `
+          <div class="text-slate-500 italic text-center py-8 text-xs flex flex-col items-center gap-1.5">
+            <span class="text-2xl">💌</span>
+            <span>Noch keine Erlebnisse im Archiv.<br>Schließt ein Abend-Match oder eine Lust-Pause ab!</span>
+          </div>
+        `;
         modal.classList.remove('hidden');
         return;
       }
 
+      // 1. Ausstehende Rückmeldungen
       if (pending.length > 0) {
         const pendingHeader = document.createElement('div');
         pendingHeader.className = 'text-[10px] font-bold text-rose-400 uppercase tracking-wider pb-1';
-        pendingHeader.innerText = 'Warte auf deine Bewertung:';
+        pendingHeader.innerText = 'Warte auf deine Rückmeldung:';
         container.appendChild(pendingHeader);
 
         pending.forEach((review) => {
           const div = document.createElement('div');
-          div.className = 'bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-2 mb-2';
+          div.className = 'bg-slate-950 border border-rose-900/50 p-3 rounded-2xl space-y-2 mb-2';
           div.innerHTML = `
             <div class="font-bold text-slate-100 text-xs">🔥 ${review.title}</div>
             <div class="text-[10px] text-slate-400">Hat dein Partner diesen Moment erfüllt?</div>
             <div class="grid grid-cols-2 gap-2 pt-1">
               <button onclick="resolveReview(${review.id}, 'cancel')" class="py-2 px-1 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded-xl text-[10px] font-medium text-center">❌ Ausgefallen</button>
-              <button onclick="resolveReview(${review.id}, 'success')" class="py-2 px-1 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-bold text-center">✨ Ja, wunderschön!</button>
+              <button onclick="resolveReview(${review.id}, 'success')" class="py-2 px-1 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-bold text-center">✨ Ja, bewerten!</button>
             </div>
           `;
           container.appendChild(div);
         });
       }
 
+      // 2. Vollständiges Highlight-Archiv
       if (history.length > 0) {
         const histHeader = document.createElement('div');
-        histHeader.className = 'text-[10px] font-bold text-slate-400 uppercase tracking-wider pt-3 pb-1';
-        histHeader.innerText = 'Letzte Highlights (Archiv):';
+        histHeader.className = 'text-[10px] font-bold text-purple-300 uppercase tracking-wider pt-2 pb-1 flex justify-between items-center';
+        histHeader.innerHTML = `<span>Gesammelte Highlights (${history.length}):</span>`;
         container.appendChild(histHeader);
 
-        history.slice(0, 5).forEach((item) => {
+        history.forEach((item, idx) => {
+          const dateStr = item.timestamp ? new Date(item.timestamp).toLocaleDateString('de-DE') : 'Vor kurzem';
           const div = document.createElement('div');
-          div.className = 'bg-slate-950/60 border border-slate-855 p-2.5 rounded-xl text-xs space-y-0.5 mb-1';
+          div.className = 'bg-slate-950 border border-slate-800 p-3 rounded-2xl text-xs space-y-1 relative';
           div.innerHTML = `
-            <div class="font-semibold text-slate-200">🔥 ${item.title}</div>
-            <div class="text-[10px] text-rose-400">Bewertung: ${item.feedback}</div>
+            <div class="flex justify-between items-start gap-1">
+              <div class="font-bold text-slate-200 text-xs">🔥 ${item.title}</div>
+              <button onclick="deleteArchivedReview(${idx})" class="text-slate-500 hover:text-rose-400 text-xs px-1" title="Löschen">🗑️</button>
+            </div>
+            <div class="text-[11px] text-rose-300 font-semibold">${item.feedback}</div>
+            <div class="text-[9px] text-slate-500 pt-0.5 flex justify-between">
+              <span>${item.from ? `Von ${item.from}` : 'Gemeinsam'}</span>
+              <span>${dateStr}</span>
+            </div>
           `;
           container.appendChild(div);
         });
       }
 
       modal.classList.remove('hidden');
+    }
+
+    function deleteArchivedReview(idx) {
+      if (confirm("Diesen Highlight-Eintrag aus dem Archiv löschen?")) {
+        state.completedReviews.splice(idx, 1);
+        saveState();
+        openPendingReviewsModal();
+      }
     }
 
     function closePendingReviewsModal() { document.getElementById('pending-reviews-modal').classList.add('hidden'); }
@@ -1973,13 +2007,37 @@
       document.getElementById('feedback-custom-text').value = '';
       
       const title = activeReviewItem && activeReviewItem.title ? activeReviewItem.title : 'Gemeinsamer Moment';
-      const finalMsg = `${feedbackText} (${title})`;
+      const entry = {
+        id: Date.now(),
+        title: title,
+        feedback: feedbackText,
+        from: state.currentUser,
+        timestamp: Date.now()
+      };
 
       if (!state.completedReviews) state.completedReviews = [];
-      state.completedReviews.unshift({ title: title, feedback: feedbackText, timestamp: Date.now() });
+      state.completedReviews.unshift(entry);
 
-      LiveStream.sendData({ type: 'craving_feedback', feedback: finalMsg });
+      // Feedback formatiert in die Flüsterbox posten
+      const shoutMsg = {
+        id: Date.now(),
+        from: state.currentUser,
+        text: `💖 Rückmeldung: ${feedbackText} (${title})`,
+        timestamp: Date.now()
+      };
+      if (!state.shoutboxMessages) state.shoutboxMessages = [];
+      state.shoutboxMessages.push(shoutMsg);
+
+      // Synchronisation an Partner (Archiv-Eintrag + Flüsterbox + Banner)
+      LiveStream.sendData({
+        type: 'craving_feedback',
+        entry: entry,
+        shoutMsg: shoutMsg,
+        feedback: `💖 ${state.currentUser}: ${feedbackText} (${title})`
+      });
+
       saveState();
+      renderAllShoutboxes();
       alert("💖 Feedback an den Partner gesendet & im Archiv gespeichert!");
     }
 
