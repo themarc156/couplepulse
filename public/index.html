@@ -919,11 +919,13 @@
       const myPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
       const partnerPrefs = state.currentUser === 'Er' ? state.kopfkino.siePreferences : state.kopfkino.erPreferences;
 
-      if (state.kopfkino.isUnlocked) {
+      const isEveningConcluded = Boolean(state.kopfkino.erRated || state.kopfkino.sieRated);
+
+      if (state.kopfkino.isUnlocked && !isEveningConcluded) {
         kopfkinoBanner.classList.remove('hidden');
         document.getElementById('kopfkino-banner-title').innerText = '✨ Unser Abend-Match ist bereit!';
         document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben gewählt. Entdeckt euer Match & den Abend-Fahrplan!';
-      } else if (partnerPrefs && !myPrefs) {
+      } else if (partnerPrefs && !myPrefs && !isEveningConcluded) {
         kopfkinoBanner.classList.remove('hidden');
         document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat Vorlieben eingeloggt!`;
         document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um unser Abend-Match zu enthüllen.`;
@@ -1084,7 +1086,12 @@
         } else if (data.type === 'craving_feedback') {
           if (data.entry) {
             if (!state.completedReviews) state.completedReviews = [];
-            state.completedReviews.unshift(data.entry);
+            const existingIdx = state.completedReviews.findIndex(r => r.id === data.entry.id || (r.type === 'abend_match' && data.entry.type === 'abend_match'));
+            if (existingIdx >= 0) {
+              state.completedReviews[existingIdx] = data.entry;
+            } else {
+              state.completedReviews.unshift(data.entry);
+            }
           }
           if (data.shoutMsg) {
             if (!state.shoutboxMessages) state.shoutboxMessages = [];
@@ -1966,25 +1973,39 @@
         });
       }
 
-      // 2. Vollständiges Highlight-Archiv
+      // 2. Vollständiges Highlight-Archiv (1 gemeinsamer Eintrag pro Abend)
       if (history.length > 0) {
         const histHeader = document.createElement('div');
         histHeader.className = 'text-[10px] font-bold text-purple-300 uppercase tracking-wider pt-2 pb-1 flex justify-between items-center';
-        histHeader.innerHTML = `<span>Gesammelte Highlights (${history.length}):</span>`;
+        histHeader.innerHTML = `<span>Gesammelte Erlebnisse (${history.length}):</span>`;
         container.appendChild(histHeader);
 
         history.forEach((item, idx) => {
           const dateStr = item.timestamp ? new Date(item.timestamp).toLocaleDateString('de-DE') : 'Vor kurzem';
+          const hasRatingsObj = Boolean(item.ratings && Object.keys(item.ratings).length > 0);
           const div = document.createElement('div');
-          div.className = 'bg-slate-950 border border-slate-800 p-3 rounded-2xl text-xs space-y-1 relative';
+          div.className = 'bg-slate-950 border border-slate-800 p-3.5 rounded-2xl text-xs space-y-2 relative';
+          
+          let ratingsHtml = '';
+          if (hasRatingsObj) {
+            ratingsHtml = `
+              <div class="space-y-1 bg-slate-900/70 p-2.5 rounded-xl border border-slate-855 text-xs">
+                ${item.ratings['Er'] ? `<div><strong class="text-purple-300">Er:</strong> <span class="text-slate-200">${item.ratings['Er']}</span></div>` : '<div class="text-slate-500 italic">Er: noch keine Bewertung</div>'}
+                ${item.ratings['Sie'] ? `<div><strong class="text-rose-300">Sie:</strong> <span class="text-slate-200">${item.ratings['Sie']}</span></div>` : '<div class="text-slate-500 italic">Sie: noch keine Bewertung</div>'}
+              </div>
+            `;
+          } else {
+            ratingsHtml = `<div class="text-[11px] text-rose-300 font-semibold bg-slate-900/60 p-2 rounded-xl">${item.feedback || 'Schönes Erlebnis'}</div>`;
+          }
+
           div.innerHTML = `
             <div class="flex justify-between items-start gap-1">
-              <div class="font-bold text-slate-200 text-xs">🔥 ${item.title}</div>
+              <div class="font-bold text-slate-100 text-xs">🔥 ${item.title}</div>
               <button onclick="deleteArchivedReview(${idx})" class="text-slate-500 hover:text-rose-400 text-xs px-1" title="Löschen">🗑️</button>
             </div>
-            <div class="text-[11px] text-rose-300 font-semibold">${item.feedback}</div>
-            <div class="text-[9px] text-slate-500 pt-0.5 flex justify-between">
-              <span>${item.from ? `Von ${item.from}` : 'Gemeinsam'}</span>
+            ${ratingsHtml}
+            <div class="text-[9px] text-slate-500 pt-0.5 flex justify-between items-center">
+              <span>Gemeinsamer Abend</span>
               <span>${dateStr}</span>
             </div>
           `;
@@ -2097,38 +2118,53 @@
       document.getElementById('feedback-custom-text').value = '';
       
       const title = activeReviewItem && activeReviewItem.title ? activeReviewItem.title : 'Gemeinsamer Moment';
-      const entry = {
-        id: Date.now(),
-        title: title,
-        feedback: feedbackText,
-        from: state.currentUser,
-        timestamp: Date.now()
-      };
+      const isAbendMatch = activeReviewItem && (activeReviewItem.type === 'abend_match' || title.includes('Abend'));
+      const currentUser = state.currentUser;
 
       if (!state.completedReviews) state.completedReviews = [];
-      state.completedReviews.unshift(entry);
+
+      // Prüfen, ob bereits ein gemeinsamer Eintrag für dieses Abend-Erlebnis existiert
+      let targetEntry = isAbendMatch ? state.completedReviews.find(r => r.type === 'abend_match' && (Date.now() - (r.timestamp || 0) < 86400000)) : null;
+
+      if (targetEntry) {
+        if (!targetEntry.ratings) targetEntry.ratings = {};
+        targetEntry.ratings[currentUser] = feedbackText;
+        targetEntry.timestamp = Date.now();
+      } else {
+        targetEntry = {
+          id: Date.now(),
+          title: title,
+          type: isAbendMatch ? 'abend_match' : 'single',
+          ratings: {
+            [currentUser]: feedbackText
+          },
+          feedback: feedbackText,
+          timestamp: Date.now()
+        };
+        state.completedReviews.unshift(targetEntry);
+      }
 
       // Feedback formatiert in die Flüsterbox posten
       const shoutMsg = {
         id: Date.now(),
-        from: state.currentUser,
-        text: `💖 Rückmeldung: ${feedbackText} (${title})`,
+        from: currentUser,
+        text: `💖 Rückmeldung von ${currentUser}: ${feedbackText} (${title})`,
         timestamp: Date.now()
       };
       if (!state.shoutboxMessages) state.shoutboxMessages = [];
       state.shoutboxMessages.push(shoutMsg);
 
-      // Synchronisation an Partner (Archiv-Eintrag + Flüsterbox + Banner)
+      // Synchronisation an Partner
       LiveStream.sendData({
         type: 'craving_feedback',
-        entry: entry,
+        entry: targetEntry,
         shoutMsg: shoutMsg,
-        feedback: `💖 ${state.currentUser}: ${feedbackText} (${title})`
+        feedback: `💖 ${currentUser}: ${feedbackText} (${title})`
       });
 
       saveState();
       renderAllShoutboxes();
-      alert("💖 Feedback an den Partner gesendet & im Archiv gespeichert!");
+      alert("💖 Feedback an den Partner gesendet & im gemeinsamen Archiv gespeichert!");
     }
 
     function showFeedbackBanner(text) {
