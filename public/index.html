@@ -487,7 +487,7 @@
 
         <!-- OPTIONALE NOTIZ / ORT -->
         <div class="pt-0.5">
-          <input id="craving-note-input" type="text" placeholder="Flüster-Notiz oder Ort (z. B. Badewanne 🛁 / Komm sofort...)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
+          <input id="craving-note-input" type="text" placeholder="Flüster-Nachricht...(optional)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
         </div>
 
         <!-- SENDE-BUTTON -->
@@ -2018,19 +2018,21 @@
         fulfilled: false
       };
 
-      // Flüster-Notiz automatisch auch in der Tages-Flüsterbox synchronisieren
-      if (note) {
-        const shoutMsg = {
-          id: Date.now(),
-          from: state.currentUser,
-          text: `${selected.emoji} ${selected.title}: "${note}"`,
-          timestamp: Date.now()
-        };
-        if (!state.shoutboxMessages) state.shoutboxMessages = [];
-        state.shoutboxMessages.push(shoutMsg);
-        LiveStream.sendData({ type: 'shoutbox_message', message: shoutMsg });
-        renderAllShoutboxes();
-      }
+      // Lust-Pause immer formatiert in der Flüsterbox festhalten
+      const shoutText = note 
+        ? `🔥 Lust-Pause erbeten: ${selected.emoji} ${selected.title} – "${note}"`
+        : `🔥 Lust-Pause erbeten: ${selected.emoji} ${selected.title}`;
+
+      const shoutMsg = {
+        id: Date.now(),
+        from: state.currentUser,
+        text: shoutText,
+        timestamp: Date.now()
+      };
+      if (!state.shoutboxMessages) state.shoutboxMessages = [];
+      state.shoutboxMessages.push(shoutMsg);
+      LiveStream.sendData({ type: 'shoutbox_message', message: shoutMsg });
+      renderAllShoutboxes();
 
       closeCravingModal();
       LiveStream.sendData({ type: 'new_craving', craving: newCraving });
