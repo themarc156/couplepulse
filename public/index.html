@@ -562,6 +562,32 @@
       </div>
     </div>
 
+    <!-- MODAL: STRAFE BEI WEIGERUNG (STYLISCH & IMMERSIV) -->
+    <div id="penalty-modal" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-gradient-to-b from-rose-950/90 via-slate-900 to-black border-2 border-rose-600/80 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl glow-rose text-center">
+        <div class="space-y-1.5">
+          <span class="text-4xl block animate-bounce">🛑</span>
+          <h3 class="text-lg font-black uppercase tracking-wider text-rose-400">
+            Strafe für Weigerung
+          </h3>
+          <span class="inline-block px-3 py-0.5 bg-rose-950/80 border border-rose-600/50 rounded-full text-[10px] font-mono font-bold text-rose-300">
+            0 Punkte für diesen Zug
+          </span>
+        </div>
+
+        <div class="bg-slate-950/90 border border-rose-900/60 p-4 rounded-2xl space-y-2 text-left">
+          <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-bold text-center">Deine Wiedergutmachung:</span>
+          <div id="penalty-task-text" class="text-sm font-bold text-slate-100 leading-relaxed text-center py-1">
+            5 feste Klapse auf den nackten Hintern!
+          </div>
+        </div>
+
+        <button onclick="resolvePenaltyModal()" class="w-full py-3.5 bg-gradient-to-r from-rose-600 via-rose-700 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-rose-950 active:scale-95 transition-all glow-rose flex items-center justify-center gap-1.5">
+          <span>✓</span> <span>Strafe tapfer absolviert & weiter</span>
+        </button>
+      </div>
+    </div>
+
     <!-- MODAL: SIEGER-ENTSCHEIDUNG (LUST-DUELL FINALE) -->
     <div id="winner-modal" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div class="bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 border-amber-500/80 w-full max-w-sm rounded-3xl p-6 space-y-5 shadow-2xl glow-amber text-center">
@@ -769,11 +795,13 @@
 
     const penaltyChallenges = [
       "5 feste Klapse auf den nackten Hintern!",
-      "Ein weiteres Kleidungsstück sofort mit den Zähnen ausziehen.",
-      "Auf Knien um Vergebung bitten und die Oberschenkel küssen.",
+      "Ein Kleidungsstück sofort nur mit den Zähnen ausziehen.",
+      "Auf Knien um Vergebung bitten und die Oberschenkel des Partners küssen.",
       "60 Sekunden lang intensiv den Intimbereich des Partners verwöhnen.",
       "Dem Partner ungefiltert dein versautestes Geheimnis ins Ohr flüstern.",
-      "Dem Partner 60 Sekunden lang ohne Gegenwehr vollkommen ausgeliefert sein."
+      "Dem Partner 60 Sekunden lang ohne Gegenwehr vollkommen ausgeliefert sein.",
+      "Lass deinen Partner 30 Sekunden lang bestimmen, wo er dich sanft beißen oder kneifen darf.",
+      "Verwöhne die Füße oder Waden deines Partners 60 Sekunden lang mit deinen Lippen."
     ];
 
     // =========================================================================
@@ -3355,10 +3383,23 @@
 
     function triggerPenalty() {
       const pen = penaltyChallenges[Math.floor(Math.random() * penaltyChallenges.length)];
-      alert(`🛑 STRAFE FÜR WEIGERUNG (0 Punkte):\n\n${pen}`);
+      const textEl = document.getElementById('penalty-task-text');
+      if (textEl) textEl.innerText = pen;
+      
+      const modal = document.getElementById('penalty-modal');
+      if (modal) modal.classList.remove('hidden');
+
+      playSensualSound('alarm');
+      triggerHaptic([150, 80, 150]);
+    }
+
+    function resolvePenaltyModal() {
+      const modal = document.getElementById('penalty-modal');
+      if (modal) modal.classList.add('hidden');
+
       state.game.roundsCount++;
       updateGameScoreUI();
-      playSensualSound('alarm');
+      playSensualSound('chime');
       advanceToNextTurn();
     }
 
