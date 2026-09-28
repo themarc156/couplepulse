@@ -317,20 +317,18 @@
             
             <!-- DYNAMISCHE RICHTUNGS- & PUNKTE-LEISTE -->
             <div id="card-direction-bar" onclick="toggleActiveTurnManual()" class="bg-slate-950/90 border border-amber-500/40 rounded-2xl p-2 flex items-center justify-between text-xs font-black tracking-wide cursor-pointer hover:scale-[1.01] active:scale-95 transition-all shrink-0" title="Tippen um Rollen zu tauschen">
-              <div id="card-sender-pill" class="flex items-center gap-1 bg-amber-500 text-slate-950 px-2 py-1 rounded-xl shadow font-bold text-[11px]">
+              <div id="card-sender-pill" class="flex items-center gap-1.5 bg-amber-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs">
                 <span id="card-sender-icon">👑</span>
                 <span id="card-sender-name">ER:</span>
                 <span id="card-sender-score" class="font-mono font-black">0 ⚡</span>
-                <span id="card-sender-role" class="text-[9px] opacity-80">(Gibt)</span>
               </div>
               
-              <span id="card-arrow-icon" class="text-amber-400 text-sm font-bold animate-pulse">──▶</span>
+              <span id="card-arrow-icon" class="text-amber-400 text-sm font-bold animate-pulse">────▶</span>
 
-              <div id="card-receiver-pill" class="flex items-center gap-1 bg-slate-900 border border-slate-800 text-slate-200 px-2 py-1 rounded-xl text-[11px]">
+              <div id="card-receiver-pill" class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs">
                 <span id="card-receiver-icon">🧘</span>
                 <span id="card-receiver-name">SIE:</span>
                 <span id="card-receiver-score" class="font-mono font-black">0 ⚡</span>
-                <span id="card-receiver-role" class="text-[9px] text-slate-400">(Nimmt)</span>
               </div>
             </div>
 
@@ -343,9 +341,9 @@
               Tippe unten auf "Karte aufdecken", um das Spiel zu starten... 🔥
             </div>
 
-            <!-- RADIALER SVG-TIMER -->
+            <!-- RADIALER SVG-TIMER (MANUELLER START PER KLICK) -->
             <div id="card-timer-container" class="hidden pt-1.5 border-t border-slate-800/80 flex flex-col items-center space-y-1.5 shrink-0">
-              <div class="relative w-16 h-16 flex items-center justify-center">
+              <div onclick="toggleTimer()" class="relative w-16 h-16 flex items-center justify-center cursor-pointer active:scale-95 transition-all" title="Tippen zum Starten/Pausieren">
                 <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                   <path class="text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                   <path id="timer-progress-ring" class="text-amber-500 transition-all duration-1000 ease-linear" stroke-dasharray="100, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -353,8 +351,10 @@
                 <div id="timer-display" class="absolute font-mono font-black text-amber-400 text-xs">01:00</div>
               </div>
               <div class="flex gap-2">
-                <button onclick="toggleTimer()" id="btn-timer-toggle" class="px-3 py-1 bg-amber-500 text-slate-950 text-[10px] font-bold rounded-lg shadow">Pause</button>
-                <button onclick="addTimerTime(30)" class="px-2.5 py-1 bg-slate-800 text-slate-300 text-[10px] rounded-lg">+30s</button>
+                <button onclick="toggleTimer()" id="btn-timer-toggle" class="px-3.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold rounded-lg shadow active:scale-95 transition-all flex items-center gap-1">
+                  <span>▶️</span> <span>Start</span>
+                </button>
+                <button onclick="addTimerTime(30)" class="px-2.5 py-1 bg-slate-800 text-slate-300 text-[10px] rounded-lg active:scale-95 transition-all">+30s</button>
               </div>
             </div>
 
@@ -369,7 +369,7 @@
         </button>
         
         <div id="post-draw-buttons" class="hidden space-y-2">
-          <div class="text-[10px] font-bold text-center text-slate-300 uppercase tracking-wider">
+          <div id="post-draw-prompt" class="text-[10px] font-bold text-center text-slate-300 uppercase tracking-wider">
             Wie intensiv war es für <span id="post-draw-receiver-name" class="text-rose-400 font-black">Sie</span>?
           </div>
           <div class="grid grid-cols-3 gap-1.5">
@@ -3130,47 +3130,62 @@
 
     function updateRoleVisuals(user, isCrit = false) {
       const isEr = (user === 'Er');
+      const card = state.game.currentCard;
+      const isMutual = Boolean(card && (card.role === 'any' || (card.tags && card.tags.includes('mutual')) || (card.text && card.text.includes('Beide'))));
+
       const cardBox = document.getElementById('active-card-face');
       const senderPill = document.getElementById('card-sender-pill');
       const senderName = document.getElementById('card-sender-name');
-      const senderRole = document.getElementById('card-sender-role');
       const receiverPill = document.getElementById('card-receiver-pill');
       const receiverName = document.getElementById('card-receiver-name');
-      const receiverRole = document.getElementById('card-receiver-role');
       const arrowIcon = document.getElementById('card-arrow-icon');
       const mainDrawBtn = document.getElementById('btn-draw-card');
-      const receiverText = document.getElementById('post-draw-receiver-name');
 
       if (isCrit) {
         cardBox.className = 'w-full bg-gradient-to-b from-amber-950/70 via-slate-900 to-slate-950 border-2 border-amber-400 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[240px] transition-all';
+      } else if (isMutual) {
+        cardBox.className = 'w-full bg-gradient-to-b from-purple-950/60 via-slate-900 to-slate-950 border-2 border-purple-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-purple text-center flex flex-col justify-between min-h-[240px] transition-all';
       } else if (isEr) {
         cardBox.className = 'w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[240px] transition-all';
       } else {
         cardBox.className = 'w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-pink-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-rose text-center flex flex-col justify-between min-h-[240px] transition-all';
       }
 
-      if (isEr) {
-        senderPill.className = 'flex items-center gap-1 bg-amber-500 text-slate-950 px-2 py-1 rounded-xl shadow font-bold text-[11px]';
+      if (isMutual) {
+        senderPill.className = 'flex items-center gap-1.5 bg-purple-600 text-white px-2.5 py-1 rounded-xl shadow font-bold text-xs';
         senderName.innerText = 'ER:';
-        senderRole.innerText = '(Gibt)';
-        receiverPill.className = 'flex items-center gap-1 bg-slate-900 border border-slate-800 text-slate-200 px-2 py-1 rounded-xl text-[11px]';
+        receiverPill.className = 'flex items-center gap-1.5 bg-pink-600 text-white px-2.5 py-1 rounded-xl shadow font-bold text-xs';
         receiverName.innerText = 'SIE:';
-        receiverRole.innerText = '(Nimmt)';
+        arrowIcon.className = 'text-purple-300 text-xs font-bold';
+        arrowIcon.innerText = '⟵ 💑 ⟶';
+      } else if (isEr) {
+        senderPill.className = 'flex items-center gap-1.5 bg-amber-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs';
+        senderName.innerText = 'ER:';
+        receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs';
+        receiverName.innerText = 'SIE:';
         arrowIcon.className = 'text-amber-400 text-sm font-bold animate-pulse';
-        mainDrawBtn.className = 'w-full py-4 bg-gradient-to-r from-amber-500 via-amber-600 to-rose-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-amber-900/40 active:scale-[0.98] transition-all glow-amber';
-        mainDrawBtn.innerText = `✨ Karte für Er aufdecken ✨`;
-        if (receiverText) receiverText.innerText = 'Sie';
+        arrowIcon.innerText = '────▶';
       } else {
-        senderPill.className = 'flex items-center gap-1 bg-pink-500 text-slate-950 px-2 py-1 rounded-xl shadow font-bold text-[11px]';
+        senderPill.className = 'flex items-center gap-1.5 bg-pink-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs';
         senderName.innerText = 'SIE:';
-        senderRole.innerText = '(Gibt)';
-        receiverPill.className = 'flex items-center gap-1 bg-slate-900 border border-slate-800 text-slate-200 px-2 py-1 rounded-xl text-[11px]';
+        receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs';
         receiverName.innerText = 'ER:';
-        receiverRole.innerText = '(Nimmt)';
         arrowIcon.className = 'text-pink-400 text-sm font-bold animate-pulse';
-        mainDrawBtn.className = 'w-full py-4 bg-gradient-to-r from-pink-500 via-rose-600 to-purple-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-pink-900/40 active:scale-[0.98] transition-all glow-rose';
-        mainDrawBtn.innerText = `✨ Karte für Sie aufdecken ✨`;
-        if (receiverText) receiverText.innerText = 'Er';
+        arrowIcon.innerText = '────▶';
+      }
+
+      mainDrawBtn.className = isEr 
+        ? 'w-full py-4 bg-gradient-to-r from-amber-500 via-amber-600 to-rose-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-amber-900/40 active:scale-[0.98] transition-all glow-amber'
+        : 'w-full py-4 bg-gradient-to-r from-pink-500 via-rose-600 to-purple-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-pink-900/40 active:scale-[0.98] transition-all glow-rose';
+      mainDrawBtn.innerText = `✨ Karte für ${user} aufdecken ✨`;
+
+      const promptEl = document.getElementById('post-draw-prompt');
+      if (promptEl) {
+        if (isMutual) {
+          promptEl.innerHTML = `💑 Wie intensiv war es für <span class="text-purple-300 font-black">euch beide</span>?`;
+        } else {
+          promptEl.innerHTML = `Wie intensiv war es für <span class="text-rose-400 font-black">${isEr ? 'Sie' : 'Er'}</span>?`;
+        }
       }
 
       updateGameScoreUI();
@@ -3267,11 +3282,7 @@
         stopTimer();
         if (card.timer && card.timer > 0) {
           document.getElementById('card-timer-container').classList.remove('hidden');
-          startTimer(card.timer, 'timer-display', 'timer-progress-ring', () => {
-            playSensualSound('alarm');
-            triggerHaptic([200, 100, 200]);
-            alert("⏳ Zeit abgelaufen!");
-          });
+          prepareTimer(card.timer);
         } else {
           document.getElementById('card-timer-container').classList.add('hidden');
         }
@@ -3284,21 +3295,45 @@
       const mult = state.game.isCriticalHit ? 2 : 1;
       const points = baseRating * mult;
       const turn = state.game.currentTurn;
+      const card = state.game.currentCard;
+      const isMutual = Boolean(card && (card.role === 'any' || (card.tags && card.tags.includes('mutual')) || (card.text && card.text.includes('Beide'))));
 
-      state.game.scores[turn] += points;
+      if (isMutual) {
+        // Gemeinsame Funken: Beide erhalten die Punkte
+        state.game.scores['Er'] += points;
+        state.game.scores['Sie'] += points;
+      } else {
+        state.game.scores[turn] += points;
+      }
+
       state.game.roundsCount++;
       updateGameScoreUI();
       playSensualSound('chime');
 
       // Prüfen, ob das Punkteziel erreicht wurde -> Automatisches Finale
-      if (state.game.targetScore > 0 && state.game.scores[turn] >= state.game.targetScore) {
-        setTimeout(() => {
-          triggerFinale();
-        }, 400);
-        return;
+      if (state.game.targetScore > 0) {
+        if (state.game.scores['Er'] >= state.game.targetScore || state.game.scores['Sie'] >= state.game.targetScore) {
+          setTimeout(() => {
+            triggerFinale();
+          }, 400);
+          return;
+        }
       }
 
       advanceToNextTurn();
+    }
+
+    function prepareTimer(seconds) {
+      stopTimer();
+      state.game.timerTotal = seconds;
+      state.game.timerSeconds = seconds;
+      state.game.isTimerRunning = false;
+      updateTimerUI('timer-display', 'timer-progress-ring');
+      const toggleBtn = document.getElementById('btn-timer-toggle');
+      if (toggleBtn) {
+        toggleBtn.className = 'px-3.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold rounded-lg shadow active:scale-95 transition-all flex items-center gap-1';
+        toggleBtn.innerHTML = `<span>▶️</span> <span>Start</span>`;
+      }
     }
 
     function triggerPenalty() {
@@ -3375,7 +3410,38 @@
 
     function toggleTimer() {
       state.game.isTimerRunning = !state.game.isTimerRunning;
-      document.getElementById('btn-timer-toggle').innerText = state.game.isTimerRunning ? 'Pause' : 'Weiter';
+      const toggleBtn = document.getElementById('btn-timer-toggle');
+
+      if (state.game.isTimerRunning) {
+        if (toggleBtn) {
+          toggleBtn.className = 'px-3.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] font-bold rounded-lg shadow active:scale-95 transition-all flex items-center gap-1';
+          toggleBtn.innerHTML = `<span>⏸️</span> <span>Pause</span>`;
+        }
+        clearInterval(state.game.timerInterval);
+        state.game.timerInterval = setInterval(() => {
+          if (!state.game.isTimerRunning) return;
+          state.game.timerSeconds--;
+          updateTimerUI('timer-display', 'timer-progress-ring');
+
+          if (state.game.timerSeconds <= 0) {
+            clearInterval(state.game.timerInterval);
+            state.game.isTimerRunning = false;
+            if (toggleBtn) {
+              toggleBtn.className = 'px-3.5 py-1 bg-emerald-600 text-white text-[10px] font-bold rounded-lg';
+              toggleBtn.innerHTML = `<span>✓</span> <span>Fertig</span>`;
+            }
+            playSensualSound('alarm');
+            triggerHaptic([200, 100, 200]);
+            alert("⏳ Zeit abgelaufen!");
+          }
+        }, 1000);
+      } else {
+        if (toggleBtn) {
+          toggleBtn.className = 'px-3.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold rounded-lg shadow active:scale-95 transition-all flex items-center gap-1';
+          toggleBtn.innerHTML = `<span>▶️</span> <span>Weiter</span>`;
+        }
+        clearInterval(state.game.timerInterval);
+      }
     }
 
     function triggerFinale() {
