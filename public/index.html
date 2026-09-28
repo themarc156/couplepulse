@@ -978,28 +978,35 @@
         }
       }
 
+      const pokeBtn = document.getElementById('btn-banner-poke');
+
       if (state.kopfkino.isUnlocked) {
         if (myRated) {
           kopfkinoBanner.classList.add('hidden');
         } else if (partnerRated) {
           kopfkinoBanner.classList.remove('hidden');
+          if (pokeBtn) pokeBtn.classList.add('hidden');
           document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat den Abend bewertet!`;
           document.getElementById('kopfkino-banner-desc').innerText = `${partner} hat eine Rückmeldung hinterlassen. Schließe das Erlebnis mit deiner Bewertung ab!`;
         } else {
           kopfkinoBanner.classList.remove('hidden');
+          if (pokeBtn) pokeBtn.classList.add('hidden');
           document.getElementById('kopfkino-banner-title').innerText = '✨ Unser Abend-Match ist bereit!';
           document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben gewählt. Entdeckt euer Match & den Abend-Fahrplan!';
         }
       } else if (partnerPrefs && !myPrefs) {
         kopfkinoBanner.classList.remove('hidden');
+        if (pokeBtn) pokeBtn.classList.add('hidden');
         document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat Vorlieben eingeloggt!`;
-        document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um euer Abend-Match zu enthüllen.`;
+        document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um euer Match für heute Abend zu enthüllen.`;
       } else if (myPrefs && !partnerPrefs) {
         kopfkinoBanner.classList.remove('hidden');
+        if (pokeBtn) pokeBtn.classList.remove('hidden');
         document.getElementById('kopfkino-banner-title').innerText = `⏳ Warten auf ${partner}...`;
-        document.getElementById('kopfkino-banner-desc').innerHTML = `Deine Vorlieben sind eingeloggt. Stupse ${partner} an, um das Match freizuschalten!`;
+        document.getElementById('kopfkino-banner-desc').innerText = `Deine Vorlieben sind eingeloggt. Stupse ${partner} an, um das Match freizuschalten!`;
       } else {
         kopfkinoBanner.classList.add('hidden');
+        if (pokeBtn) pokeBtn.classList.add('hidden');
       }
 
       const banner = document.getElementById('incoming-craving-banner');
@@ -1833,10 +1840,11 @@
 
       if (state.kopfkino.isUnlocked) {
         alert("✨ Perfekt! Beide haben gewählt. Euer Abend-Match steht fest!");
+        switchAppView('match');
       } else {
         alert("✓ Deine Vorlieben wurden gespeichert! Du wirst benachrichtigt, sobald dein Partner fertig ist.");
+        switchAppView('pulse');
       }
-      renderKopfkinoTab();
     }
 
     function changeErCumFocusDirectly(cumKey, cumTitle) {
