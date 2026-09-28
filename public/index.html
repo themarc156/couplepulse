@@ -199,6 +199,10 @@
           <!-- Video Overlays & Controls in den Ecken -->
           <div class="absolute top-2 left-2 z-20 flex items-center gap-1.5">
             <span id="stream-role-badge" class="px-2 py-0.5 bg-black/75 border border-rose-500/70 rounded-md text-[9px] font-bold text-rose-300">LIVE 🔴</span>
+            <button id="btn-stream-swap" onclick="LiveStream.switchStreamDirection()" class="px-2 py-1 bg-purple-900/80 hover:bg-purple-800 border border-purple-400 text-purple-200 rounded-lg text-[9px] font-bold shadow flex items-center gap-1 transition-all active:scale-95" title="Kamera-Rolle tauschen">
+              <span>🔁</span>
+              <span id="btn-stream-swap-text">Ich zeig mich</span>
+            </button>
           </div>
           <div class="absolute top-2 right-2 z-20 flex items-center gap-1.5">
             <button id="btn-stream-zoom" onclick="LiveStream.toggleZoom()" class="px-2 py-1 bg-black/70 border border-slate-700 hover:border-purple-400 rounded-lg text-[10px] text-slate-200 font-bold shadow" title="Zoom / Bildausschnitt umschalten">🔍 1x</button>
@@ -1116,6 +1120,32 @@
 
         this.peer.on('call', (call) => {
           this.incomingCall = call;
+          this.primaryCall = call;
+
+          // Nahtloser Rollentausch während eines bereits aktiven Streams
+          if (this.isStreaming) {
+            if (this.localStream) {
+              this.localStream.getTracks().forEach(t => t.stop());
+              this.localStream = null;
+            }
+            this.isSender = false;
+            this.updateStreamRoleUI();
+
+            document.getElementById('local-video').classList.add('hidden');
+            const rVideo = document.getElementById('remote-video');
+            rVideo.classList.remove('hidden');
+
+            call.answer();
+            call.on('stream', (remoteStream) => {
+              rVideo.srcObject = remoteStream;
+              rVideo.muted = this.audioMuted;
+              rVideo.play().catch(e => {});
+              document.getElementById('stream-status-overlay').classList.add('hidden');
+              playSensualSound('chime');
+            });
+            return;
+          }
+
           const incomingBtn = document.getElementById('btn-stream-incoming');
           if (incomingBtn) incomingBtn.classList.remove('hidden');
           playSensualSound('chime');
@@ -1192,13 +1222,19 @@
 
       toggleTheaterMode() {
         this.isTheaterMode = !this.isTheaterMode;
-        const bottomActions = document.getElementById('pulse-bottom-actions');
+        const container = document.getElementById('stream-video-container');
         const btn = document.getElementById('btn-stream-expand');
-        if (bottomActions) {
-          if (this.isTheaterMode) bottomActions.classList.add('hidden');
-          else bottomActions.classList.remove('hidden');
+        if (!container) return;
+
+        if (this.isTheaterMode) {
+          // Echtes Fullscreen-Overlay über das gesamte Handy-Display
+          container.className = 'fixed inset-0 z-50 bg-black flex items-center justify-center select-none touch-none overflow-hidden';
+          if (btn) btn.innerText = '🗗';
+        } else {
+          // Zurück in die kompakte Flüsterbox
+          container.className = 'relative flex-1 min-h-[190px] rounded-xl overflow-hidden bg-black border border-purple-500/50 my-1 flex items-center justify-center select-none touch-none';
+          if (btn) btn.innerText = '⛶';
         }
-        if (btn) btn.innerText = this.isTheaterMode ? '🗗' : '⛶';
       },
 
       setupTouchZoom() {
@@ -1240,6 +1276,67 @@
         }, { passive: true });
       },
 
+      updateStreamRoleUI() {
+        const roleBadge = document.getElementById('stream-role-badge');
+        const swapText = document.getElementById('btn-stream-swap-text');
+        const flipBtn = document.getElementById('btn-stream-flip');
+
+        if (this.isSender) {
+          if (roleBadge) roleBadge.innerText = 'DU STREAMST 🔴';
+          if (swapText) swapText.innerText = 'Übergeben';
+          if (flipBtn) flipBtn.classList.remove('hidden');
+        } else {
+          if (roleBadge) roleBadge.innerText = 'LIVE PEEPSHOW 🔴';
+          if (swapText) swapText.innerText = 'Ich zeig mich';
+          if (flipBtn) flipBtn.classList.add('hidden');
+        }
+      },
+
+      async switchStreamDirection() {
+        if (!this.isStreaming) return;
+
+        if (this.isSender) {
+          this.sendData({ type: 'stream_swap_offer' });
+          showFeedbackBanner("🔁 Einladung zur Kamera-Übernahme an Partner gesendet!");
+        } else {
+          try {
+            const newStream = await navigator.mediaDevices.getUserMedia({ 
+              video: { facingMode: this.currentFacingMode }, 
+              audio: true 
+            });
+
+            this.localStream = newStream;
+            this.isSender = true;
+
+            const localVid = document.getElementById('local-video');
+            const remoteVid = document.getElementById('remote-video');
+            if (remoteVid) remoteVid.classList.add('hidden');
+            if (localVid) {
+              localVid.classList.remove('hidden');
+              localVid.srcObject = this.localStream;
+              localVid.play().catch(e => {});
+            }
+
+            this.updateStreamRoleUI();
+
+            const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
+            const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
+            const partnerId = `cp_${safeRoom}_${targetUser}`;
+
+            if (this.primaryCall) {
+              try { this.primaryCall.close(); } catch(e) {}
+            }
+
+            this.sendData({ type: 'stream_swap_takeover' });
+            this.primaryCall = this.peer.call(partnerId, this.localStream);
+            playSensualSound('chime');
+            showFeedbackBanner("✨ Du hast die Kamera übernommen!");
+          } catch (e) {
+            alert('Kamera-Fehler bei Übernahme: ' + e.message);
+          }
+        }
+      },
+
       async startAsSender() {
         try {
           this.localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.currentFacingMode }, audio: true });
@@ -1261,8 +1358,8 @@
 
           this.zoomLevel = 1;
           this.applyZoom();
+          this.updateStreamRoleUI();
 
-          document.getElementById('stream-role-badge').innerText = 'DU STREAMST 🔴';
           document.getElementById('stream-status-text').innerText = 'Warte auf Partner...';
           document.getElementById('stream-btn-label').innerText = 'Aus';
 
@@ -1303,8 +1400,8 @@
 
         this.zoomLevel = 1;
         this.applyZoom();
+        this.updateStreamRoleUI();
 
-        document.getElementById('stream-role-badge').innerText = 'LIVE PEEPSHOW 🔴';
         document.getElementById('stream-btn-label').innerText = 'Aus';
 
         this.primaryCall = this.incomingCall;
@@ -1390,6 +1487,21 @@
           if (incomingBtn) incomingBtn.classList.remove('hidden');
           showFeedbackBanner(`👁️ ${data.sender} hat einen Live-Stream gestartet!`);
           playSensualSound('chime');
+        } else if (data.type === 'stream_swap_takeover') {
+          if (this.localStream) {
+            this.localStream.getTracks().forEach(t => t.stop());
+            this.localStream = null;
+          }
+          this.isSender = false;
+          this.updateStreamRoleUI();
+          document.getElementById('local-video').classList.add('hidden');
+          document.getElementById('remote-video').classList.remove('hidden');
+          showFeedbackBanner("🔁 Dein Partner hat die Kamera übernommen!");
+          playSensualSound('chime');
+        } else if (data.type === 'stream_swap_offer') {
+          if (confirm("Dein Partner lädt dich ein, jetzt die Kamera zu übernehmen! Möchtest du streamen?")) {
+            this.switchStreamDirection();
+          }
         } else if (data.type === 'stream_ended') {
           if (this.isStreaming) {
             alert('Live-Stream wurde vom Partner beendet.');
