@@ -1048,6 +1048,9 @@
 
     function resetGlobalDay() {
       if (confirm("Möchtest du den Tag komplett zurücksetzen? (Abend-Match, Vorlieben, Bewertungen und Spielstand werden genullt, Katalog bleibt erhalten)")) {
+        wizardEditing = false;
+        wizardCurrentStep = 1;
+        currentDraftPreferences = {};
         state.pendingReviews = []; 
         state.completedReviews = []; 
         state.activeCraving = null; 
@@ -1741,7 +1744,7 @@
         let recHtml = recItems.map(p => render2SwitchCard(p.id, getPracticeLabel(p, state.currentUser))).join('');
 
         content.innerHTML = `
-          <div id="wizard-scroll-container" class="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+          <div id="wizard-scroll-container" class="space-y-2.5 pr-1">
             ${recHtml}
           </div>
         `;
@@ -1758,7 +1761,7 @@
         let giveHtml = giveItems.map(p => render2SwitchCard(p.id, getPracticeLabel(p, state.currentUser))).join('');
 
         content.innerHTML = `
-          <div id="wizard-scroll-container" class="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+          <div id="wizard-scroll-container" class="space-y-2.5 pr-1">
             ${giveHtml}
           </div>
         `;
@@ -1775,7 +1778,7 @@
         let cumHtml = cumList.map(c => renderModel1FinaleCard(`cum_${c.id}`, isEr ? c.labelEr : c.labelSie, isEr)).join('');
 
         content.innerHTML = `
-          <div id="wizard-scroll-container" class="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+          <div id="wizard-scroll-container" class="space-y-2.5 pr-1">
             ${cumHtml}
           </div>
         `;
@@ -2122,7 +2125,7 @@
             </span>
             <div id="modal-shoutbox-messages" class="space-y-1 max-h-24 overflow-y-auto text-xs no-scrollbar"></div>
             <div class="flex gap-1.5 items-center">
-              <input id="modal-shout-input" type="text" placeholder="Gedanke, Emojis oder Teaser..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+              <input id="modal-shout-input" onkeydown="if(event.key==='Enter'){event.preventDefault();sendShoutboxMessage('modal-shout-input');}" type="text" placeholder="Gedanke, Emojis oder Teaser..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
               <button onclick="sendShoutboxMessage('modal-shout-input')" class="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-[0.98]">Senden</button>
             </div>
           </div>
