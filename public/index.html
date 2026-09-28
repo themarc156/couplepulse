@@ -3131,12 +3131,18 @@
     function updateRoleVisuals(user, isCrit = false) {
       const isEr = (user === 'Er');
       const card = state.game.currentCard;
-      const isMutual = Boolean(card && (card.role === 'any' || (card.tags && card.tags.includes('mutual')) || (card.text && card.text.includes('Beide'))));
+      // Nur echte gemeinsame Karten (mutual / Beide:) sind beidseitig
+      const isMutual = Boolean(card && (
+        (card.tags && card.tags.includes('mutual')) || 
+        (card.text && (card.text.includes('Beide:') || card.text.includes('💑')))
+      ));
 
       const cardBox = document.getElementById('active-card-face');
       const senderPill = document.getElementById('card-sender-pill');
+      const senderIcon = document.getElementById('card-sender-icon');
       const senderName = document.getElementById('card-sender-name');
       const receiverPill = document.getElementById('card-receiver-pill');
+      const receiverIcon = document.getElementById('card-receiver-icon');
       const receiverName = document.getElementById('card-receiver-name');
       const arrowIcon = document.getElementById('card-arrow-icon');
       const mainDrawBtn = document.getElementById('btn-draw-card');
@@ -3153,22 +3159,28 @@
 
       if (isMutual) {
         senderPill.className = 'flex items-center gap-1.5 bg-purple-600 text-white px-2.5 py-1 rounded-xl shadow font-bold text-xs';
+        senderIcon.innerText = '👑';
         senderName.innerText = 'ER:';
         receiverPill.className = 'flex items-center gap-1.5 bg-pink-600 text-white px-2.5 py-1 rounded-xl shadow font-bold text-xs';
+        receiverIcon.innerText = '👑';
         receiverName.innerText = 'SIE:';
         arrowIcon.className = 'text-purple-300 text-xs font-bold';
         arrowIcon.innerText = '⟵ 💑 ⟶';
       } else if (isEr) {
         senderPill.className = 'flex items-center gap-1.5 bg-amber-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs';
+        senderIcon.innerText = '👑';
         senderName.innerText = 'ER:';
         receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs';
+        receiverIcon.innerText = '🧘';
         receiverName.innerText = 'SIE:';
         arrowIcon.className = 'text-amber-400 text-sm font-bold animate-pulse';
         arrowIcon.innerText = '────▶';
       } else {
         senderPill.className = 'flex items-center gap-1.5 bg-pink-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs';
+        senderIcon.innerText = '👑';
         senderName.innerText = 'SIE:';
         receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs';
+        receiverIcon.innerText = '🧘';
         receiverName.innerText = 'ER:';
         arrowIcon.className = 'text-pink-400 text-sm font-bold animate-pulse';
         arrowIcon.innerText = '────▶';
@@ -3184,7 +3196,9 @@
         if (isMutual) {
           promptEl.innerHTML = `💑 Wie intensiv war es für <span class="text-purple-300 font-black">euch beide</span>?`;
         } else {
-          promptEl.innerHTML = `Wie intensiv war es für <span class="text-rose-400 font-black">${isEr ? 'Sie' : 'Er'}</span>?`;
+          const receiverLabel = isEr ? 'Sie' : 'Ihn';
+          const receiverColor = isEr ? 'text-rose-400' : 'text-amber-400';
+          promptEl.innerHTML = `Wie intensiv war es für <span class="${receiverColor} font-black">${receiverLabel}</span>?`;
         }
       }
 
@@ -3296,7 +3310,10 @@
       const points = baseRating * mult;
       const turn = state.game.currentTurn;
       const card = state.game.currentCard;
-      const isMutual = Boolean(card && (card.role === 'any' || (card.tags && card.tags.includes('mutual')) || (card.text && card.text.includes('Beide'))));
+      const isMutual = Boolean(card && (
+        (card.tags && card.tags.includes('mutual')) || 
+        (card.text && (card.text.includes('Beide:') || card.text.includes('💑')))
+      ));
 
       if (isMutual) {
         // Gemeinsame Funken: Beide erhalten die Punkte
@@ -3351,6 +3368,7 @@
       const critBadge = document.getElementById('card-crit-badge');
       if (critBadge) critBadge.classList.add('hidden');
 
+      state.game.currentCard = null;
       state.game.currentTurn = (state.game.currentTurn === 'Er') ? 'Sie' : 'Er';
       state.game.isCriticalHit = false;
       updateRoleVisuals(state.game.currentTurn, false);
