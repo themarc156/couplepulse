@@ -1023,6 +1023,9 @@
     }
 
     function switchUser(newUser) {
+      if (LiveStream.isStreaming) {
+        LiveStream.endStream();
+      }
       state.currentUser = newUser;
       localStorage.setItem('cp_current_user', newUser);
       LiveStream.initPeer();
@@ -1178,7 +1181,7 @@
           }
 
           this.sendData({ type: 'stream_started', sender: state.currentUser });
-          triggerPushNotification(state.currentUser);
+          triggerPushNotification(state.currentUser, true);
         } catch (e) {
           alert('Kamera-Zugriff nicht möglich: ' + e.message);
           this.endStream();
@@ -1190,6 +1193,7 @@
         this.isStreaming = true;
         this.isSender = false;
 
+        closeFeedbackBanner();
         document.getElementById('btn-stream-incoming').classList.add('hidden');
         document.getElementById('home-shoutbox-messages').classList.add('hidden');
         document.getElementById('stream-video-container').classList.remove('hidden');
@@ -1435,7 +1439,22 @@
       }
     }
 
-    async function triggerPushNotification(sender = state.currentUser) {
+    let lastPushTimestamp = 0;
+
+    async function triggerPushNotification(sender = state.currentUser, force = false) {
+      // 1. Während eines laufenden Video-Streams niemals Telegram benachrichtigen
+      if (LiveStream && LiveStream.isStreaming) return;
+
+      // 2. Wenn Partner live in der App verbunden ist (P2P offen) und kein Express-Signal vorliegt -> lautlos
+      const isPartnerConnected = Boolean(LiveStream && LiveStream.dataConn && LiveStream.dataConn.open);
+      if (isPartnerConnected && !force) return;
+
+      // 3. Cooldown: Maximal 1 Telegram-Push alle 90 Sekunden bei normalen Aktionen
+      const now = Date.now();
+      if (!force && (now - lastPushTimestamp < 90000)) return;
+
+      lastPushTimestamp = now;
+
       try {
         await fetch('/api/notify', {
           method: 'POST',
@@ -1460,7 +1479,7 @@
       if (LiveStream.isStreaming) {
         LiveStream.showStreamFloatingWhisper(newMsg);
       }
-      triggerPushNotification(state.currentUser);
+      triggerPushNotification(state.currentUser, false);
       playSensualSound('heartbeat');
       saveState();
       renderAllShoutboxes();
@@ -2581,7 +2600,7 @@
 
       closeCravingModal();
       LiveStream.sendData({ type: 'new_craving', craving: newCraving });
-      triggerPushNotification(state.currentUser);
+      triggerPushNotification(state.currentUser, true);
       alert(`✓ Signal "${selected.emoji} ${selected.title}" an Partner gesendet!`);
       saveState();
     }
