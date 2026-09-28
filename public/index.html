@@ -110,7 +110,7 @@
           <div id="incoming-feedback-text" class="text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-rose-800/40"></div>
         </section>
 
-        <!-- BANNER: ABEND-MATCH BEREIT / EINLADUNG / WARTE-STATUS -->
+        <!-- BANNER: ABEND-MATCH STATUS -->
         <section id="kopfkino-match-ready-banner" class="hidden bg-gradient-to-r from-purple-950 via-indigo-950 to-pink-950 border border-purple-500/70 rounded-2xl p-3 glow-purple space-y-2">
           <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
             <span id="kopfkino-banner-title">✨ Unser Abend-Match ist bereit!</span>
@@ -119,14 +119,9 @@
           <div id="kopfkino-banner-desc" class="text-xs text-slate-200 bg-slate-950/60 p-2 rounded-xl border border-purple-800/40">
             Beide haben gewählt. Enthüllt jetzt euer gemeinsames Match & den Abend-Fahrplan!
           </div>
-          <div class="flex gap-2">
-            <button onclick="openKopfkinoModal()" class="flex-1 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg active:scale-[0.98]">
-              🔍 Match-Tab öffnen
-            </button>
-            <button onclick="pokePartnerForMatch()" id="btn-banner-poke" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-purple-500/40 text-purple-300 text-xs font-bold rounded-xl active:scale-95 transition-all" title="Partner per Benachrichtigung anstupsen">
-              🔔 Anstupsen
-            </button>
-          </div>
+          <button onclick="openKopfkinoModal()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg active:scale-[0.98]">
+            🔍 Match-Tab öffnen
+          </button>
         </section>
 
         <!-- LIVE-BANNER: EINGEHENDES SPONTAN-SIGNAL -->
@@ -980,35 +975,28 @@
         }
       }
 
-      const pokeBtn = document.getElementById('btn-banner-poke');
-
       if (state.kopfkino.isUnlocked) {
         if (myRated) {
           kopfkinoBanner.classList.add('hidden');
         } else if (partnerRated) {
           kopfkinoBanner.classList.remove('hidden');
-          if (pokeBtn) pokeBtn.classList.add('hidden');
           document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat den Abend bewertet!`;
           document.getElementById('kopfkino-banner-desc').innerText = `${partner} hat eine Rückmeldung hinterlassen. Schließe das Erlebnis mit deiner Bewertung ab!`;
         } else {
           kopfkinoBanner.classList.remove('hidden');
-          if (pokeBtn) pokeBtn.classList.add('hidden');
           document.getElementById('kopfkino-banner-title').innerText = '✨ Unser Abend-Match ist bereit!';
           document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben gewählt. Entdeckt euer Match & den Abend-Fahrplan!';
         }
       } else if (partnerPrefs && !myPrefs) {
         kopfkinoBanner.classList.remove('hidden');
-        if (pokeBtn) pokeBtn.classList.add('hidden');
         document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat Vorlieben eingeloggt!`;
         document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um euer Match für heute Abend zu enthüllen.`;
       } else if (myPrefs && !partnerPrefs) {
         kopfkinoBanner.classList.remove('hidden');
-        if (pokeBtn) pokeBtn.classList.remove('hidden');
         document.getElementById('kopfkino-banner-title').innerText = `⏳ Warten auf ${partner}...`;
-        document.getElementById('kopfkino-banner-desc').innerText = `Deine Vorlieben sind eingeloggt. Stupse ${partner} an, um das Match freizuschalten!`;
+        document.getElementById('kopfkino-banner-desc').innerText = `Deine Vorlieben sind eingeloggt. Sobald ${partner} fertig ist, steht euer Abend-Fahrplan!`;
       } else {
         kopfkinoBanner.classList.add('hidden');
-        if (pokeBtn) pokeBtn.classList.add('hidden');
       }
 
       const banner = document.getElementById('incoming-craving-banner');
@@ -1461,11 +1449,8 @@
           checkKopfkinoUnlock();
           saveState();
           playSensualSound('chime');
-          
-          if (state.kopfkino.isUnlocked) {
-            showFeedbackBanner(`✨ Beide haben gewählt: Euer Abend-Match ist jetzt freigeschaltet!`);
-          } else {
-            showFeedbackBanner(`🧠 ${data.sender} hat Vorlieben eingeloggt. Mach jetzt mit!`);
+          if (state.activeView === 'match') {
+            renderKopfkinoTab();
           }
         } else if (data.type === 'er_cum_focus_update') {
           if (!state.kopfkino.erPreferences) state.kopfkino.erPreferences = {};
@@ -1723,30 +1708,10 @@
       `;
 
       actions.innerHTML = `
-        <button onclick="openKopfkinoRestart()" class="flex-1 py-2.5 bg-slate-850 hover:bg-slate-800 border border-slate-700 text-xs font-semibold rounded-xl text-slate-300 active:scale-95 transition-all">
-          ✏️ Auswahl bearbeiten
-        </button>
-        <button onclick="pokePartnerForMatch()" class="flex-1 py-2.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-1">
-          <span>🔔</span> <span>${partner} anstupsen</span>
+        <button onclick="openKopfkinoRestart()" class="w-full py-2.5 bg-slate-850 hover:bg-slate-800 border border-slate-700 text-xs font-semibold rounded-xl text-slate-300 active:scale-95 transition-all">
+          ✏️ Eigene Auswahl bearbeiten
         </button>
       `;
-    }
-
-    function pokePartnerForMatch() {
-      const partner = state.currentUser === 'Er' ? 'Sie' : 'Er';
-      const pokeMsg = {
-        id: Date.now(),
-        from: state.currentUser,
-        text: `✨ Deine Vorlieben für heute Abend fehlen noch! Logge sie im Match-Tab ein 💖`,
-        timestamp: Date.now()
-      };
-      if (!state.shoutboxMessages) state.shoutboxMessages = [];
-      state.shoutboxMessages.push(pokeMsg);
-      LiveStream.sendData({ type: 'shoutbox_message', message: pokeMsg });
-      triggerPushNotification(state.currentUser, true);
-      playSensualSound('chime');
-      renderAllShoutboxes();
-      alert(`🔔 ${partner} wurde per Flüsterbox & Benachrichtigung angestupst!`);
     }
 
     function openKopfkinoModal() {
