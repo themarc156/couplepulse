@@ -522,39 +522,39 @@
     </div>
 
 
-    <!-- MODAL: KURZE LUST-PAUSE (AUF EINGABEHÖHE DER FLÜSTERBOX POSITIONIERT) -->
-    <div id="craving-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex flex-col justify-end p-4 pb-20">
-      <div id="craving-modal-sheet" class="bg-slate-900/95 border border-rose-500/50 w-full rounded-3xl p-3.5 space-y-2.5 shadow-2xl glow-rose mb-[60px] transition-transform duration-150">
-        <div class="flex justify-between items-center border-b border-slate-800/80 pb-2">
+    <!-- MODAL: KURZE LUST-PAUSE (INLINE & VIEWPORT-GESCHÜTZT) -->
+    <div id="craving-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-end justify-center p-0">
+      <div id="craving-modal-sheet" class="bg-slate-900 border-t border-slate-800 w-full rounded-t-3xl p-4 space-y-3 max-h-[90vh] overflow-y-auto shadow-2xl transition-all duration-150">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
           <h3 class="font-bold text-xs text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
             <span>🔥</span> Kurze Lust-Pause
           </h3>
-          <button onclick="closeCravingModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-1.5">✕</button>
+          <button onclick="closeCravingModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-2">✕</button>
         </div>
 
         <!-- DIE 3 BUTTONS -->
-        <div class="space-y-1.5">
-          <button type="button" onclick="selectCravingLevel('knutschen')" id="btn-craving-knutschen" class="w-full p-2 rounded-2xl border border-slate-800 bg-slate-950 text-slate-200 flex items-center gap-2.5 transition-all hover:border-pink-500 active:scale-[0.99] font-bold text-xs">
-            <span class="text-base">💋</span>
+        <div class="space-y-2">
+          <button type="button" onclick="selectCravingLevel('knutschen')" id="btn-craving-knutschen" class="w-full p-2.5 rounded-2xl border border-slate-800 bg-slate-950 text-slate-200 flex items-center gap-3 transition-all hover:border-pink-500 active:scale-[0.99] font-bold text-xs">
+            <span class="text-lg">💋</span>
             <span>Nur knutschen</span>
           </button>
 
-          <button type="button" onclick="selectCravingLevel('fummeln')" id="btn-craving-fummeln" class="w-full p-2 rounded-2xl border border-amber-500 bg-amber-950/40 text-white flex items-center gap-2.5 transition-all shadow-lg active:scale-[0.99] font-bold text-xs">
-            <span class="text-base">🔥</span>
+          <button type="button" onclick="selectCravingLevel('fummeln')" id="btn-craving-fummeln" class="w-full p-2.5 rounded-2xl border border-amber-500 bg-amber-950/40 text-white flex items-center gap-3 transition-all shadow-lg active:scale-[0.99] font-bold text-xs">
+            <span class="text-lg">🔥</span>
             <span>Lass uns fummeln</span>
           </button>
 
-          <button type="button" onclick="selectCravingLevel('dringend')" id="btn-craving-dringend" class="w-full p-2 rounded-2xl border border-slate-800 bg-slate-950 text-slate-200 flex items-center gap-2.5 transition-all hover:border-rose-500 active:scale-[0.99] font-bold text-xs">
-            <span class="text-base">🎯</span>
+          <button type="button" onclick="selectCravingLevel('dringend')" id="btn-craving-dringend" class="w-full p-2.5 rounded-2xl border border-slate-800 bg-slate-950 text-slate-200 flex items-center gap-3 transition-all hover:border-rose-500 active:scale-[0.99] font-bold text-xs">
+            <span class="text-lg">🎯</span>
             <span>Dringend kommen</span>
           </button>
         </div>
 
-        <!-- INLINE ZEILE: NOTIZ + SENDE-BUTTON AUF EXAKTER FLÜSTERBOX-HÖHE -->
-        <div class="pt-0.5 border-t border-slate-800/80">
-          <div class="flex gap-1.5 items-center">
-            <input id="craving-note-input" onkeydown="if(event.key==='Enter'){event.preventDefault();sendQuickCraving();}" type="text" placeholder="Flüster-Notiz oder Ort..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
-            <button id="btn-send-craving" onclick="sendQuickCraving()" class="px-3.5 py-2 bg-gradient-to-r from-rose-600 to-amber-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-95 transition-all shrink-0">
+        <!-- INLINE ZEILE: NOTIZ + SENDE-BUTTON DIREKT NEBENEINANDER -->
+        <div class="pt-0.5">
+          <div class="flex gap-2 items-center">
+            <input id="craving-note-input" onkeydown="if(event.key==='Enter'){event.preventDefault();sendQuickCraving();}" type="text" placeholder="Flüster-Notiz oder Ort..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
+            <button id="btn-send-craving" onclick="sendQuickCraving()" class="px-4 py-2.5 bg-gradient-to-r from-rose-600 to-amber-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-95 transition-all shrink-0">
               Senden 🚀
             </button>
           </div>
@@ -3035,7 +3035,7 @@
       const input = document.getElementById('craving-note-input');
       if (input) input.value = '';
       const sheet = document.getElementById('craving-modal-sheet');
-      if (sheet) sheet.style.transform = 'translateY(0px)';
+      if (sheet) sheet.style.marginBottom = '0px';
       document.getElementById('craving-modal').classList.remove('hidden'); 
     }
 
@@ -3046,7 +3046,7 @@
           const sheet = document.getElementById('craving-modal-sheet');
           if (modal && !modal.classList.contains('hidden') && sheet) {
             const offset = window.innerHeight - window.visualViewport.height;
-            sheet.style.transform = offset > 50 ? `translateY(-${offset}px)` : 'translateY(0px)';
+            sheet.style.marginBottom = offset > 50 ? `${offset}px` : '0px';
           }
         });
       }
