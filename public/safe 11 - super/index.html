@@ -175,45 +175,13 @@
           <span class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
             <span>💬</span> Flüsterbox
           </span>
-          <div class="flex items-center gap-1.5">
-            <button id="btn-stream-incoming" onclick="LiveStream.joinAsViewer()" class="hidden px-2 py-0.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-[10px] rounded-lg shadow animate-pulse">
-              👁️ Ansehen
-            </button>
-            <button id="btn-toggle-stream" onclick="LiveStream.toggleStreamTrigger()" class="px-2.5 py-0.5 bg-slate-950 hover:bg-purple-950/60 border border-purple-500/40 text-purple-300 hover:text-purple-200 text-[10px] font-bold rounded-lg transition-all flex items-center gap-1">
-              <span>📹</span> <span id="stream-btn-label">Live</span>
-            </button>
-          </div>
+          <span class="text-[9px] text-purple-400/80 font-mono">Live Sync ✨</span>
         </div>
 
-        <!-- STREAM VIDEO CONTAINER (INLINE IN DER FLÜSTERBOX) -->
-        <div id="stream-video-container" class="hidden relative flex-1 min-h-[190px] rounded-xl overflow-hidden bg-black border border-purple-500/50 my-1 flex items-center justify-center">
-          <video id="remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
-          <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover hidden"></video>
-
-          <!-- Status Overlay -->
-          <div id="stream-status-overlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-xs flex flex-col items-center justify-center text-center p-3 space-y-1.5 z-10">
-            <span class="text-2xl animate-pulse">👁️</span>
-            <span id="stream-status-text" class="text-xs font-semibold text-slate-300">Verbindung wird aufgebaut...</span>
-          </div>
-
-          <!-- Video Overlays & Controls in den Ecken -->
-          <div class="absolute top-2 left-2 z-20">
-            <span id="stream-role-badge" class="px-2 py-0.5 bg-black/75 border border-rose-500/70 rounded-md text-[9px] font-bold text-rose-300">LIVE 🔴</span>
-          </div>
-          <div class="absolute top-2 right-2 z-20 flex items-center gap-1.5">
-            <button id="btn-stream-flip" onclick="LiveStream.flipCamera()" class="p-1.5 bg-black/70 border border-slate-700 hover:border-purple-400 rounded-lg text-xs text-slate-200 shadow" title="Kamera wechseln">🔄</button>
-            <button id="btn-stream-audio" onclick="LiveStream.toggleAudio()" class="p-1.5 bg-black/70 border border-slate-700 hover:border-purple-400 rounded-lg text-xs text-slate-200 shadow" title="Ton An/Aus">🔇</button>
-            <button onclick="LiveStream.endStream()" class="p-1.5 bg-rose-600 hover:bg-rose-500 rounded-lg text-xs text-white font-bold shadow" title="Stream beenden">✕</button>
-          </div>
-
-          <!-- Floating Overlays für Chat & Flüster-Nachrichten während des Streams -->
-          <div id="stream-floating-box" class="absolute inset-x-3 bottom-2 z-20 pointer-events-none flex flex-col items-center space-y-1.5"></div>
-        </div>
-
-        <!-- SCROLLBARE NACHRICHTEN-LISTE (WIRD WÄHREND DES STREAMS DURCH DAS VIDEO ERSETZT) -->
+        <!-- SCROLLBARE NACHRICHTEN-LISTE (OHNE SICHTBAREN SCROLLBALKEN) -->
         <div id="home-shoutbox-messages" class="space-y-2 flex-1 min-h-0 overflow-y-auto text-xs my-2 no-scrollbar"></div>
 
-        <!-- EINGABEZEILE (BLEIBT VOLL ERHALTEN) -->
+        <!-- EINGABEZEILE -->
         <div class="pt-1.5 border-t border-slate-800/80 shrink-0">
           <div class="flex gap-1.5 items-center">
             <input id="home-shout-input" onkeydown="if(event.key==='Enter'){event.preventDefault();sendShoutboxMessage('home-shout-input');}" type="text" placeholder="Flüsternachricht, Emojis oder Gedanke..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
@@ -1065,18 +1033,11 @@
     }
 
     // =========================================================================
-    // PEERJS LIVE DATA SYNC & INLINE PEEPSHOW
+    // PEERJS LIVE DATA SYNC (DATEN- & SIGNALKANAL)
     // =========================================================================
     const LiveStream = {
       peer: null,
-      primaryCall: null,
-      incomingCall: null,
       dataConn: null,
-      localStream: null,
-      isStreaming: false,
-      isSender: false,
-      currentFacingMode: 'user',
-      audioMuted: true,
 
       initPeer() {
         if (this.peer && !this.peer.destroyed) { try { this.peer.destroy(); } catch (e) {} }
@@ -1097,14 +1058,6 @@
           this.dataConn = conn;
           conn.on('data', (data) => this.handleIncomingData(data));
           conn.on('close', () => { this.dataConn = null; });
-        });
-
-        this.peer.on('call', (call) => {
-          this.incomingCall = call;
-          const incomingBtn = document.getElementById('btn-stream-incoming');
-          if (incomingBtn) incomingBtn.classList.remove('hidden');
-          playSensualSound('chime');
-          showFeedbackBanner(`👁️ Dein Partner streamt live! Tippe in der Flüsterbox auf "Ansehen".`);
         });
       },
 
@@ -1140,147 +1093,8 @@
         }
       },
 
-      toggleStreamTrigger() {
-        if (this.isStreaming) {
-          this.endStream();
-        } else {
-          this.startAsSender();
-        }
-      },
-
-      async startAsSender() {
-        try {
-          this.localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.currentFacingMode }, audio: true });
-          this.isStreaming = true;
-          this.isSender = true;
-
-          document.getElementById('home-shoutbox-messages').classList.add('hidden');
-          document.getElementById('stream-video-container').classList.remove('hidden');
-          document.getElementById('remote-video').classList.add('hidden');
-          
-          const localVid = document.getElementById('local-video');
-          localVid.classList.remove('hidden');
-          localVid.srcObject = this.localStream;
-          localVid.play().catch(e => {});
-
-          document.getElementById('stream-role-badge').innerText = 'DU STREAMST 🔴';
-          document.getElementById('stream-status-text').innerText = 'Warte auf Partner...';
-          document.getElementById('stream-btn-label').innerText = 'Aus';
-
-          const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
-          const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
-          const partnerId = `cp_${safeRoom}_${targetUser}`;
-
-          this.connectData();
-          this.primaryCall = this.peer.call(partnerId, this.localStream);
-          if (this.primaryCall) {
-            document.getElementById('stream-status-overlay').classList.add('hidden');
-          }
-
-          this.sendData({ type: 'stream_started', sender: state.currentUser });
-          triggerPushNotification(state.currentUser);
-        } catch (e) {
-          alert('Kamera-Zugriff nicht möglich: ' + e.message);
-          this.endStream();
-        }
-      },
-
-      joinAsViewer() {
-        if (!this.incomingCall) return;
-        this.isStreaming = true;
-        this.isSender = false;
-
-        document.getElementById('btn-stream-incoming').classList.add('hidden');
-        document.getElementById('home-shoutbox-messages').classList.add('hidden');
-        document.getElementById('stream-video-container').classList.remove('hidden');
-        document.getElementById('local-video').classList.add('hidden');
-        document.getElementById('remote-video').classList.remove('hidden');
-
-        document.getElementById('stream-role-badge').innerText = 'LIVE PEEPSHOW 🔴';
-        document.getElementById('stream-btn-label').innerText = 'Aus';
-
-        this.primaryCall = this.incomingCall;
-        this.incomingCall.answer();
-
-        this.incomingCall.on('stream', (remoteStream) => {
-          const rVideo = document.getElementById('remote-video');
-          rVideo.srcObject = remoteStream;
-          rVideo.muted = this.audioMuted;
-          rVideo.play().catch(e => {});
-          document.getElementById('stream-status-overlay').classList.add('hidden');
-          playSensualSound('chime');
-        });
-
-        this.incomingCall.on('close', () => this.endStream());
-      },
-
-      async flipCamera() {
-        if (!this.localStream || !this.isSender) return;
-        this.currentFacingMode = this.currentFacingMode === 'user' ? 'environment' : 'user';
-        this.localStream.getTracks().forEach(t => t.stop());
-        this.localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.currentFacingMode }, audio: true });
-        document.getElementById('local-video').srcObject = this.localStream;
-        if (this.primaryCall && this.primaryCall.peerConnection) {
-          const videoSender = this.primaryCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
-          if (videoSender) videoSender.replaceTrack(this.localStream.getVideoTracks()[0]);
-        }
-      },
-
-      toggleAudio() {
-        this.audioMuted = !this.audioMuted;
-        const btn = document.getElementById('btn-stream-audio');
-        btn.innerText = this.audioMuted ? '🔇' : '🔊';
-        const rVideo = document.getElementById('remote-video');
-        if (rVideo) rVideo.muted = this.audioMuted;
-      },
-
-      showStreamFloatingWhisper(msg) {
-        const box = document.getElementById('stream-floating-box');
-        if (!box) return;
-        const el = document.createElement('div');
-        const isMe = msg.from === state.currentUser;
-        el.className = `floating-whisper px-3 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-md ${isMe ? 'bg-purple-950/85 border border-purple-400 text-purple-100' : 'bg-rose-950/85 border border-rose-400 text-rose-100'}`;
-        el.innerText = `${msg.from}: ${msg.text}`;
-        box.appendChild(el);
-        setTimeout(() => { el.remove(); }, 3600);
-      },
-
-      endStream() {
-        if (this.localStream) {
-          this.localStream.getTracks().forEach(t => t.stop());
-          this.localStream = null;
-        }
-        if (this.primaryCall) {
-          this.primaryCall.close();
-          this.primaryCall = null;
-        }
-        this.incomingCall = null;
-        this.isStreaming = false;
-        this.isSender = false;
-
-        document.getElementById('stream-video-container').classList.add('hidden');
-        document.getElementById('home-shoutbox-messages').classList.remove('hidden');
-        document.getElementById('btn-stream-incoming').classList.add('hidden');
-        document.getElementById('stream-btn-label').innerText = 'Live';
-
-        this.sendData({ type: 'stream_ended' });
-        renderAllShoutboxes();
-      },
-
       handleIncomingData(data) {
-        if (data.type === 'stream_started') {
-          const incomingBtn = document.getElementById('btn-stream-incoming');
-          if (incomingBtn) incomingBtn.classList.remove('hidden');
-          showFeedbackBanner(`👁️ ${data.sender} hat einen Live-Stream gestartet!`);
-          playSensualSound('chime');
-        } else if (data.type === 'stream_ended') {
-          if (this.isStreaming) {
-            alert('Live-Stream wurde vom Partner beendet.');
-            this.endStream();
-          } else {
-            document.getElementById('btn-stream-incoming').classList.add('hidden');
-          }
-        } else if (data.type === 'new_craving') {
+        if (data.type === 'new_craving') {
           state.activeCraving = data.craving;
           saveState();
           playSensualSound('chime');
@@ -1351,8 +1165,8 @@
           saveState();
           playSensualSound('chime');
           showFeedbackBanner(`💦 Er hat den Abspritz-Favoriten auf "${data.title}" geändert!`);
-          if (state.activeView === 'match') {
-            renderKopfkinoTab();
+          if (document.getElementById('kopfkino-modal') && !document.getElementById('kopfkino-modal').classList.contains('hidden')) {
+            renderKopfkinoMatchReveal();
           }
         } else if (data.type === 'item_single_reaction_sync') {
           if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
@@ -1363,8 +1177,8 @@
           }
           saveState();
           playSensualSound('heartbeat');
-          if (state.activeView === 'match') {
-            renderKopfkinoTab();
+          if (document.getElementById('kopfkino-modal') && !document.getElementById('kopfkino-modal').classList.contains('hidden')) {
+            renderKopfkinoMatchReveal();
           }
         } else if (data.type === 'shoutbox_message') {
           if (!state.shoutboxMessages) state.shoutboxMessages = [];
@@ -1372,11 +1186,7 @@
           saveState();
           playSensualSound('heartbeat');
           renderAllShoutboxes();
-          if (this.isStreaming) {
-            this.showStreamFloatingWhisper(data.message);
-          } else {
-            showFeedbackBanner(`💬 ${data.message.from}: ${data.message.text}`);
-          }
+          showFeedbackBanner(`💬 ${data.message.from}: ${data.message.text}`);
         } else if (data.type === 'kopfkino_fulfilled_event') {
           saveState();
           playSensualSound('chime');
@@ -1385,8 +1195,8 @@
           if (data.sender === 'Er') state.kopfkino.erRated = true;
           if (data.sender === 'Sie') state.kopfkino.sieRated = true;
           saveState();
-          if (state.activeView === 'match') {
-            renderKopfkinoTab();
+          if (document.getElementById('kopfkino-modal') && !document.getElementById('kopfkino-modal').classList.contains('hidden')) {
+            renderKopfkinoMatchReveal();
           }
         }
       }
@@ -1457,9 +1267,6 @@
       input.value = '';
 
       LiveStream.sendData({ type: 'shoutbox_message', message: newMsg });
-      if (LiveStream.isStreaming) {
-        LiveStream.showStreamFloatingWhisper(newMsg);
-      }
       triggerPushNotification(state.currentUser);
       playSensualSound('heartbeat');
       saveState();
