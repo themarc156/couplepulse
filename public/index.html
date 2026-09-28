@@ -104,14 +104,14 @@
         <div id="incoming-feedback-text" class="text-sm font-bold text-slate-100 bg-slate-950/70 p-2.5 rounded-xl border border-rose-800/40"></div>
       </section>
 
-      <!-- BANNER: KOPFKINO MATCH BEREIT / EINLADUNG -->
+      <!-- BANNER: ABEND-MATCH BEREIT / EINLADUNG -->
       <section id="kopfkino-match-ready-banner" class="hidden bg-gradient-to-r from-purple-950 via-indigo-950 to-pink-950 border border-purple-500/70 rounded-2xl p-3.5 glow-purple space-y-2 animate-pulse">
         <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
-          <span id="kopfkino-banner-title">✨ Kopfkino-Match bereit!</span>
+          <span id="kopfkino-banner-title">✨ Unser Abend-Match ist bereit!</span>
           <span class="bg-purple-900/80 px-2 py-0.5 rounded-full text-[10px] border border-purple-500/40 font-bold">MATCH 🔥</span>
         </div>
         <div id="kopfkino-banner-desc" class="text-xs text-slate-200 bg-slate-950/60 p-2 rounded-xl border border-purple-800/40">
-          Beide haben gewählt. Enthülle jetzt euer gemeinsames Match & den Abend-Fahrplan!
+          Beide haben gewählt. Enthüllt jetzt euer gemeinsames Match & den Abend-Fahrplan!
         </div>
         <button onclick="openKopfkinoModal()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg active:scale-[0.98]">
           🔍 Abend-Match ansehen
@@ -184,11 +184,11 @@
       <!-- HAUPT-AKTIONEN (DAUMENZONE) -->
       <div class="space-y-2 pt-1">
         <button onclick="openCravingModal()" class="w-full py-3.5 bg-gradient-to-r from-amber-600 via-rose-600 to-pink-600 text-xs uppercase font-bold tracking-wider rounded-xl shadow-lg shadow-rose-900/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 glow-rose">
-          <span>🔥</span> <span>Spontanen Wunsch senden</span>
+          <span>🔥</span> <span>Kurze Lust-Pause</span>
         </button>
 
-        <button onclick="openKopfkinoModal()" class="w-full py-3.5 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 border border-purple-500/40 text-purple-200 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] glow-purple">
-          <span>🧠</span> <span>Kopfkino & Abend-Match</span>
+        <button onclick="openKopfkinoModal()" class="w-full py-3 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 border border-purple-500/40 text-purple-200 text-xs uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] glow-purple">
+          <span>✨</span> <span>Unser Abend-Match</span>
         </button>
       </div>
 
@@ -457,12 +457,12 @@
     </div>
 
 
-    <!-- MODAL: SPONTANER WUNSCH -->
+    <!-- MODAL: KURZE LUST-PAUSE -->
     <div id="craving-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end justify-center p-0">
       <div class="bg-slate-900 border-t border-slate-800 w-full rounded-t-3xl p-5 space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
           <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
-            <span>🔥</span> Worauf hast du JETZT Lust?
+            <span>🔥</span> Kurze Lust-Pause
           </h3>
           <button onclick="closeCravingModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">✕</button>
         </div>
@@ -913,12 +913,12 @@
 
       if (state.kopfkino.isUnlocked) {
         kopfkinoBanner.classList.remove('hidden');
-        document.getElementById('kopfkino-banner-title').innerText = '✨ Euer Abend-Match ist bereit!';
-        document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben gewählt. Entdecke euer Match & die Flüsterbox!';
+        document.getElementById('kopfkino-banner-title').innerText = '✨ Unser Abend-Match ist bereit!';
+        document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben gewählt. Entdeckt euer Match & den Abend-Fahrplan!';
       } else if (partnerPrefs && !myPrefs) {
         kopfkinoBanner.classList.remove('hidden');
         document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat Vorlieben eingeloggt!`;
-        document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um euer Match für heute Abend zu enthüllen.`;
+        document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um unser Abend-Match zu enthüllen.`;
       } else {
         kopfkinoBanner.classList.add('hidden');
       }
