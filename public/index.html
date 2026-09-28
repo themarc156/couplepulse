@@ -274,22 +274,21 @@
     <!-- ================================================================= -->
     <main id="view-game" class="hidden w-full p-4 space-y-3.5 flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
       
-      <!-- SUB-HEADER DUELL -->
+      <!-- SUB-HEADER DUELL (AUFGERÄUMT & OHNE DOPPELTE BUTTONS) -->
       <div class="space-y-2 shrink-0">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1.5">
             <span id="session-rounds-badge" class="text-[10px] text-slate-400 bg-slate-900 border border-slate-800 px-2 py-1 rounded-lg font-mono">
               Runde #1
             </span>
-            <button onclick="openFilterModal()" class="text-[10px] text-amber-300 bg-amber-950/60 border border-amber-500/50 px-2 py-1 rounded-lg font-bold flex items-center gap-1">
-              <span>🏁 Ziel:</span> <span id="display-target-score">7 ⚡</span>
+            <button onclick="openFilterModal()" id="btn-target-score" class="text-[10px] text-amber-300 bg-amber-950/60 hover:bg-amber-900/60 border border-amber-500/50 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 shadow active:scale-95 transition-all" title="Zielpunkte & Filter einstellen">
+              <span>🏁 Ziel:</span> <span id="display-target-score">20 ⚡</span> <span>⚙️</span>
             </button>
           </div>
           <div class="flex items-center gap-1.5">
             <button onclick="toggleAudioMute()" id="btn-audio-mute" class="text-[11px] p-1.5 bg-slate-900 border border-slate-800 rounded-lg text-slate-300" title="Sound An/Aus">🔊</button>
-            <button onclick="openFilterModal()" class="text-[10px] text-amber-400 bg-amber-950/50 border border-amber-800/40 px-2 py-1 rounded-lg font-bold">⚙️ Filter</button>
             <button onclick="openCardManagerModal()" id="btn-deck-count" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-2 py-1 rounded-lg font-bold">✏️ Deck (32)</button>
-            <button onclick="resetGame()" class="text-[10px] text-slate-500 hover:text-slate-300 px-1 py-1">Reset</button>
+            <button onclick="resetGame()" class="text-[10px] text-slate-500 hover:text-slate-300 px-1.5 py-1">Reset</button>
           </div>
         </div>
       </div>
@@ -615,17 +614,22 @@
         </div>
 
         <div class="space-y-2.5 text-xs">
-          <!-- ZIELPUNKTE EINSTELLUNG -->
-          <div class="space-y-1.5 p-2.5 bg-slate-950 rounded-xl border border-slate-800">
+          <!-- ZIELPUNKTE EINSTELLUNG (IN 5ER-SCHRITTEN) -->
+          <div class="space-y-2 p-3 bg-slate-950 rounded-2xl border border-slate-800">
             <div class="flex justify-between items-center">
               <span class="font-bold text-amber-300 block text-xs">🏁 Ziel-Punkte fürs Finale:</span>
-              <span id="modal-target-score-display" class="text-[10px] text-amber-400 font-mono font-bold">7 ⚡</span>
+              <span id="modal-target-score-display" class="text-xs text-amber-400 font-mono font-black bg-amber-950/60 border border-amber-500/40 px-2.5 py-0.5 rounded-lg">20 ⚡</span>
             </div>
-            <div class="grid grid-cols-4 gap-1.5 text-center text-xs font-bold pt-0.5">
-              <button type="button" onclick="setGameTargetScore(5)" id="btn-target-5" class="py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">5 ⚡</button>
-              <button type="button" onclick="setGameTargetScore(7)" id="btn-target-7" class="py-2 rounded-lg bg-amber-500 text-slate-950 font-black">7 ⚡</button>
-              <button type="button" onclick="setGameTargetScore(10)" id="btn-target-10" class="py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">10 ⚡</button>
-              <button type="button" onclick="setGameTargetScore(0)" id="btn-target-0" class="py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">∞ Offen</button>
+            <div class="flex items-center justify-between gap-2 pt-0.5">
+              <button type="button" onclick="adjustTargetScore(-5)" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-xl text-xs font-bold text-slate-200 active:scale-95 transition-all">
+                -5 ⚡
+              </button>
+              <button type="button" onclick="setGameTargetScore(0)" id="btn-target-infinite" class="py-2.5 px-3 bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-xl text-xs font-bold text-slate-300 active:scale-95 transition-all">
+                ∞ Offen
+              </button>
+              <button type="button" onclick="adjustTargetScore(5)" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-black shadow glow-amber active:scale-95 transition-all">
+                +5 ⚡
+              </button>
             </div>
           </div>
 
@@ -859,7 +863,7 @@
         currentTurn: 'Er',
         roundsCount: 0,
         scores: { Er: 0, Sie: 0 },
-        targetScore: 7,
+        targetScore: 20,
         isCriticalHit: false,
         audioMuted: false,
         filters: { allowToys: true, allowSpanking: true, syncKopfkino: true },
@@ -3146,17 +3150,22 @@
     // =========================================================================
     // LUST-DUELL ENGINE (GAME & BEWERTUNGS-SYSTEM)
     // =========================================================================
+    function adjustTargetScore(delta) {
+      let current = typeof state.game.targetScore === 'number' ? state.game.targetScore : 20;
+      if (current === 0) current = 20; // Von Offen zurück zu Zahl
+      
+      let next = current + delta;
+      if (next < 5) next = 5;
+      if (next > 100) next = 100;
+
+      state.game.targetScore = next;
+      updateGameScoreUI();
+      saveState();
+      playSensualSound('chime');
+    }
+
     function setGameTargetScore(score) {
       state.game.targetScore = score;
-      [5, 7, 10, 0].forEach(val => {
-        const btn = document.getElementById(`btn-target-${val}`);
-        if (!btn) return;
-        if (val === score) {
-          btn.className = 'py-2 rounded-lg bg-amber-500 text-slate-950 font-black';
-        } else {
-          btn.className = 'py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300';
-        }
-      });
       updateGameScoreUI();
       saveState();
       playSensualSound('chime');
@@ -3166,11 +3175,21 @@
       const roundsEl = document.getElementById('session-rounds-badge');
       if (roundsEl) roundsEl.innerText = `Runde #${state.game.roundsCount + 1}`;
 
+      const isInfinite = state.game.targetScore === 0;
+      const targetText = isInfinite ? '∞ Offen' : `${state.game.targetScore} ⚡`;
+
       const targetDisplay = document.getElementById('display-target-score');
-      if (targetDisplay) targetDisplay.innerText = state.game.targetScore > 0 ? `${state.game.targetScore} ⚡` : '∞ Offen';
+      if (targetDisplay) targetDisplay.innerText = targetText;
 
       const modalTarget = document.getElementById('modal-target-score-display');
-      if (modalTarget) modalTarget.innerText = state.game.targetScore > 0 ? `${state.game.targetScore} ⚡` : '∞ Offen';
+      if (modalTarget) modalTarget.innerText = targetText;
+
+      const btnInfinite = document.getElementById('btn-target-infinite');
+      if (btnInfinite) {
+        btnInfinite.className = isInfinite
+          ? 'py-2.5 px-3 bg-amber-500 text-slate-950 font-black rounded-xl text-xs shadow glow-amber'
+          : 'py-2.5 px-3 bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-xl text-xs font-bold text-slate-300';
+      }
 
       const sScore = document.getElementById('card-sender-score');
       const rScore = document.getElementById('card-receiver-score');
