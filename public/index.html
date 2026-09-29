@@ -884,6 +884,7 @@
       },
       shoutboxMessages: [],
       activeCraving: null,
+      activeFeedbackBanner: null,
       eveningReservation: null,
       game: {
         stage: 1,
@@ -1080,7 +1081,6 @@
         }
       }
 
-      const kopfkinoBanner = document.getElementById('kopfkino-match-ready-banner');
       const myPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
       const partnerPrefs = state.currentUser === 'Er' ? state.kopfkino.siePreferences : state.kopfkino.erPreferences;
 
@@ -1099,50 +1099,87 @@
         }
       }
 
-      if (state.kopfkino.isUnlocked) {
-        if (myRated) {
-          kopfkinoBanner.classList.add('hidden');
-        } else if (partnerRated) {
-          kopfkinoBanner.classList.remove('hidden');
-          document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat den Abend bewertet!`;
-          document.getElementById('kopfkino-banner-desc').innerText = `${partner} hat eine Rückmeldung hinterlassen. Schließe das Erlebnis mit deiner Bewertung ab!`;
-        } else {
-          kopfkinoBanner.classList.remove('hidden');
-          document.getElementById('kopfkino-banner-title').innerText = '✨ Unser Abend-Match ist bereit!';
-          document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben gewählt. Entdeckt euer Match & den Abend-Fahrplan!';
+      // =======================================================================
+      // PRIORITÄTEN-HIERARCHIE (GARANTIERT MAXIMAL 1 BANNER ÜBER DER FLÜSTERBOX)
+      // =======================================================================
+      const fbBanner = document.getElementById('incoming-feedback-banner');
+      const cravingBanner = document.getElementById('incoming-craving-banner');
+      const matchBanner = document.getElementById('kopfkino-match-ready-banner');
+      const eveningBanner = document.getElementById('evening-reservation-banner');
+
+      // Zunächst alle Banner ausblenden
+      if (fbBanner) fbBanner.classList.add('hidden');
+      if (cravingBanner) cravingBanner.classList.add('hidden');
+      if (matchBanner) matchBanner.classList.add('hidden');
+      if (eveningBanner) eveningBanner.classList.add('hidden');
+
+      let bannerOccupied = false;
+
+      // 1. Höchste Priorität: Akutes Spontan-Signal / Lust-Pause vom Partner
+      if (state.activeCraving && state.activeCraving.from !== state.currentUser) {
+        if (cravingBanner) {
+          cravingBanner.classList.remove('hidden');
+          document.getElementById('incoming-craving-text').innerHTML = `
+            <div class="text-rose-300 font-bold text-sm flex items-center gap-1.5">
+              <span>${state.activeCraving.emoji}</span> 
+              <span>${state.activeCraving.title}</span>
+            </div>
+            ${state.activeCraving.note ? `<div class="text-amber-200 text-xs mt-1 italic bg-amber-950/40 p-1.5 rounded-lg border border-amber-800/40">💬 "${state.activeCraving.note}"</div>` : ''}
+          `;
         }
-      } else if (partnerPrefs && !myPrefs) {
-        kopfkinoBanner.classList.remove('hidden');
-        document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat Vorlieben eingeloggt!`;
-        document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um euer Match für heute Abend zu enthüllen.`;
-      } else if (myPrefs && !partnerPrefs) {
-        kopfkinoBanner.classList.remove('hidden');
-        document.getElementById('kopfkino-banner-title').innerText = `⏳ Warten auf ${partner}...`;
-        document.getElementById('kopfkino-banner-desc').innerText = `Deine Vorlieben sind eingeloggt. Sobald ${partner} fertig ist, steht euer Abend-Fahrplan!`;
-      } else {
-        kopfkinoBanner.classList.add('hidden');
+        bannerOccupied = true;
       }
 
-      const banner = document.getElementById('incoming-craving-banner');
-      if (state.activeCraving && state.activeCraving.from !== state.currentUser) {
-        banner.classList.remove('hidden');
-        document.getElementById('incoming-craving-text').innerHTML = `
-          <div class="text-rose-300 font-bold text-sm flex items-center gap-1.5">
-            <span>${state.activeCraving.emoji}</span> 
-            <span>${state.activeCraving.title}</span>
-          </div>
-          ${state.activeCraving.note ? `<div class="text-amber-200 text-xs mt-1 italic bg-amber-950/40 p-1.5 rounded-lg border border-amber-800/40">💬 "${state.activeCraving.note}"</div>` : ''}
-        `;
-      } else { banner.classList.add('hidden'); }
+      // 2. Zweite Priorität: Frisches Feedback / Rückmeldung vom Partner
+      if (!bannerOccupied && state.activeFeedbackBanner) {
+        if (fbBanner) {
+          fbBanner.classList.remove('hidden');
+          const fbTextEl = document.getElementById('incoming-feedback-text');
+          if (fbTextEl) fbTextEl.innerText = state.activeFeedbackBanner;
+        }
+        bannerOccupied = true;
+      }
 
-      const eveningBanner = document.getElementById('evening-reservation-banner');
-      if (state.eveningReservation) {
-        eveningBanner.classList.remove('hidden');
-        document.getElementById('evening-reservation-text').innerHTML = `
-          <div class="font-semibold text-indigo-200">${state.eveningReservation.emoji} ${state.eveningReservation.title}</div>
-          ${state.eveningReservation.note ? `<div class="text-[10px] text-slate-400 italic">💬 "${state.eveningReservation.note}"</div>` : ''}
-        `;
-      } else { eveningBanner.classList.add('hidden'); }
+      // 3. Dritte Priorität: Abend-Match Status / Einladung / Warten
+      if (!bannerOccupied) {
+        if (state.kopfkino.isUnlocked) {
+          if (!myRated) {
+            if (partnerRated) {
+              matchBanner.classList.remove('hidden');
+              document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat den Abend bewertet!`;
+              document.getElementById('kopfkino-banner-desc').innerText = `${partner} hat eine Rückmeldung hinterlassen. Schließe das Erlebnis mit deiner Bewertung ab!`;
+              bannerOccupied = true;
+            } else {
+              matchBanner.classList.remove('hidden');
+              document.getElementById('kopfkino-banner-title').innerText = '✨ Unser Abend-Match ist bereit!';
+              document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben gewählt. Entdeckt euer Match & den Abend-Fahrplan!';
+              bannerOccupied = true;
+            }
+          }
+        } else if (partnerPrefs && !myPrefs) {
+          matchBanner.classList.remove('hidden');
+          document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat Vorlieben eingeloggt!`;
+          document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um euer Match für heute Abend zu enthüllen.`;
+          bannerOccupied = true;
+        } else if (myPrefs && !partnerPrefs) {
+          matchBanner.classList.remove('hidden');
+          document.getElementById('kopfkino-banner-title').innerText = `⏳ Warten auf ${partner}...`;
+          document.getElementById('kopfkino-banner-desc').innerText = `Deine Vorlieben sind eingeloggt. Sobald ${partner} fertig ist, steht euer Abend-Fahrplan!`;
+          bannerOccupied = true;
+        }
+      }
+
+      // 4. Vierte Priorität: Abend-Reservierung
+      if (!bannerOccupied && state.eveningReservation) {
+        if (eveningBanner) {
+          eveningBanner.classList.remove('hidden');
+          document.getElementById('evening-reservation-text').innerHTML = `
+            <div class="font-semibold text-indigo-200">${state.eveningReservation.emoji} ${state.eveningReservation.title}</div>
+            ${state.eveningReservation.note ? `<div class="text-[10px] text-slate-400 italic">💬 "${state.eveningReservation.note}"</div>` : ''}
+          `;
+        }
+        bannerOccupied = true;
+      }
 
       document.getElementById('btn-user-er').className = state.currentUser === 'Er' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
       document.getElementById('btn-user-sie').className = state.currentUser === 'Sie' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
@@ -1224,7 +1261,8 @@
         state.pendingReviews = []; 
         state.completedReviews = []; 
         state.activeCraving = null; 
-        state.eveningReservation = null; 
+        state.activeFeedbackBanner = null;
+        state.eveningReservation = null;
         state.kopfkino.erPreferences = null;
         state.kopfkino.siePreferences = null;
         state.kopfkino.itemReactions = {};
@@ -3060,12 +3098,16 @@
     }
 
     function showFeedbackBanner(text) {
-      const banner = document.getElementById('incoming-feedback-banner');
-      document.getElementById('incoming-feedback-text').innerText = text;
-      banner.classList.remove('hidden');
+      state.activeFeedbackBanner = text;
+      saveState();
+      updateUI();
     }
 
-    function closeFeedbackBanner() { document.getElementById('incoming-feedback-banner').classList.add('hidden'); }
+    function closeFeedbackBanner() {
+      state.activeFeedbackBanner = null;
+      saveState();
+      updateUI();
+    }
 
     // =========================================================================
     // SPONTAN-WUNSCH LOGIK
