@@ -1627,7 +1627,7 @@
             showToast("✨ Kamera aktiv", "Du überträgst jetzt dein Video.", "📹");
           } catch (e) {
             this.isSwapping = false;
-            alert('Kamera-Fehler bei Übernahme: ' + e.message);
+            showToast("⚠️ Kamera-Fehler", "Übernahme nicht möglich: " + e.message, "📹");
           }
         }
       },
@@ -1671,7 +1671,7 @@
           this.sendData({ type: 'stream_started', sender: state.currentUser });
           triggerPushNotification(state.currentUser, true);
         } catch (e) {
-          alert('Kamera-Zugriff nicht möglich: ' + e.message);
+          showToast("⚠️ Kamera blockiert", "Kamera-Zugriff nicht möglich: " + e.message, "📹");
           this.endStream();
         }
       },
@@ -1795,12 +1795,11 @@
           showToast("🔁 Kamera gewechselt", "Dein Partner überträgt jetzt das Video.", "📹");
           setTimeout(() => { this.isSwapping = false; }, 1500);
         } else if (data.type === 'stream_swap_offer') {
-          if (confirm("Dein Partner lädt dich ein, jetzt die Kamera zu übernehmen! Möchtest du streamen?")) {
-            this.switchStreamDirection();
-          }
+          showToast("🔁 Kamera-Übergabe", "Dein Partner bietet dir die Kamera an. Tippe auf 'Ich zeig mich'!", "📹");
+          playSensualSound('chime');
         } else if (data.type === 'stream_ended') {
           if (this.isStreaming) {
-            alert('Live-Stream wurde vom Partner beendet.');
+            showToast("📹 Stream beendet", "Dein Partner hat den Live-Stream beendet.", "👁️");
             this.endStream();
           } else {
             document.getElementById('btn-stream-incoming').classList.add('hidden');
