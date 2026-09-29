@@ -974,6 +974,9 @@
         state.kopfkino.isUnlocked = false;
         state.activeCraving = null; 
         state.matchUpdateNotice = false;
+        state.matchNoticeType = null;
+        state.lastReactionTitle = null;
+        state.lastReactionBadge = null;
         state.lastReactionNotice = null;
         state.eveningReservation = null;
         state.lastActiveDayKey = currentDay;
@@ -1079,20 +1082,33 @@
           matchBanner.classList.remove('hidden');
 
           if (state.matchUpdateNotice) {
-            // Goldener Look bei Aktualisierung (Ruhig, ohne Pulsieren)
-            matchBanner.className = 'bg-gradient-to-r from-amber-950/95 via-orange-950/95 to-rose-950/95 border-2 border-amber-400/90 rounded-2xl p-3 glow-amber space-y-2';
+            const isWishOrOffer = state.matchNoticeType === 'wish' || state.matchNoticeType === 'offer';
+            
+            // Design anpassen: Warmes Rose/Gold bei Zusage, Bernstein bei reinem Einstellungs-Update
+            matchBanner.className = isWishOrOffer 
+              ? 'bg-gradient-to-r from-rose-950/95 via-purple-950/95 to-amber-950/95 border-2 border-rose-400/90 rounded-2xl p-3 glow-rose space-y-2'
+              : 'bg-gradient-to-r from-amber-950/95 via-orange-950/95 to-rose-950/95 border-2 border-amber-400/90 rounded-2xl p-3 glow-amber space-y-2';
+
             if (titleBox) {
+              const titleText = state.lastReactionTitle || '✨ Vorlieben aktualisiert';
+              const badgeText = state.lastReactionBadge || 'UPDATE 🔄';
+              const badgeBg = isWishOrOffer ? 'bg-rose-950 text-rose-300 border-rose-500/60' : 'bg-amber-950 text-amber-300 border-amber-500/60';
+              const titleColor = isWishOrOffer ? 'text-rose-200' : 'text-amber-200';
               titleBox.innerHTML = `
-                <span class="truncate text-amber-200 font-black">✨ Vorlieben aktualisiert</span>
-                <span class="text-[9px] bg-amber-950 text-amber-300 border border-amber-500/60 px-1.5 py-0.5 rounded font-black shrink-0">NEU 🔄</span>
+                <span class="truncate ${titleColor} font-black">${titleText}</span>
+                <span class="text-[9px] ${badgeBg} border px-1.5 py-0.5 rounded font-black shrink-0">${badgeText}</span>
               `;
             }
             if (bannerBtn) {
-              bannerBtn.className = 'text-[10px] bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-2.5 py-0.5 rounded-lg shadow active:scale-95 transition-all shrink-0';
-              bannerBtn.innerText = '🔍 Neu ansehen →';
+              bannerBtn.className = isWishOrOffer
+                ? 'text-[10px] bg-gradient-to-r from-rose-500 to-pink-600 text-white font-black px-2.5 py-0.5 rounded-lg shadow active:scale-95 transition-all shrink-0'
+                : 'text-[10px] bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-2.5 py-0.5 rounded-lg shadow active:scale-95 transition-all shrink-0';
+              bannerBtn.innerText = '🔍 Ansehen →';
             }
             if (bannerDesc) {
-              bannerDesc.className = 'text-xs font-bold text-amber-100 bg-slate-950/80 p-2 rounded-xl border border-amber-500/40 leading-snug flex items-center min-h-[36px] cursor-pointer';
+              bannerDesc.className = isWishOrOffer
+                ? 'text-xs font-bold text-rose-100 bg-slate-950/80 p-2 rounded-xl border border-rose-500/40 leading-snug flex items-center min-h-[36px] cursor-pointer'
+                : 'text-xs font-bold text-amber-100 bg-slate-950/80 p-2 rounded-xl border border-amber-500/40 leading-snug flex items-center min-h-[36px] cursor-pointer';
               bannerDesc.innerText = state.lastReactionNotice || `${partner} hat die Auswahl für heute angepasst.`;
             }
           } else {
@@ -1838,9 +1854,19 @@
         } else if (data.type === 'item_single_reaction_sync') {
           if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
           if (data.text) {
-            state.kopfkino.itemReactions[data.itemKey] = { user: data.sender, text: data.text };
+            state.kopfkino.itemReactions[data.itemKey] = { 
+              user: data.sender, 
+              text: data.text, 
+              practiceTitle: data.practiceTitle 
+            };
             state.matchUpdateNotice = true;
-            state.lastReactionNotice = `${data.sender} hat einen Wunsch bestätigt! (${data.text})`;
+            state.matchNoticeType = data.isOffer ? 'offer' : 'wish';
+            state.lastReactionTitle = data.isOffer ? '🎁 Angebot angenommen!' : '💖 Wunsch bestätigt!';
+            state.lastReactionBadge = data.isOffer ? 'DAFÜR 🔥' : 'ZUSAGE ✨';
+            const cleanTitle = data.practiceTitle ? `„${data.practiceTitle}“` : 'einen Moment';
+            state.lastReactionNotice = data.isOffer 
+              ? `${data.sender} freut sich auf: ${cleanTitle} ✨`
+              : `${data.sender} hat zugesagt: ${cleanTitle} ✨`;
           } else {
             delete state.kopfkino.itemReactions[data.itemKey];
           }
@@ -2072,6 +2098,9 @@
 
     function openKopfkinoModal() {
       state.matchUpdateNotice = false;
+      state.matchNoticeType = null;
+      state.lastReactionTitle = null;
+      state.lastReactionBadge = null;
       state.lastReactionNotice = null;
       saveState();
       switchAppView('match');
@@ -2301,16 +2330,29 @@
     }
 
     let currentMatchHighlightTitles = [];
-    function setSingleReaction(itemKey, text) {
+
+    function setSingleReaction(itemKey, text, practiceTitle = '', isOffer = false) {
       if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
       const current = state.kopfkino.itemReactions[itemKey];
 
       if (current && current.user === state.currentUser) {
         delete state.kopfkino.itemReactions[itemKey];
-        LiveStream.sendData({ type: 'item_single_reaction_sync', sender: state.currentUser, itemKey: itemKey, text: null });
+        LiveStream.sendData({ 
+          type: 'item_single_reaction_sync', 
+          sender: state.currentUser, 
+          itemKey: itemKey, 
+          text: null 
+        });
       } else {
-        state.kopfkino.itemReactions[itemKey] = { user: state.currentUser, text: text };
-        LiveStream.sendData({ type: 'item_single_reaction_sync', sender: state.currentUser, itemKey: itemKey, text: text });
+        state.kopfkino.itemReactions[itemKey] = { user: state.currentUser, text: text, practiceTitle: practiceTitle };
+        LiveStream.sendData({ 
+          type: 'item_single_reaction_sync', 
+          sender: state.currentUser, 
+          itemKey: itemKey, 
+          text: text,
+          practiceTitle: practiceTitle,
+          isOffer: isOffer
+        });
       }
 
       playSensualSound('heartbeat');
@@ -2318,7 +2360,7 @@
       renderKopfkinoMatchReveal();
     }
 
-    function renderTargetedReactionButton(itemKey, buttonLabel, isAllowedToReact) {
+    function renderTargetedReactionButton(itemKey, buttonLabel, isAllowedToReact, practiceTitle = '', isOffer = false) {
       const reactionObj = (state.kopfkino.itemReactions || {})[itemKey];
       const isConfirmed = Boolean(reactionObj);
       const isConfirmedByMe = reactionObj && reactionObj.user === state.currentUser;
@@ -2331,9 +2373,11 @@
         ` : '';
       }
 
+      const safeTitle = (practiceTitle || '').replace(/'/g, "\\'");
+
       return `
         <div class="flex items-center justify-between mt-1.5 pt-1.5 border-t border-slate-800/60" onclick="event.stopPropagation()">
-          <button onclick="setSingleReaction('${itemKey}', '${buttonLabel}')" 
+          <button onclick="setSingleReaction('${itemKey}', '${buttonLabel}', '${safeTitle}', ${isOffer})" 
             class="px-3 py-1 rounded-xl text-[10px] font-bold border transition-all ${isConfirmed ? 'bg-gradient-to-r from-emerald-500 to-teal-500 border-emerald-400 text-slate-950 shadow-lg shadow-emerald-950' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-purple-500'}">
             ${buttonLabel}
           </button>
@@ -2399,7 +2443,7 @@
               openWishesForMe.push(`
                 <div>
                   <div>🧘 <strong>Wunsch von Sie:</strong> ${labelSie}</div>
-                  ${renderTargetedReactionButton(key, '✨ Sehr gerne!', true)}
+                  ${renderTargetedReactionButton(key, '✨ Sehr gerne!', true, labelEr || myLabel, false)}
                 </div>
               `);
             }
@@ -2412,7 +2456,7 @@
               partnerOffersForMe.push(`
                 <div>
                   <div>🎁 <strong>Angebot von Er:</strong> ${labelEr}</div>
-                  ${renderTargetedReactionButton(key, '🔥 Ooh ja!', true)}
+                  ${renderTargetedReactionButton(key, '🔥 Ooh ja!', true, labelSie || myLabel, true)}
                 </div>
               `);
             }
@@ -2435,7 +2479,7 @@
               openWishesForMe.push(`
                 <div>
                   <div>🧘 <strong>Wunsch von Er:</strong> ${labelEr}</div>
-                  ${renderTargetedReactionButton(key, '✨ Sehr gerne!', true)}
+                  ${renderTargetedReactionButton(key, '✨ Sehr gerne!', true, labelSie || myLabel, false)}
                 </div>
               `);
             }
@@ -2448,7 +2492,7 @@
               partnerOffersForMe.push(`
                 <div>
                   <div>🎁 <strong>Angebot von Sie:</strong> ${labelSie}</div>
-                  ${renderTargetedReactionButton(key, '🔥 Ooh ja!', true)}
+                  ${renderTargetedReactionButton(key, '🔥 Ooh ja!', true, labelEr || myLabel, true)}
                 </div>
               `);
             }
