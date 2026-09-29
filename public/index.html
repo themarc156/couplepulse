@@ -569,17 +569,6 @@
             <span class="text-[9px] text-slate-500 block mt-0.5">Muss auf beiden Handys exakt übereinstimmen.</span>
           </div>
 
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-[10px] text-rose-300 font-bold block pb-1">Name für Ihn (Er):</label>
-              <input id="setup-name-er" oninput="updateSetupRoleButtons()" type="text" placeholder="z. B. Stefan" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-rose-500">
-            </div>
-            <div>
-              <label class="text-[10px] text-pink-300 font-bold block pb-1">Name für Sie (Sie):</label>
-              <input id="setup-name-sie" oninput="updateSetupRoleButtons()" type="text" placeholder="z. B. Sarah" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-pink-500">
-            </div>
-          </div>
-
           <div class="pt-1">
             <label class="text-[10px] text-amber-300 font-bold block pb-1.5">Wer nutzt dieses Handy?</label>
             <div class="grid grid-cols-2 gap-2">
@@ -590,11 +579,6 @@
                 <span>👑</span> <span id="label-setup-role-sie">Sie</span>
               </button>
             </div>
-          </div>
-
-          <div class="pt-1 flex items-center justify-between border-t border-slate-800/80">
-            <span class="text-[10px] text-slate-400">Entwickler-Modus (Umschalter im Header)</span>
-            <input type="checkbox" id="setup-dev-mode-check" class="w-4 h-4 accent-purple-500">
           </div>
         </div>
 
@@ -1334,12 +1318,10 @@
       const keyInput = document.getElementById('setup-couple-key');
       const nameErInput = document.getElementById('setup-name-er');
       const nameSieInput = document.getElementById('setup-name-sie');
-      const devCheck = document.getElementById('setup-dev-mode-check');
 
       if (keyInput) keyInput.value = state.coupleKey || 'unser-paar-code';
       if (nameErInput) nameErInput.value = (state.names && state.names.Er) ? state.names.Er : 'Er';
       if (nameSieInput) nameSieInput.value = (state.names && state.names.Sie) ? state.names.Sie : 'Sie';
-      if (devCheck) devCheck.checked = Boolean(state.devMode);
 
       updateSetupRoleButtons();
       document.getElementById('profile-setup-modal').classList.remove('hidden');
@@ -1384,7 +1366,6 @@
       const keyInput = document.getElementById('setup-couple-key');
       const nameErInput = document.getElementById('setup-name-er');
       const nameSieInput = document.getElementById('setup-name-sie');
-      const devCheck = document.getElementById('setup-dev-mode-check');
 
       const rawKey = keyInput ? keyInput.value.trim().toLowerCase() : '';
       const safeKey = rawKey.replace(/[^a-zA-Z0-9_-]/g, '') || 'unser-paar-code';
@@ -1394,14 +1375,12 @@
       state.coupleKey = safeKey;
       state.names = { Er: nameEr, Sie: nameSie };
       state.currentUser = setupSelectedRole;
-      state.devMode = devCheck ? devCheck.checked : false;
       state.isConfigured = true;
 
       localStorage.setItem('cp_couple_key', safeKey);
       localStorage.setItem('cp_name_er', nameEr);
       localStorage.setItem('cp_name_sie', nameSie);
       localStorage.setItem('cp_current_user', setupSelectedRole);
-      localStorage.setItem('cp_dev_mode', state.devMode ? 'true' : 'false');
       localStorage.setItem('cp_device_configured', 'true');
 
       closeProfileSetupModal();
