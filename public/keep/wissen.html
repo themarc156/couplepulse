@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#020617">
+  <title>CouplePulse – Orgasmus-Menü</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#f43f5e', 600: '#e11d48', 900: '#881337' },
+            slate: { 850: '#151f32', 855: '#111a2c' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { -webkit-tap-highlight-color: transparent; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans select-none antialiased flex justify-center items-start">
+
+  <div class="w-full max-w-md min-h-screen bg-slate-950 md:border-x md:border-slate-800/80 md:shadow-[0_0_60px_-15px_rgba(0,0,0,0.9)] flex flex-col justify-between relative pb-24">
+
+    <!-- HEADER -->
+    <header class="border-b border-slate-855 sticky top-0 bg-slate-950/95 backdrop-blur z-30 p-3.5 space-y-3">
+      <div class="flex items-center gap-2.5">
+        <span class="text-2xl animate-pulse">🕯️</span>
+        <div>
+          <h1 class="font-bold tracking-wider text-xs uppercase bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400 bg-clip-text text-transparent">
+            Abend-Leitfaden
+          </h1>
+          <p class="text-[11px] text-slate-400">Pure Essenz • In 3 Stufen zur Ekstase</p>
+        </div>
+      </div>
+
+      <!-- HAUPT-TABS (FÜR SIE / FÜR IHN) -->
+      <div class="grid grid-cols-2 gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs font-bold text-center">
+        <button id="tab-sie" onclick="switchGender('sie')" class="py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow flex items-center justify-center gap-1.5 transition-all">
+          <span>👑</span> <span>Verwöhnen für SIE</span>
+        </button>
+        <button id="tab-er" onclick="switchGender('er')" class="py-2.5 rounded-lg text-slate-400 hover:text-slate-200 font-bold flex items-center justify-center gap-1.5 transition-all">
+          <span>👑</span> <span>Verwöhnen für IHN</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- LISTE DER KARTEN IM FLOW -->
+    <main id="flowchart-container" class="p-4 space-y-4 flex-1 overflow-y-auto"></main>
+
+    <!-- UNTERE APP-NAVIGATION -->
+    <nav class="fixed bottom-0 max-w-md w-full bg-slate-950/95 border-t border-slate-855 backdrop-blur z-40 px-3 py-2.5 flex justify-around items-center">
+      <a href="index.html" class="flex flex-col items-center text-slate-400 hover:text-rose-400 text-[10px]">
+        <span class="text-base">✨</span>
+        <span>Pulse</span>
+      </a>
+      <a href="game.html" class="flex flex-col items-center text-slate-400 hover:text-amber-400 text-[10px]">
+        <span class="text-base">🎲</span>
+        <span>Duell</span>
+      </a>
+      <a href="menue.html" class="flex flex-col items-center text-purple-400 font-bold text-[10px]">
+        <span class="text-base">🕯️</span>
+        <span>Menü</span>
+      </a>
+      <a href="tresor.html" class="flex flex-col items-center text-slate-400 hover:text-amber-400 text-[10px]">
+        <span class="text-base">🗝️</span>
+        <span>Tresor</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <script>
+    // =========================================================================
+    // DIE ESSENZ-DATENBANK (FOKUSSIERT & KOMPAKT)
+    // =========================================================================
+    const verwoehnData = [
+      // -----------------------------------------------------------------------
+      // 👑 FÜR SIE
+      // -----------------------------------------------------------------------
+      {
+        id: 'sie_kivin_doppelkammer',
+        target: 'sie',
+        stage: 1,
+        badge: '🌊 Aufbau',
+        title: 'Die Kivin-Methode & Doppelkammer',
+        description: '1. 👅 KIVIN-BASIS: Lege dich im 90°-Winkel SEITLICH an ihre Hüfte. Setze deine Zunge QUER (horizontal) auf die Klitoris-Vorhaut und führe breite, flächige Wischbewegungen von links nach rechts aus. Nutze viel warmen Speichel – das flutet die Schwellkörper schmerzfrei ohne Kitzeln.\n\n2. 🌊 OPTION DOPPELKAMMER: Sobald sie voll erregt ist, umschließe ihre Klitoris sanft saugend mit feuchten Lippen. Führe 1–2 geölte Finger ca. 3–4 cm in die Vagina ein und hake mit den Fingerkuppen nach oben zur Bauchwand (G-Punkt). Im gleichen Takt stimulieren (doppeltes Lust-Vakuum).',
+        proTip: 'Lege während der Kivin-Zungenbewegung den Zeigefinger der freien Hand sanft auf ihren Damm und federe ihn elastisch nach unten-hinten – das löst ein intensives Weitungsgefühl aus.'
+      },
+      {
+        id: 'sie_blended_press_schloss',
+        target: 'sie',
+        stage: 2,
+        badge: '⚡ Entladung',
+        title: 'Die Blended-Fusion mit Knie-Schloss',
+        description: '1. ⚡ BLENDED-SYNC: Führe 2 Finger an ihren G-Punkt und lege gleichzeitig die Daumenbeere oder deinen Mund auf die Klitoris. Bewege BEIDE Punkte im exakt gleichen Rhythmus und Druck (wie ein doppelter Herzschlag) bis zur 95%-Kante (ihre Atmung stockt, Becken spannt an).\n\n2. 🔒 DAS KNIE-SCHLOSS: Kurz vor dem Orgasmus alle Reibung stoppen! Schiebe deinen Oberschenkel/Knie fest zwischen ihre Beine. Sie presst ihre Oberschenkel eng um dein Bein zusammen und spannt den Beckenboden maximal an. 15–20 Sek. halten, tief durchatmen (die Orgasmuswelle staut sich tief im Becken).\n\n3. 🚀 ENTLADUNG: Nach 2–3 Press-Pausen Druck lösen und beide Punkte sofort synchron durchziehen – der gestaute Orgasmus rollt unaufhaltsam durch das gesamte Becken & entlädt sich in gewaltigen Ganzkörper-Wellen.',
+        proTip: 'Das Zusammenpressen der Beine verhindert das vorzeitige Abklingen und staut die Energie tief im Unterleib – für maximale Orgasmus-Wucht.'
+      },
+      {
+        id: 'sie_shaft_pinch_roll',
+        target: 'sie',
+        stage: 3,
+        badge: '✨ Verlängerung',
+        title: 'Die K-Minus-Schaftklammer',
+        description: 'Berühre nach ihrem Höhepunkt NICHT direkt die empfindliche Klitorisspitze. Greife stattdessen mit Daumen und Zeigefinger sanft die Hautfalte 1–2 cm OBERHALB der Perle und rolle den darunterliegenden Schwellkörper-Strang sanft zwischen den Fingerkuppen (wie eine kleine Erbse). Nach 30–60 Sek. bricht entweder direkt ein tiefer Schaft-Höhepunkt durch ODER du wechselst wieder direkt zu Stufe 1 / 2 – der nächste Orgasmus zündet oft in unter 2 Minuten!',
+        proTip: 'Die ultimative Brücke: Hält die Erregungswelle nach dem ersten Orgasmus oben und zündet völlig schmerzfrei den zweiten und dritten Höhepunkt.'
+      },
+
+      // -----------------------------------------------------------------------
+      // 👑 FÜR IHN
+      // -----------------------------------------------------------------------
+      {
+        id: 'er_katana_tunnel_kombi',
+        target: 'er',
+        stage: 1,
+        badge: '🌊 Aufbau • Basis',
+        title: 'Der endlose Katana-Tunnel',
+        description: 'Beide Hände umschließen den geölten Schaft fest direkt übereinander (Faust über Faust wie ein Schwertgriff):\n\n• ⬇️ ABWÄRTS (Endloser Tunnel): Gleite abwechselnd von der Spitze zur Basis nach unten. Die Eichel verschwindet immer in der nächsten Faust, bevor sie die vorherige verlässt. Dadurch wird die perfekte Illusion einer endlosen Penetration erzeugt.\n\n• ⬆️ AUFWÄRTS (Katana-Welle): Beide Hände gleiten mit festem Druck synchron nach oben. Oben öffnet die erste Hand blitzschnell und greift unten wieder an. Die Stauung des Blutes in der Eichel führt zu maximalem Druckaufbau & Erektionshärte.',
+        proTip: 'Reichlich Gleitgel nutzen. Nutze den Abwärts-Tunnel zum genussvollen Dahinschmelzen. Wechsle nahtlos in den kraftvollen Katana-Aufwärtszug, um die Erregungswelle steil nach oben zu peitschen.'
+      },
+      {
+        id: 'er_wechselschraube',
+        target: 'er',
+        stage: 1,
+        badge: '🌊 Aufbau • Variante',
+        title: 'Die Wechselschraube (Doppel-Acht)',
+        description: 'Hand 1 umschließt die Basis und dreht sich wie eine Schraube nach oben. An der Eichelspitze angekommen, kippt die Hand über die Krone und gleitet auf der ANDEREN Seite mit umgekehrter Drehung sanft nach unten. Auf halber Strecke setzt Hand 2 an der Basis an und startet dieselbe Dreh-Schleife.',
+        proTip: 'Reichlich Gleitgel verwenden. Der unvorhersehbare Torsionsreiz an den Schwellkörpern überfordert die Muskelkontrolle und treibt ihn in den Wahnsinns-Zustand.'
+      },
+      {
+        id: 'er_kaskaden_masterlock',
+        target: 'er',
+        stage: 2,
+        badge: '⚡ Entladung',
+        title: 'Der Masterlock (Dual-Edging)',
+        description: 'Kurz vor dem Orgasmus (Atmung stockt, Hoden wollen hochschnellen): Stoppe sofort jede Reibung und setze beide Hände gleichzeitig an:\n\n• Hand 1 (Schaftbasis): Umschließt die Peniswurzel fest im C-Griff (wie ein strammer Cock-Ring), um das Blut zu stauen (kein Schmerz).\n\n• Hand 2 (Hodensack): Umgreift sanft die Basis des Skrotums oberhalb der Hoden und zieht sie mit leichtem, stetigem Zug nach unten weg vom Körper.\n\n🌊 DIE KASKADE: Halte den Lock für ca. 15–20 Sek., bis die Welle abklingt. Wiederhole dies 2–3 Mal und halte ihn durch zügiges Melken an der 95%-Kante.\n\n🚀 DIE ENTLADUNG: Beim 4. Mal beide Sperren blitzschnell öffnen und ohne Unterbrechung durchziehen. Beim finalen Loslassen explodiert der Druck in einer spektakulären Megafontäne.',
+        proTip: 'Achte beim Hodenzug auf ein sanftes, elastisches Dehnen – niemals ruckartig ziehen. Das Zusammenspiel beider Hände neutralisiert den Reflex zuverlässig.'
+      },
+      {
+        id: 'er_prostata_melken',
+        target: 'er',
+        stage: 3,
+        badge: '✨ Vertiefung',
+        title: 'Prostatamassage (P-Spot Melken)',
+        description: 'Mit reichlich Gleitgel dringt ein geölter Finger ca. 4–5 cm in den Anus ein (Handfläche zeigt nach oben Richtung Bauchnabel). Ertaste die erhabene Prostata (Größe einer Walnuss). Massiere sie mit sanftem Haken-Druck („Komm-her-Bewegung“) im Rhythmus seiner tiefen Atmung. Prostata-Orgasmen bauen sich langsam auf & lösen minutenlange, wellenartige Ganzkörperorgasmen aus, die sich völlig anders anfühlen als ein Penisorgasmus: Keine Erschöpfung, kein Erektionsverlust, oft mehrfach hintereinander.',
+        proTip: 'Auf kurze Fingernägel / Handschuhe achten. Ein plötzlicher Harndrang-Impuls zu Beginn ist völlig normal und vergeht nach wenigen Sekunden (vorher kurz Blase leeren).'
+      }
+    ];
+
+    // Farbdefinitionen für die Stufen-Badges
+    const badgeStyles = {
+      1: 'bg-purple-950/80 text-purple-300 border-purple-800/80',
+      2: 'bg-amber-950/80 text-amber-300 border-amber-800/80',
+      3: 'bg-emerald-950/80 text-emerald-300 border-emerald-800/80'
+    };
+
+    let currentGender = 'sie';
+
+    function switchGender(gender) {
+      currentGender = gender;
+      const tabSie = document.getElementById('tab-sie');
+      const tabEr = document.getElementById('tab-er');
+      if (gender === 'sie') {
+        tabSie.className = 'py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow font-bold flex items-center justify-center gap-1.5 transition-all';
+        tabEr.className = 'py-2.5 rounded-lg text-slate-400 hover:text-slate-200 font-bold flex items-center justify-center gap-1.5 transition-all';
+      } else {
+        tabEr.className = 'py-2.5 rounded-lg bg-gradient-to-r from-amber-600 to-rose-600 text-white shadow font-bold flex items-center justify-center gap-1.5 transition-all';
+        tabSie.className = 'py-2.5 rounded-lg text-slate-400 hover:text-slate-200 font-bold flex items-center justify-center gap-1.5 transition-all';
+      }
+      renderFlowchart();
+    }
+
+    function renderFlowchart() {
+      const container = document.getElementById('flowchart-container');
+      const stageIds = [1, 2, 3];
+      const allCategoryItems = verwoehnData.filter(d => d.target === currentGender);
+      
+      let html = '';
+
+      stageIds.forEach((sId, index) => {
+        const stageTechs = allCategoryItems.filter(t => t.stage === sId);
+        if (stageTechs.length === 0) return;
+
+        html += `<div class="space-y-3.5">`;
+
+        stageTechs.forEach(t => {
+          const badgeClass = badgeStyles[t.stage] || 'bg-slate-800 text-slate-300 border-slate-700';
+
+          html += `
+            <div class="bg-slate-900 border border-slate-800/90 rounded-3xl p-4 md:p-5 space-y-3 shadow-md">
+              
+              <!-- KARTEN-KOPF (BADGE & TITEL) -->
+              <div class="space-y-1.5">
+                <span class="inline-block text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${badgeClass}">
+                  ${t.badge}
+                </span>
+                <h3 class="font-bold text-base text-slate-100 tracking-tight leading-snug">${t.title}</h3>
+              </div>
+
+              <!-- ANLEITUNG (KOMFORTABEL LESBAR) -->
+              <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-855 space-y-1">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">✋ Ausführung:</span>
+                <p class="text-sm text-slate-200 leading-relaxed whitespace-pre-line">
+                  ${t.description}
+                </p>
+              </div>
+
+              <!-- PROFI TIPP -->
+              <div class="bg-amber-950/30 border border-amber-900/40 p-3 rounded-xl text-xs text-amber-200/90 flex items-start gap-2 leading-relaxed">
+                <span class="text-sm shrink-0">💡</span>
+                <div><strong class="text-amber-300">Tipp:</strong> ${t.proTip}</div>
+              </div>
+
+            </div>
+          `;
+        });
+
+        html += `</div>`;
+
+        // Verbindungspfeil zwischen den Stufen
+        if (index < stageIds.length - 1) {
+          html += `
+            <div class="flex justify-center my-0.5 text-slate-600 font-bold text-base">
+              ↓
+            </div>
+          `;
+        }
+      });
+
+      container.innerHTML = html;
+    }
+
+    // Initialisierung
+    renderFlowchart();
+  </script>
+</body>
+</html>

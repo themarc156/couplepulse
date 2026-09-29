@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#020617">
+  <title>CouplePulse – Fantasie-Tresor & Geheimwissen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <style>
+    body { -webkit-tap-highlight-color: transparent; }
+    .glow-amber { box-shadow: 0 0 30px -5px rgba(245, 158, 11, 0.45); }
+    .glow-purple { box-shadow: 0 0 30px -5px rgba(168, 85, 247, 0.45); }
+    .glow-rose { box-shadow: 0 0 30px -5px rgba(244, 63, 94, 0.45); }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans select-none antialiased flex justify-center items-start">
+
+  <div class="w-full max-w-md min-h-screen bg-slate-950 md:border-x md:border-slate-800/80 flex flex-col justify-between relative overflow-hidden pb-24">
+
+    <!-- HEADER MIT ER/SIE UMSCHALTER -->
+    <header class="border-b border-slate-850 sticky top-0 bg-slate-950/95 backdrop-blur z-30 p-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🗝️</span>
+        <div>
+          <span class="font-bold tracking-wider text-xs uppercase text-amber-400 block">Fantasie-Tresor</span>
+          <span class="text-[10px] text-slate-400">Erinnerungen & geheime Wünsche</span>
+        </div>
+      </div>
+      
+      <!-- ER / SIE UMSCHALTER -->
+      <div class="flex items-center bg-slate-900 rounded-full p-0.5 border border-slate-800 text-xs">
+        <button id="btn-tresor-user-er" onclick="switchUser('Er')" class="px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all">Er</button>
+        <button id="btn-tresor-user-sie" onclick="switchUser('Sie')" class="px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all">Sie</button>
+      </div>
+    </header>
+
+    <!-- MAIN TRESOR CONTENT -->
+    <main class="p-4 flex-1 flex flex-col space-y-3.5 justify-between">
+      
+      <!-- DIE 2 TABS -->
+      <div class="grid grid-cols-2 gap-1.5 bg-slate-900/90 p-1 rounded-2xl border border-slate-800 text-xs font-bold text-center">
+        <button id="tab-memories" onclick="switchTab('memories')" class="py-2 rounded-xl bg-amber-500 text-slate-950 shadow font-black transition-all">
+          🔥 Momente (<span id="count-memories">0</span>)
+        </button>
+        <button id="tab-fantasies" onclick="switchTab('fantasies')" class="py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all">
+          ✨ Wünsche (<span id="count-fantasies">0</span>)
+        </button>
+      </div>
+
+      <!-- LIST CONTAINER (MOMENTE & FANTASIEN) -->
+      <div id="vault-items" class="space-y-2.5 flex-1 overflow-y-auto max-h-[62vh] pr-1"></div>
+
+      <!-- FORMULAR ZUM ANLEGEN -->
+      <div id="vault-form-section" class="pt-2 border-t border-slate-800 mt-auto">
+        <button id="btn-toggle-add" onclick="toggleForm()" class="w-full py-3 bg-slate-900 hover:bg-slate-850 border border-amber-500/40 text-amber-300 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all">
+          <span>➕</span> <span>Neuen Moment / Wunsch festhalten</span>
+        </button>
+
+        <div id="add-form" class="hidden bg-slate-900 border border-amber-500/40 p-3.5 rounded-2xl space-y-2.5 mt-2 text-xs">
+          <div>
+            <label class="text-[10px] text-slate-400 block pb-0.5 font-bold">Kategorie:</label>
+            <select id="input-type" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-slate-200">
+              <option value="memories">🔥 Unvergesslicher Moment (Erinnerung)</option>
+              <option value="fantasies">✨ Geheime Bucket-List (Fantasie)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[10px] text-amber-300 block pb-0.5 font-bold">Titel / Stichwort:</label>
+            <input id="input-title" type="text" placeholder="z. B. Der Abend im Hotelzimmer..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400 block pb-0.5 font-bold">Details & Notizen:</label>
+            <textarea id="input-text" rows="2" placeholder="Was war besonders intensiv? Oder was wollen wir ausprobieren?" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-slate-200 focus:outline-none focus:border-amber-500"></textarea>
+          </div>
+          <div class="flex gap-2 pt-1">
+            <button onclick="saveItem()" class="flex-1 py-2.5 bg-gradient-to-r from-amber-600 to-rose-600 text-white font-bold rounded-xl shadow active:scale-[0.98]">Speichern 🗝️</button>
+            <button onclick="toggleForm()" class="py-2.5 px-3 bg-slate-950 text-slate-400 rounded-xl">Abbrechen</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- UNTERE APP-NAVIGATION (SCHLANKE 3 SÄULEN) -->
+    <nav class="fixed bottom-0 max-w-md w-full bg-slate-950/95 border-t border-slate-850 backdrop-blur z-40 px-3 py-2.5 flex justify-around items-center">
+      <a href="index.html" class="flex flex-col items-center text-slate-400 hover:text-rose-400 text-[10px]">
+        <span class="text-base">✨</span>
+        <span>Pulse</span>
+      </a>
+      <a href="game.html" class="flex flex-col items-center text-slate-400 hover:text-amber-400 text-[10px]">
+        <span class="text-base">🎲</span>
+        <span>Duell</span>
+      </a>
+      <a href="tresor.html" class="flex flex-col items-center text-amber-400 font-bold text-[10px]">
+        <span class="text-base">🗝️</span>
+        <span>Tresor</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <script>
+    let currentUser = localStorage.getItem('cp_current_user') || 'Er';
+    let currentTab = 'memories';
+
+    let vaultData = {
+      memories: [
+        { id: 1, title: 'Unser erster Magic-Wand Abend ⚡', text: 'Als wir die Klemmen kombiniert haben und du vor Lust gezittert hast...', from: 'Er', timestamp: Date.now() - 864000000 }
+      ],
+      fantasies: [
+        { id: 2, title: 'Titjob vor dem großen Spiegel 🪞', text: 'Mit reichlich warmem Öl im Stehen vor dem Spiegel...', from: 'Sie', timestamp: Date.now() - 432000000 }
+      ]
+    };
+
+    function switchUser(u) {
+      currentUser = u;
+      localStorage.setItem('cp_current_user', u);
+      updateUserButtons();
+    }
+
+    function updateUserButtons() {
+      document.getElementById('btn-tresor-user-er').className = currentUser === 'Er' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
+      document.getElementById('btn-tresor-user-sie').className = currentUser === 'Sie' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
+    }
+
+    function loadVault() {
+      const saved = localStorage.getItem('cp_vault_data');
+      if (saved) { 
+        try { 
+          const parsed = JSON.parse(saved);
+          if (parsed && (parsed.memories || parsed.fantasies)) vaultData = parsed;
+        } catch(e){} 
+      }
+      updateUserButtons();
+      renderItems();
+    }
+
+    function saveVault() {
+      localStorage.setItem('cp_vault_data', JSON.stringify(vaultData));
+      renderItems();
+    }
+
+    function switchTab(t) {
+      currentTab = t;
+      const tabMem = document.getElementById('tab-memories');
+      const tabFan = document.getElementById('tab-fantasies');
+
+      [tabMem, tabFan].forEach(el => el.className = 'py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all');
+
+      if (t === 'memories') {
+        tabMem.className = 'py-2 rounded-xl bg-amber-500 text-slate-950 shadow font-black transition-all';
+        renderItems();
+      } else if (t === 'fantasies') {
+        tabFan.className = 'py-2 rounded-xl bg-purple-600 text-white shadow font-black transition-all';
+        renderItems();
+      }
+    }
+
+    function renderItems() {
+      const countMem = vaultData.memories?.length || 0;
+      const countFan = vaultData.fantasies?.length || 0;
+      document.getElementById('count-memories').innerText = countMem;
+      document.getElementById('count-fantasies').innerText = countFan;
+
+      const container = document.getElementById('vault-items');
+      const list = vaultData[currentTab] || [];
+
+      if (list.length === 0) {
+        container.innerHTML = `<div class="text-slate-500 text-center py-10 italic text-xs">Noch keine Einträge vorhanden. Halte euren ersten Moment fest! 🗝️</div>`;
+        return;
+      }
+
+      container.innerHTML = list.map((item, idx) => `
+        <div class="bg-slate-900/90 border ${currentTab === 'memories' ? 'border-amber-500/40' : 'border-purple-500/40'} p-3.5 rounded-2xl space-y-2 text-xs transition-all shadow-md">
+          <div class="flex justify-between items-start gap-1">
+            <div>
+              <span class="text-[9px] font-bold ${item.from === 'Er' ? 'text-rose-400' : 'text-purple-400'} uppercase">Notiert von ${item.from}:</span>
+              <h4 class="font-bold text-slate-100 text-xs">${item.title}</h4>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="editItem(${idx})" class="text-purple-400 hover:text-purple-200 text-xs px-2 py-1 bg-slate-950 border border-slate-800 rounded-lg font-bold" title="Bearbeiten">✏️</button>
+              <button onclick="deleteItem(${idx})" class="text-rose-400 hover:text-rose-200 text-xs px-2 py-1 bg-slate-950 border border-slate-800 rounded-lg font-bold" title="Löschen">🗑️</button>
+            </div>
+          </div>
+          <p class="text-slate-300 bg-slate-950/70 p-2.5 rounded-xl leading-relaxed border border-slate-855 whitespace-pre-line">${item.text}</p>
+          <div class="flex justify-between items-center text-[10px] text-slate-400 pt-1">
+            <span>${new Date(item.timestamp || Date.now()).toLocaleDateString('de-DE')}</span>
+            ${currentTab === 'fantasies' ? `
+              <button onclick="convertToMemory(${idx})" class="text-emerald-400 font-bold hover:underline flex items-center gap-1">
+                <span>✓</span> <span>Erfüllt! (In Momente verschieben)</span>
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleForm() {
+      document.getElementById('add-form').classList.toggle('hidden');
+      document.getElementById('btn-toggle-add').classList.toggle('hidden');
+    }
+
+    function saveItem() {
+      const type = document.getElementById('input-type').value;
+      const title = document.getElementById('input-title').value.trim();
+      const text = document.getElementById('input-text').value.trim();
+      if (!title) { alert("Bitte einen Titel eingeben."); return; }
+
+      if (!vaultData[type]) vaultData[type] = [];
+      vaultData[type].unshift({ id: Date.now(), title, text, from: currentUser, timestamp: Date.now() });
+      saveVault();
+      toggleForm();
+      document.getElementById('input-title').value = '';
+      document.getElementById('input-text').value = '';
+      switchTab(type);
+    }
+
+    function editItem(idx) {
+      const item = vaultData[currentTab][idx];
+      const newTitle = prompt("Titel bearbeiten:", item.title);
+      if (newTitle === null) return;
+      if (!newTitle.trim()) { alert("Titel darf nicht leer sein."); return; }
+
+      const newText = prompt("Text / Notizen bearbeiten:", item.text);
+      if (newText === null) return;
+
+      item.title = newTitle.trim();
+      item.text = newText.trim();
+      saveVault();
+    }
+
+    function deleteItem(idx) {
+      if (confirm("Diesen Eintrag wirklich aus dem Tresor löschen?")) {
+        vaultData[currentTab].splice(idx, 1);
+        saveVault();
+      }
+    }
+
+    function convertToMemory(idx) {
+      const item = vaultData.fantasies.splice(idx, 1)[0];
+      if (!vaultData.memories) vaultData.memories = [];
+      vaultData.memories.unshift(item);
+      saveVault();
+      alert(`🎉 Glückwunsch! "${item.title}" wurde in eure heißen Momente verschoben!`);
+      switchTab('memories');
+    }
+
+    loadVault();
+  </script>
+</body>
+</html>

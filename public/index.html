@@ -416,8 +416,57 @@
 
     </main>
 
-    <!-- UNTERE APP-NAVIGATION (3 REITER) -->
-    <nav class="fixed bottom-0 max-w-md w-full bg-slate-950/95 border-t border-slate-855 backdrop-blur z-40 px-4 py-2 flex justify-around items-center">
+    <!-- ================================================================= -->
+    <!-- VIEW 4: WÜNSCHE & FANTASIE-TRESOR -->
+    <!-- ================================================================= -->
+    <main id="view-wishes" class="hidden w-full p-4 space-y-3 flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
+      <div class="bg-slate-900/90 border border-amber-500/40 w-full rounded-3xl p-4 space-y-3 shadow-2xl glow-amber flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
+        
+        <!-- HEADER -->
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2 shrink-0">
+          <div>
+            <h3 class="font-bold text-sm text-amber-300 flex items-center gap-1.5">
+              <span>🗝️</span> <span>Geheime Wunschliste</span>
+            </h3>
+            <p class="text-[10px] text-slate-400 mt-0.5">Fantasien & Bucket-List für euch</p>
+          </div>
+          <span id="wishes-counter-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-950/80 border border-amber-500/50 text-amber-300 shrink-0">0 Wünsche</span>
+        </div>
+
+        <!-- LISTE DER WÜNSCHE -->
+        <div id="wishes-items-container" class="flex-1 min-h-0 overflow-y-auto pr-1 py-1 no-scrollbar space-y-2.5"></div>
+
+        <!-- FORMULAR / BUTTON UNTEN -->
+        <div class="pt-2 border-t border-slate-800 shrink-0">
+          <button id="btn-toggle-add-wish" onclick="toggleAddWishForm()" class="w-full py-2.5 bg-slate-950 hover:bg-slate-850 border border-amber-500/40 text-amber-300 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]">
+            <span>➕</span> <span>Neuen Wunsch festhalten</span>
+          </button>
+
+          <div id="add-wish-form" class="hidden bg-slate-950 border border-amber-500/40 p-3 rounded-2xl space-y-2 mt-2 text-xs">
+            <div>
+              <label class="text-[10px] text-amber-300 block pb-0.5 font-bold">Wunsch / Fantasie-Titel:</label>
+              <input id="input-wish-title" type="text" placeholder="z. B. Titjob vor dem großen Spiegel 🪞" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block pb-0.5 font-bold">Details & Ideen (optional):</label>
+              <textarea id="input-wish-notes" rows="2" placeholder="Was reizt dich daran besonders?" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500"></textarea>
+            </div>
+            <div class="flex gap-2 pt-1">
+              <button onclick="saveNewWish()" class="flex-1 py-2 bg-gradient-to-r from-amber-500 to-rose-600 text-slate-950 font-black text-xs rounded-xl shadow active:scale-[0.98]">
+                Speichern 🗝️
+              </button>
+              <button onclick="toggleAddWishForm()" class="py-2 px-3 bg-slate-900 text-slate-400 text-xs rounded-xl">
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- UNTERE APP-NAVIGATION (4 REITER) -->
+    <nav class="fixed bottom-0 max-w-md w-full bg-slate-950/95 border-t border-slate-855 backdrop-blur z-40 px-2 py-2 flex justify-around items-center">
       <button onclick="switchAppView('pulse')" id="nav-btn-pulse" class="flex flex-col items-center text-rose-500 font-bold text-[10px] transition-all flex-1">
         <span class="text-base">✨</span>
         <span>Pulse</span>
@@ -430,6 +479,10 @@
       <button onclick="switchAppView('game')" id="nav-btn-game" class="flex flex-col items-center text-slate-400 hover:text-amber-400 font-bold text-[10px] transition-all flex-1">
         <span class="text-base">🎲</span>
         <span>Duell</span>
+      </button>
+      <button onclick="switchAppView('wishes')" id="nav-btn-wishes" class="flex flex-col items-center text-slate-400 hover:text-amber-400 font-bold text-[10px] transition-all flex-1">
+        <span class="text-base">🗝️</span>
+        <span>Wünsche</span>
       </button>
     </nav>
 
@@ -892,6 +945,10 @@
       matchUpdateNotice: false,
       lastReactionNotice: null,
       eveningReservation: null,
+      wishes: [
+        { id: 1, title: 'Titjob vor dem großen Spiegel 🪞', notes: 'Mit reichlich warmem Massageöl im Stehen...', from: 'Er', done: false, timestamp: Date.now() - 86400000 },
+        { id: 2, title: 'Augen verbinden & nur mit Atem und Eiswürfel necken 🧊', notes: 'Völlig unvorhersehbar und langsam...', from: 'Sie', done: false, timestamp: Date.now() - 43200000 }
+      ],
       game: {
         stage: 1,
         currentTurn: 'Er',
@@ -950,7 +1007,7 @@
         }
       }
 
-      ['pulse', 'match', 'game'].forEach(v => {
+      ['pulse', 'match', 'game', 'wishes'].forEach(v => {
         const el = document.getElementById(`view-${v}`);
         const btn = document.getElementById(`nav-btn-${v}`);
         if (!el || !btn) return;
@@ -960,6 +1017,7 @@
           if (v === 'pulse') btn.className = 'flex flex-col items-center text-rose-500 font-bold text-[10px] transition-all flex-1';
           else if (v === 'match') btn.className = 'relative flex flex-col items-center text-purple-400 font-bold text-[10px] transition-all flex-1';
           else if (v === 'game') btn.className = 'flex flex-col items-center text-amber-400 font-bold text-[10px] transition-all flex-1';
+          else if (v === 'wishes') btn.className = 'flex flex-col items-center text-amber-400 font-bold text-[10px] transition-all flex-1';
         } else {
           el.classList.add('hidden');
           if (v === 'match') btn.className = 'relative flex flex-col items-center text-slate-400 hover:text-purple-400 font-bold text-[10px] transition-all flex-1';
@@ -970,7 +1028,8 @@
       const titles = {
         pulse: { icon: '✨', title: 'CouplePulse' },
         match: { icon: '💖', title: 'Abend-Match' },
-        game: { icon: '🎲', title: 'Lust-Duell' }
+        game: { icon: '🎲', title: 'Lust-Duell' },
+        wishes: { icon: '🗝️', title: 'Fantasie-Tresor' }
       };
 
       if (view !== 'game' && titles[view]) {
@@ -979,6 +1038,7 @@
       }
 
       if (view === 'match') renderKopfkinoTab();
+      if (view === 'wishes') renderWishesList();
       if (view === 'game') {
         if (!state.game.currentCard) {
           drawCurrentTurnCard();
@@ -1997,7 +2057,12 @@
       },
 
       handleIncomingData(data) {
-        if (data.type === 'profile_names_sync') {
+        if (data.type === 'wishes_sync') {
+          state.wishes = data.wishes || [];
+          saveState();
+          playSensualSound('heartbeat');
+          if (state.activeView === 'wishes') renderWishesList();
+        } else if (data.type === 'profile_names_sync') {
           if (data.names) {
             state.names = Object.assign(state.names || {}, data.names);
             localStorage.setItem('cp_name_er', state.names.Er || 'Er');
@@ -3844,6 +3909,174 @@
       }
     }
 
+
+    // =========================================================================
+    // WÜNSCHE & TRESOR LOGIK
+    // =========================================================================
+    function toggleAddWishForm() {
+      const form = document.getElementById('add-wish-form');
+      const btn = document.getElementById('btn-toggle-add-wish');
+      if (form && btn) {
+        form.classList.toggle('hidden');
+        btn.classList.toggle('hidden');
+      }
+    }
+
+    function renderWishesList() {
+      const container = document.getElementById('wishes-items-container');
+      const badge = document.getElementById('wishes-counter-badge');
+      const list = state.wishes || [];
+
+      if (badge) badge.innerText = `${list.length} Wunsch${list.length === 1 ? '' : 'e'}`;
+      if (!container) return;
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="text-slate-500 italic text-center py-10 text-xs flex flex-col items-center justify-center gap-1.5 opacity-70">
+            <span class="text-2xl">🗝️</span>
+            <span>Eure geheime Wunschliste ist noch leer.<br>Halte eure erste gemeinsame Fantasie fest!</span>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map((w, idx) => {
+        const fromName = getRoleName(w.from);
+        const isFromMe = w.from === state.currentUser;
+        const isDone = Boolean(w.done);
+
+        return `
+          <div class="bg-slate-950/90 border ${isDone ? 'border-emerald-500/30 opacity-60' : 'border-amber-500/40 glow-amber'} p-3 rounded-2xl space-y-2 text-xs transition-all shadow">
+            <div class="flex justify-between items-start gap-1">
+              <div class="flex-1 min-w-0 pr-1">
+                <span class="text-[9px] font-bold ${isFromMe ? 'text-amber-400' : 'text-purple-400'} uppercase block">
+                  Notiert von ${fromName}:
+                </span>
+                <h4 class="font-bold text-slate-100 text-xs leading-snug ${isDone ? 'line-through text-slate-400' : ''}">${w.title}</h4>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button onclick="editWish(${idx})" class="text-purple-400 hover:text-purple-200 text-xs p-1 bg-slate-900 border border-slate-800 rounded-lg" title="Bearbeiten">✏️</button>
+                <button onclick="deleteWish(${idx})" class="text-rose-400 hover:text-rose-200 text-xs p-1 bg-slate-900 border border-slate-800 rounded-lg" title="Löschen">🗑️</button>
+              </div>
+            </div>
+
+            ${w.notes ? `<div class="text-slate-300 bg-slate-900/80 p-2 rounded-xl border border-slate-800/80 text-[11px] leading-relaxed whitespace-pre-line">${w.notes}</div>` : ''}
+
+            <div class="flex justify-between items-center pt-1 border-t border-slate-855 text-[10px]">
+              <button onclick="proposeWishForTonight(${idx})" class="px-2.5 py-1 bg-amber-950/70 hover:bg-amber-900/80 border border-amber-500/50 text-amber-200 font-bold rounded-lg flex items-center gap-1 shadow active:scale-95 transition-all">
+                <span>🔥</span> <span>Für heute vorschlagen</span>
+              </button>
+
+              <button onclick="toggleWishDone(${idx})" class="px-2 py-1 rounded-lg border font-bold transition-all flex items-center gap-1 ${isDone ? 'bg-emerald-950 text-emerald-300 border-emerald-500/60' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'}">
+                <span>${isDone ? '✓ Erlebt' : '○ Offen'}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function saveNewWish() {
+      const titleInput = document.getElementById('input-wish-title');
+      const notesInput = document.getElementById('input-wish-notes');
+      if (!titleInput) return;
+
+      const title = titleInput.value.trim();
+      const notes = notesInput ? notesInput.value.trim() : '';
+
+      if (!title) { alert("Bitte einen Wunsch-Titel eingeben."); return; }
+
+      if (!state.wishes) state.wishes = [];
+      const newWish = {
+        id: Date.now(),
+        title: title,
+        notes: notes,
+        from: state.currentUser,
+        done: false,
+        timestamp: Date.now()
+      };
+
+      state.wishes.unshift(newWish);
+      saveState();
+      broadcastWishesSync();
+
+      titleInput.value = '';
+      if (notesInput) notesInput.value = '';
+      toggleAddWishForm();
+      renderWishesList();
+      playSensualSound('chime');
+      showToast("🗝️ Wunsch gespeichert", "In eurer geheimen Liste eingeloggt.", "✨");
+    }
+
+    function editWish(idx) {
+      const wish = state.wishes[idx];
+      if (!wish) return;
+
+      const newTitle = prompt("Wunsch-Titel bearbeiten:", wish.title);
+      if (newTitle === null) return;
+      if (!newTitle.trim()) { alert("Titel darf nicht leer sein."); return; }
+
+      const newNotes = prompt("Details / Notizen:", wish.notes || '');
+      if (newNotes === null) return;
+
+      wish.title = newTitle.trim();
+      wish.notes = newNotes.trim();
+
+      saveState();
+      broadcastWishesSync();
+      renderWishesList();
+      playSensualSound('chime');
+    }
+
+    function deleteWish(idx) {
+      if (confirm("Diesen Wunsch wirklich aus dem Tresor löschen?")) {
+        state.wishes.splice(idx, 1);
+        saveState();
+        broadcastWishesSync();
+        renderWishesList();
+      }
+    }
+
+    function toggleWishDone(idx) {
+      const wish = state.wishes[idx];
+      if (!wish) return;
+
+      wish.done = !wish.done;
+      saveState();
+      broadcastWishesSync();
+      renderWishesList();
+      playSensualSound('chime');
+      showToast(wish.done ? "🎉 Glückwunsch!" : "○ Wieder als offen markiert", wish.done ? `„${wish.title}“ wurde als erlebt markiert!` : '', "✨");
+    }
+
+    function proposeWishForTonight(idx) {
+      const wish = state.wishes[idx];
+      if (!wish) return;
+
+      const shoutText = `🗝️ Wunsch für heute Abend vorgeschlagen:\n„${wish.title}“ 🔥`;
+      const shoutMsg = {
+        id: Date.now(),
+        from: state.currentUser,
+        text: shoutText,
+        timestamp: Date.now()
+      };
+
+      if (!state.shoutboxMessages) state.shoutboxMessages = [];
+      state.shoutboxMessages.push(shoutMsg);
+      LiveStream.sendData({ type: 'shoutbox_message', message: shoutMsg });
+      triggerPushNotification(state.currentUser, false);
+      playSensualSound('chime');
+      saveState();
+      renderAllShoutboxes();
+      showToast("🔥 Wunsch vorgeschlagen!", "In die Flüsterbox für heute übertragen.", "🗝️");
+    }
+
+    function broadcastWishesSync() {
+      LiveStream.sendData({
+        type: 'wishes_sync',
+        wishes: state.wishes
+      });
+    }
 
     // =========================================================================
     // INIT
