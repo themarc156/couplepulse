@@ -333,29 +333,20 @@
       <div class="my-auto flex-1 min-h-0 flex items-center justify-center w-full">
         <div id="active-card-face" class="w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[240px] transition-all">
           
-          <!-- DYNAMISCHE SCOREBOARD-ANZEIGETAFEL -->
-          <div id="card-direction-bar" onclick="toggleActiveTurnManual()" class="bg-slate-950/95 border border-amber-500/40 rounded-2xl p-2.5 flex items-center justify-between gap-2 text-xs font-black tracking-wide cursor-pointer hover:scale-[1.01] active:scale-95 transition-all shrink-0 select-none shadow-lg" title="Tippen um Rollen zu tauschen">
-            <!-- SENDER (LINKS - GIBT) -->
-            <div id="card-sender-pill" class="flex-1 min-w-0 flex items-center justify-start gap-1.5 bg-amber-500 text-slate-950 px-3 py-1.5 rounded-xl shadow font-bold text-xs transition-all">
-              <span id="card-sender-icon" class="text-sm shrink-0">👑</span>
-              <span id="card-sender-name" class="truncate">Er</span>
+          <!-- DYNAMISCHE RICHTUNGS- & PUNKTE-LEISTE -->
+          <div id="card-direction-bar" onclick="toggleActiveTurnManual()" class="bg-slate-950/90 border border-amber-500/40 rounded-2xl p-2 flex items-center justify-between text-xs font-black tracking-wide cursor-pointer hover:scale-[1.01] active:scale-95 transition-all shrink-0" title="Tippen um Rollen zu tauschen">
+            <div id="card-sender-pill" class="flex items-center gap-1.5 bg-amber-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs">
+              <span id="card-sender-icon">👑</span>
+              <span id="card-sender-name">ER:</span>
+              <span id="card-sender-score" class="font-mono font-black">0 ⚡</span>
             </div>
+            
+            <span id="card-arrow-icon" class="text-amber-400 text-sm font-bold animate-pulse">────▶</span>
 
-            <!-- SCOREBOARD ZENTRUM (MITTE) -->
-            <div id="card-score-center" class="shrink-0 flex flex-col items-center justify-center px-3 py-1 bg-slate-900/90 border border-slate-800 rounded-xl min-w-[80px] shadow-inner">
-              <div id="card-scoreboard-display" class="font-mono font-black text-xs text-amber-400 tracking-wider flex items-center gap-1">
-                <span id="card-sender-score">0</span>
-                <span class="text-slate-500">:</span>
-                <span id="card-receiver-score">0</span>
-                <span class="text-[10px]">⚡</span>
-              </div>
-              <div id="card-arrow-icon" class="text-[9px] text-amber-400 font-bold leading-none mt-0.5 animate-pulse">──▶</div>
-            </div>
-
-            <!-- RECEIVER (RECHTS - EMPFÄNGT) -->
-            <div id="card-receiver-pill" class="flex-1 min-w-0 flex items-center justify-end gap-1.5 bg-slate-900 border border-slate-800 text-slate-300 px-3 py-1.5 rounded-xl text-xs transition-all">
-              <span id="card-receiver-name" class="truncate">Sie</span>
-              <span id="card-receiver-icon" class="text-sm shrink-0">🧘</span>
+            <div id="card-receiver-pill" class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs">
+              <span id="card-receiver-icon">🧘</span>
+              <span id="card-receiver-name">SIE:</span>
+              <span id="card-receiver-score" class="font-mono font-black">0 ⚡</span>
             </div>
           </div>
 
@@ -3169,8 +3160,8 @@
       const sender = state.game.currentTurn;
       const receiver = sender === 'Er' ? 'Sie' : 'Er';
 
-      if (sScore) sScore.innerText = `${state.game.scores[sender] || 0}`;
-      if (rScore) rScore.innerText = `${state.game.scores[receiver] || 0}`;
+      if (sScore) sScore.innerText = `${state.game.scores[sender]} ⚡`;
+      if (rScore) rScore.innerText = `${state.game.scores[receiver]} ⚡`;
     }
 
     function selectStage(stage) {
@@ -3232,32 +3223,32 @@
 
       if (senderPill && receiverPill && arrowIcon && senderIcon && senderName && receiverIcon && receiverName) {
         if (isMutual) {
-          senderPill.className = 'flex-1 min-w-0 flex items-center justify-start gap-1.5 bg-purple-600 text-white px-3 py-1.5 rounded-xl shadow font-bold text-xs transition-all';
+          senderPill.className = 'flex items-center gap-1.5 bg-purple-600 text-white px-2.5 py-1 rounded-xl shadow font-bold text-xs';
           senderIcon.innerText = '👑';
-          senderName.innerText = getRoleName('Er');
-          receiverPill.className = 'flex-1 min-w-0 flex items-center justify-end gap-1.5 bg-pink-600 text-white px-3 py-1.5 rounded-xl shadow font-bold text-xs transition-all';
+          senderName.innerText = `${getRoleName('Er')}:`;
+          receiverPill.className = 'flex items-center gap-1.5 bg-pink-600 text-white px-2.5 py-1 rounded-xl shadow font-bold text-xs';
           receiverIcon.innerText = '👑';
-          receiverName.innerText = getRoleName('Sie');
-          arrowIcon.className = 'text-[9px] text-purple-300 font-bold leading-none mt-0.5';
+          receiverName.innerText = `${getRoleName('Sie')}:`;
+          arrowIcon.className = 'text-purple-300 text-xs font-bold';
           arrowIcon.innerText = '⟵ 💑 ⟶';
         } else if (isEr) {
-          senderPill.className = 'flex-1 min-w-0 flex items-center justify-start gap-1.5 bg-amber-500 text-slate-950 px-3 py-1.5 rounded-xl shadow font-bold text-xs transition-all glow-amber';
+          senderPill.className = 'flex items-center gap-1.5 bg-amber-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs';
           senderIcon.innerText = '👑';
-          senderName.innerText = senderDisplay;
-          receiverPill.className = 'flex-1 min-w-0 flex items-center justify-end gap-1.5 bg-slate-900 border border-slate-800 text-slate-300 px-3 py-1.5 rounded-xl text-xs transition-all';
+          senderName.innerText = `${senderDisplay}:`;
+          receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs';
           receiverIcon.innerText = '🧘';
-          receiverName.innerText = receiverDisplay;
-          arrowIcon.className = 'text-[9px] text-amber-400 font-bold leading-none mt-0.5 animate-pulse';
-          arrowIcon.innerText = '──▶';
+          receiverName.innerText = `${receiverDisplay}:`;
+          arrowIcon.className = 'text-amber-400 text-sm font-bold animate-pulse';
+          arrowIcon.innerText = '────▶';
         } else {
-          senderPill.className = 'flex-1 min-w-0 flex items-center justify-start gap-1.5 bg-pink-500 text-slate-950 px-3 py-1.5 rounded-xl shadow font-bold text-xs transition-all glow-rose';
+          senderPill.className = 'flex items-center gap-1.5 bg-pink-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs';
           senderIcon.innerText = '👑';
-          senderName.innerText = senderDisplay;
-          receiverPill.className = 'flex-1 min-w-0 flex items-center justify-end gap-1.5 bg-slate-900 border border-slate-800 text-slate-300 px-3 py-1.5 rounded-xl text-xs transition-all';
+          senderName.innerText = `${senderDisplay}:`;
+          receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs';
           receiverIcon.innerText = '🧘';
-          receiverName.innerText = receiverDisplay;
-          arrowIcon.className = 'text-[9px] text-pink-400 font-bold leading-none mt-0.5 animate-pulse';
-          arrowIcon.innerText = '──▶';
+          receiverName.innerText = `${receiverDisplay}:`;
+          arrowIcon.className = 'text-pink-400 text-sm font-bold animate-pulse';
+          arrowIcon.innerText = '────▶';
         }
       }
 
