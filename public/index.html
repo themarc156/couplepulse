@@ -125,8 +125,10 @@
         <!-- BANNER: ABEND-MATCH STATUS & LIVE-UPDATES -->
         <section id="kopfkino-match-ready-banner" class="hidden bg-gradient-to-r from-purple-950/90 via-indigo-950/90 to-pink-950/90 border border-purple-500/60 rounded-2xl p-3 glow-purple space-y-2">
           <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider h-5">
-            <span id="kopfkino-banner-title" class="truncate">✨ Abend-Match bereit</span>
-            <button onclick="openKopfkinoModal()" class="text-[10px] bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold px-2.5 py-0.5 rounded-lg shadow active:scale-95 transition-all shrink-0">
+            <div id="kopfkino-banner-title-box" class="flex items-center gap-1.5 truncate">
+              <span id="kopfkino-banner-title" class="truncate">✨ Abend-Match bereit</span>
+            </div>
+            <button id="kopfkino-banner-btn" onclick="openKopfkinoModal()" class="text-[10px] bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold px-2.5 py-0.5 rounded-lg shadow active:scale-95 transition-all shrink-0">
               🔍 Ansehen →
             </button>
           </div>
@@ -1067,25 +1069,71 @@
 
       // 2. Zweite Priorität: Abend-Match Status / Vorlieben-Update / Warten
       if (!bannerOccupied) {
+        const bannerBtn = document.getElementById('kopfkino-banner-btn');
+        const bannerDesc = document.getElementById('kopfkino-banner-desc');
+        const titleBox = document.getElementById('kopfkino-banner-title-box');
+
         if (state.kopfkino.isUnlocked) {
           matchBanner.classList.remove('hidden');
+
           if (state.matchUpdateNotice) {
-            document.getElementById('kopfkino-banner-title').innerText = '✨ Vorlieben aktualisiert!';
-            document.getElementById('kopfkino-banner-desc').innerText = `${partner} hat die Auswahl für heute angepasst.`;
+            // Goldener Look bei Aktualisierung (Ruhig, ohne Pulsieren)
+            matchBanner.className = 'bg-gradient-to-r from-amber-950/95 via-orange-950/95 to-rose-950/95 border-2 border-amber-400/90 rounded-2xl p-3 glow-amber space-y-2';
+            if (titleBox) {
+              titleBox.innerHTML = `
+                <span class="truncate text-amber-200 font-black">✨ Vorlieben aktualisiert</span>
+                <span class="text-[9px] bg-amber-950 text-amber-300 border border-amber-500/60 px-1.5 py-0.5 rounded font-black shrink-0">NEU 🔄</span>
+              `;
+            }
+            if (bannerBtn) {
+              bannerBtn.className = 'text-[10px] bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-2.5 py-0.5 rounded-lg shadow active:scale-95 transition-all shrink-0';
+              bannerBtn.innerText = '🔍 Neu ansehen →';
+            }
+            if (bannerDesc) {
+              bannerDesc.className = 'text-xs font-bold text-amber-100 bg-slate-950/80 p-2 rounded-xl border border-amber-500/40 leading-snug flex items-center min-h-[36px] cursor-pointer';
+              bannerDesc.innerText = `${partner} hat die Auswahl für heute angepasst.`;
+            }
           } else {
-            document.getElementById('kopfkino-banner-title').innerText = '✨ Abend-Match bereit';
-            document.getElementById('kopfkino-banner-desc').innerText = 'Euer gemeinsamer Abend-Fahrplan steht fest!';
+            // Standard ruhiges Lila-Design
+            matchBanner.className = 'bg-gradient-to-r from-purple-950/90 via-indigo-950/90 to-pink-950/90 border border-purple-500/60 rounded-2xl p-3 glow-purple space-y-2';
+            if (titleBox) {
+              titleBox.innerHTML = `<span class="truncate text-purple-300">✨ Abend-Match bereit</span>`;
+            }
+            if (bannerBtn) {
+              bannerBtn.className = 'text-[10px] bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold px-2.5 py-0.5 rounded-lg shadow active:scale-95 transition-all shrink-0';
+              bannerBtn.innerText = '🔍 Ansehen →';
+            }
+            if (bannerDesc) {
+              bannerDesc.className = 'text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-purple-800/40 leading-snug flex items-center min-h-[36px] cursor-pointer';
+              bannerDesc.innerText = 'Euer gemeinsamer Abend-Fahrplan steht fest!';
+            }
           }
           bannerOccupied = true;
         } else if (partnerPrefs && !myPrefs) {
           matchBanner.classList.remove('hidden');
-          document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat gewählt`;
-          document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um euer Match zu enthüllen.`;
+          matchBanner.className = 'bg-gradient-to-r from-purple-950/90 via-indigo-950/90 to-pink-950/90 border border-purple-500/60 rounded-2xl p-3 glow-purple space-y-2';
+          if (titleBox) titleBox.innerHTML = `<span class="truncate text-purple-300">💌 ${partner} hat gewählt</span>`;
+          if (bannerBtn) {
+            bannerBtn.className = 'text-[10px] bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold px-2.5 py-0.5 rounded-lg shadow active:scale-95 transition-all shrink-0';
+            bannerBtn.innerText = '🔍 Mitmachen →';
+          }
+          if (bannerDesc) {
+            bannerDesc.className = 'text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-purple-800/40 leading-snug flex items-center min-h-[36px] cursor-pointer';
+            bannerDesc.innerText = `Mache jetzt mit, um euer Match zu enthüllen.`;
+          }
           bannerOccupied = true;
         } else if (myPrefs && !partnerPrefs) {
           matchBanner.classList.remove('hidden');
-          document.getElementById('kopfkino-banner-title').innerText = `⏳ Warten auf ${partner}...`;
-          document.getElementById('kopfkino-banner-desc').innerText = `Deine Vorlieben sind gespeichert.`;
+          matchBanner.className = 'bg-gradient-to-r from-purple-950/90 via-indigo-950/90 to-pink-950/90 border border-purple-500/60 rounded-2xl p-3 glow-purple space-y-2';
+          if (titleBox) titleBox.innerHTML = `<span class="truncate text-purple-300">⏳ Warten auf ${partner}...</span>`;
+          if (bannerBtn) {
+            bannerBtn.className = 'text-[10px] bg-slate-800 text-slate-300 font-bold px-2.5 py-0.5 rounded-lg border border-slate-700 active:scale-95 transition-all shrink-0';
+            bannerBtn.innerText = '🔍 Auswahl';
+          }
+          if (bannerDesc) {
+            bannerDesc.className = 'text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-purple-800/40 leading-snug flex items-center min-h-[36px] cursor-pointer';
+            bannerDesc.innerText = `Deine Vorlieben sind gespeichert.`;
+          }
           bannerOccupied = true;
         }
       }
