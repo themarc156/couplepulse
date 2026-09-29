@@ -2096,12 +2096,12 @@
         <div class="bg-slate-950/85 border ${isFokus ? 'border-amber-500/80 glow-amber' : isTabu ? 'border-rose-600/70' : 'border-slate-800'} rounded-2xl p-3 space-y-2.5 transition-all">
           <div class="flex justify-between items-start gap-2">
             <span class="font-bold text-sm text-slate-100 leading-snug flex-1">${label}</span>
-            ${isFokus ? `<span class="text-[10px] font-bold text-amber-400 bg-amber-950/60 border border-amber-500/40 px-2.5 py-0.5 rounded-full shrink-0 animate-pulse">🔥 Fokus</span>` : ''}
+            ${isFokus ? `<span class="text-[10px] font-bold text-amber-400 bg-amber-950/60 border border-amber-500/40 px-2.5 py-0.5 rounded-full shrink-0">🔥 Fokus</span>` : ''}
             ${isTabu ? `<span class="text-[10px] font-bold text-rose-400 bg-rose-950/60 border border-rose-600/40 px-2.5 py-0.5 rounded-full shrink-0">🛑 Tabu</span>` : ''}
           </div>
           <div class="grid grid-cols-2 gap-2 text-xs font-bold">
             <button type="button" onclick="toggleDraftItemStatus('${key}', 'fokus')" 
-              class="py-2.5 rounded-xl border transition-all active:scale-95 ${isFokus ? 'bg-amber-500 border-amber-400 text-slate-950 shadow font-black animate-pulse' : 'bg-slate-900 border-slate-800 text-amber-300 hover:border-amber-500'}">
+              class="py-2.5 rounded-xl border transition-all active:scale-95 ${isFokus ? 'bg-amber-500 border-amber-400 text-slate-950 shadow font-black' : 'bg-slate-900 border-slate-800 text-amber-300 hover:border-amber-500'}">
               🔥 Fokus
             </button>
             <button type="button" onclick="toggleDraftItemStatus('${key}', 'tabu')" 
@@ -2142,12 +2142,12 @@
           <div class="bg-slate-950/85 border ${isFokus ? 'border-amber-500/80 glow-amber' : isTabu ? 'border-rose-600/70' : 'border-slate-800'} rounded-2xl p-3 space-y-2.5 transition-all">
             <div class="flex justify-between items-start gap-2">
               <span class="font-bold text-sm text-slate-100 leading-snug flex-1">${label}</span>
-              ${isFokus ? `<span class="text-[10px] font-bold text-amber-400 bg-amber-950/60 border border-amber-500/40 px-2.5 py-0.5 rounded-full shrink-0 animate-pulse">🔥 Mein Wunsch</span>` : ''}
+              ${isFokus ? `<span class="text-[10px] font-bold text-amber-400 bg-amber-950/60 border border-amber-500/40 px-2.5 py-0.5 rounded-full shrink-0">🔥 Mein Wunsch</span>` : ''}
               ${isTabu ? `<span class="text-[10px] font-bold text-rose-400 bg-rose-950/60 border border-rose-600/40 px-2.5 py-0.5 rounded-full shrink-0">🛑 Tabu</span>` : ''}
             </div>
             <div class="grid grid-cols-2 gap-2 text-xs font-bold">
               <button type="button" onclick="toggleDraftItemStatus('${key}', 'fokus')" 
-                class="py-2.5 rounded-xl border transition-all active:scale-95 ${isFokus ? 'bg-amber-500 border-amber-400 text-slate-950 shadow font-black animate-pulse' : 'bg-slate-900 border-slate-800 text-amber-300 hover:border-amber-500'}">
+                class="py-2.5 rounded-xl border transition-all active:scale-95 ${isFokus ? 'bg-amber-500 border-amber-400 text-slate-950 shadow font-black' : 'bg-slate-900 border-slate-800 text-amber-300 hover:border-amber-500'}">
                 🔥 Mein Favorit
               </button>
               <button type="button" onclick="toggleDraftItemStatus('${key}', 'tabu')" 
@@ -2321,7 +2321,7 @@
       if (!isAllowedToReact) {
         return reactionObj ? `
           <div class="mt-1 pt-1 border-t border-slate-800/60 flex items-center justify-end">
-            <span class="text-[10px] text-emerald-400 font-bold animate-pulse">Partner freut sich drauf! ✨</span>
+            <span class="text-[10px] text-emerald-400 font-bold">Partner freut sich drauf! ✨</span>
           </div>
         ` : '';
       }
@@ -2329,7 +2329,7 @@
       return `
         <div class="flex items-center justify-between mt-1.5 pt-1.5 border-t border-slate-800/60" onclick="event.stopPropagation()">
           <button onclick="setSingleReaction('${itemKey}', '${buttonLabel}')" 
-            class="px-3 py-1 rounded-xl text-[10px] font-bold border transition-all ${isConfirmed ? 'bg-gradient-to-r from-emerald-500 to-teal-500 border-emerald-400 text-slate-950 shadow-lg shadow-emerald-950 animate-pulse' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-purple-500'}">
+            class="px-3 py-1 rounded-xl text-[10px] font-bold border transition-all ${isConfirmed ? 'bg-gradient-to-r from-emerald-500 to-teal-500 border-emerald-400 text-slate-950 shadow-lg shadow-emerald-950' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-purple-500'}">
             ${buttonLabel}
           </button>
           ${isConfirmedByMe ? `<span class="text-[9px] text-emerald-400 font-bold">Aktiv geleuchtet ✨</span>` : ''}
@@ -2526,7 +2526,7 @@
                 <div class="flex flex-wrap gap-1">
                   ${cumAllowedZonen.map(z => `
                     <button type="button" ${isEr ? `onclick="changeErCumFocusDirectly('${z.key}', '${z.title}')"` : ''} 
-                      class="px-2.5 py-1 rounded-xl text-[10px] border transition-all ${z.isFav ? 'bg-amber-500 border-amber-400 text-slate-950 font-bold shadow animate-pulse' : isEr ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-amber-500 cursor-pointer' : 'bg-slate-900 border-slate-800 text-slate-300 cursor-default'}">
+                      class="px-2.5 py-1 rounded-xl text-[10px] border transition-all ${z.isFav ? 'bg-amber-500 border-amber-400 text-slate-950 font-bold shadow' : isEr ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-amber-500 cursor-pointer' : 'bg-slate-900 border-slate-800 text-slate-300 cursor-default'}">
                       ${z.title} ${z.isFav ? '⭐' : ''}
                     </button>
                   `).join('')}
