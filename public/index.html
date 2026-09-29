@@ -67,6 +67,15 @@
     /* Scrollbars unsichtbar halten bei voller Scroll-Funktion */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Nur der äußere Rahmen & Glow pulsiert (Inhalt bleibt stabil lesbar) */
+    @keyframes borderPulse {
+      0%, 100% { border-color: rgba(244, 63, 94, 0.35); box-shadow: 0 0 12px -2px rgba(244, 63, 94, 0.25); }
+      50% { border-color: rgba(244, 63, 94, 0.95); box-shadow: 0 0 25px 2px rgba(244, 63, 94, 0.65); }
+    }
+    .animate-border-pulse {
+      animation: borderPulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
   </style>
 </head>
 <body class="bg-slate-900 md:bg-black text-slate-100 h-[100dvh] overflow-hidden font-sans select-none antialiased flex justify-center items-start">
@@ -117,13 +126,13 @@
 
       <!-- BENACHRICHTIGUNGS-BEREICH (EXPANDIERT NUR BEI AKTIVEN ALARMEN) -->
       <div id="pulse-notification-area" class="space-y-2 shrink-0">
-        <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK -->
-        <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950 to-purple-950 border border-rose-500/70 rounded-2xl p-3 glow-rose space-y-2 animate-pulse">
+        <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK (NUR RAHMEN PULSIERT) -->
+        <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950/90 to-purple-950/90 border-2 border-rose-500/70 rounded-2xl p-3 space-y-2 animate-border-pulse">
           <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
             <span>💖 Rückmeldung vom Partner</span>
             <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Schließen</button>
           </div>
-          <div id="incoming-feedback-text" class="text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-rose-800/40"></div>
+          <div id="incoming-feedback-text" class="text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-rose-800/40 leading-relaxed"></div>
         </section>
 
         <!-- BANNER: ABEND-MATCH STATUS -->
