@@ -91,21 +91,21 @@
         <div class="flex items-center gap-2">
           <span id="header-main-icon" onclick="handleLogoTripleTap()" class="text-xl animate-pulse cursor-pointer">✨</span>
           <span id="header-main-title" onclick="handleLogoTripleTap()" class="font-bold tracking-wider text-xs uppercase text-slate-300 cursor-pointer">CouplePulse</span>
-          <button onclick="openProfileSetupModal()" title="Profil & PIN verwalten" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-1.5 py-0.5 rounded-md font-mono">⚙️ Profil</button>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="resetGlobalDay()" class="text-[10px] text-slate-500 hover:text-slate-300 px-1.5 py-1">Reset</button>
-          
+          <!-- DEV-UMSCHALTER & DEV-RESET (NUR IM DEV-MODUS AKTIV) -->
+          <div id="header-dev-switcher" class="hidden items-center gap-1.5">
+            <button onclick="resetGlobalDay()" class="text-[10px] text-slate-400 hover:text-rose-400 bg-slate-900 border border-slate-800 px-2 py-1 rounded-lg" title="Tag komplett zurücksetzen">🔄 Reset</button>
+            <div class="flex items-center bg-slate-900 rounded-full p-0.5 border border-purple-500/60 text-xs">
+              <button id="btn-user-er" onclick="switchUser('Er')" class="px-2.5 py-1 rounded-full bg-rose-600 font-medium transition-all text-[11px]">Er</button>
+              <button id="btn-user-sie" onclick="switchUser('Sie')" class="px-2.5 py-1 rounded-full text-slate-400 font-medium transition-all text-[11px]">Sie</button>
+            </div>
+          </div>
+
           <!-- FESTES PROFIL-BADGE FÜR PRODUKTION -->
           <div id="header-profile-badge" onclick="openProfileSetupModal()" class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-full px-3 py-1 text-xs text-rose-300 font-bold cursor-pointer hover:border-rose-500/50 transition-all shadow">
             <span id="header-profile-icon">👑</span>
             <span id="header-profile-name">Er</span>
-          </div>
-
-          <!-- DEV-UMSCHALTER (NUR IM DEV-MODUS AKTIV) -->
-          <div id="header-dev-switcher" class="hidden flex items-center bg-slate-900 rounded-full p-0.5 border border-purple-500/60 text-xs">
-            <button id="btn-user-er" onclick="switchUser('Er')" class="px-2.5 py-1 rounded-full bg-rose-600 font-medium transition-all text-[11px]">Er</button>
-            <button id="btn-user-sie" onclick="switchUser('Sie')" class="px-2.5 py-1 rounded-full text-slate-400 font-medium transition-all text-[11px]">Sie</button>
           </div>
         </div>
       </div>
@@ -306,7 +306,6 @@
             <button onclick="openProfileSetupModal()" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-2 py-1 rounded-lg font-bold" title="Namen & PIN bearbeiten">⚙️ Profil</button>
             <button onclick="toggleAudioMute()" id="btn-audio-mute" class="text-[11px] p-1.5 bg-slate-900 border border-slate-800 rounded-lg text-slate-300" title="Sound An/Aus">🔊</button>
             <button onclick="openCardManagerModal()" id="btn-deck-count" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-2 py-1 rounded-lg font-bold">✏️ Deck (32)</button>
-            <button onclick="resetGame()" class="text-[10px] text-slate-500 hover:text-slate-300 px-1.5 py-1">Reset</button>
           </div>
         </div>
       </div>
@@ -674,6 +673,13 @@
             </div>
             <input type="checkbox" id="filter-kopfkino" onchange="applyFilters()" checked class="w-4 h-4 accent-purple-500">
           </label>
+
+          <!-- SPIELSTAND MANUELL NULLEN -->
+          <div class="pt-1">
+            <button type="button" onclick="resetGameFromModal()" class="w-full py-2.5 bg-slate-950 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-800/50 text-slate-400 hover:text-rose-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+              <span>🔄</span> <span>Spielstand auf 0 : 0 nullen</span>
+            </button>
+          </div>
         </div>
 
         <button onclick="closeFilterModal()" class="w-full py-2.5 bg-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow">
@@ -1134,6 +1140,11 @@
       state.kopfkino.isUnlocked = Boolean(state.kopfkino.erPreferences && state.kopfkino.siePreferences);
     }
 
+    function resetGameFromModal() {
+      closeFilterModal();
+      resetGame();
+    }
+
     function updateUI() {
       const partner = getPartnerName();
 
@@ -1162,7 +1173,7 @@
 
       if (state.devMode) {
         if (profileBadge) profileBadge.classList.add('hidden');
-        if (devSwitcher) devSwitcher.classList.remove('hidden');
+        if (devSwitcher) devSwitcher.className = 'flex items-center gap-1.5';
         if (btnEr) {
           btnEr.innerText = getRoleName('Er');
           btnEr.className = state.currentUser === 'Er' ? 'px-2.5 py-1 rounded-full bg-rose-600 font-bold transition-all text-[11px] text-white' : 'px-2.5 py-1 rounded-full text-slate-400 font-medium transition-all text-[11px]';
@@ -1173,7 +1184,7 @@
         }
       } else {
         if (profileBadge) profileBadge.classList.remove('hidden');
-        if (devSwitcher) devSwitcher.classList.add('hidden');
+        if (devSwitcher) devSwitcher.className = 'hidden';
       }
 
       // =======================================================================
