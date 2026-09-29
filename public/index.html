@@ -971,13 +971,15 @@
       isConfigured: Boolean(localStorage.getItem('cp_device_configured')),
       lastActiveDayKey: getGameDayKey(),
       kopfkino: {
-        practicesCatalog: defaultPracticesCatalog,
-        cumCatalog: defaultCumLocations,
-        erPreferences: null,
-        siePreferences: null,
-        itemReactions: {},
-        isUnlocked: false
-      },
+  practicesCatalog: defaultPracticesCatalog,
+  cumCatalog: defaultCumLocations,
+  erPreferences: null,
+  siePreferences: null,
+  itemReactions: {},
+  isUnlocked: false,
+  catalogUpdatedAt: 0,   // NEU: Zeitstempel für Praktiken
+  cumUpdatedAt: 0        // NEU: Zeitstempel für Cum-Locations
+},
       shoutboxMessages: [],
       activeCraving: null,
       matchUpdateNotice: false,
@@ -987,6 +989,7 @@
         { id: 1, title: 'Titjob vor dem großen Spiegel 🪞', notes: 'Mit reichlich warmem Massageöl im Stehen...', from: 'Er', done: false, timestamp: Date.now() - 86400000 },
         { id: 2, title: 'Augen verbinden & nur mit Atem und Eiswürfel necken 🧊', notes: 'Völlig unvorhersehbar und langsam...', from: 'Sie', done: false, timestamp: Date.now() - 43200000 }
       ],
+wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
       game: {
   stage: 1,
   currentTurn: 'Er',
@@ -1213,9 +1216,14 @@
 
       // Fallbacks
       if (!state.kopfkino) state.kopfkino = {};
-      if (!state.kopfkino.practicesCatalog || state.kopfkino.practicesCatalog.length === 0) state.kopfkino.practicesCatalog = defaultPracticesCatalog;
-      if (!state.kopfkino.cumCatalog || state.kopfkino.cumCatalog.length === 0) state.kopfkino.cumCatalog = defaultCumLocations;
-      if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
+if (!state.kopfkino.practicesCatalog || state.kopfkino.practicesCatalog.length === 0) state.kopfkino.practicesCatalog = defaultPracticesCatalog;
+if (!state.kopfkino.cumCatalog || state.kopfkino.cumCatalog.length === 0) state.kopfkino.cumCatalog = defaultCumLocations;
+if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
+
+// NEU: Timestamps sicherstellen
+if (typeof state.kopfkino.catalogUpdatedAt !== 'number') state.kopfkino.catalogUpdatedAt = 0;
+if (typeof state.kopfkino.cumUpdatedAt !== 'number') state.kopfkino.cumUpdatedAt = 0;
+if (typeof state.wishesUpdatedAt !== 'number') state.wishesUpdatedAt = 0;
       
       if (!state.shoutboxMessages) state.shoutboxMessages = [];
       state.shoutboxMessages = state.shoutboxMessages.filter(m => m.from !== 'System' && !m.text.includes('Neuer Tag gestartet'));
@@ -1647,7 +1655,14 @@ if (!state.game.penalties || !Array.isArray(state.game.penalties) || state.game.
           secure: true,
           host: '0.peerjs.com',
           port: 443,
-          config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] },
+          config: { 
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
+    { urls: 'stun:stun3.l.google.com:19302' }
+  ] 
+},
           debug: 1
         });
 
@@ -1659,8 +1674,8 @@ if (!state.game.penalties || !Array.isArray(state.game.penalties) || state.game.
   this.dataConn = conn;
   conn.on('data', (data) => this.handleIncomingData(data));
   conn.on('open', () => {
-    // Auch bei eingehender Verbindung den aktuellen Stand abgleichen
-    setTimeout(() => requestDeckSyncFromPartner(), 800);
+    // Auch bei eingehender Verbindung ALLE Stände abgleichen
+    setTimeout(() => requestAllSyncsFromPartner(), 800);
   });
   conn.on('close', () => { this.dataConn = null; });
 });
@@ -1718,7 +1733,7 @@ if (!state.game.penalties || !Array.isArray(state.game.penalties) || state.game.
   // Nur übernehmen, wenn wir nicht schon eine offene Verbindung haben
   if (!this.dataConn || !this.dataConn.open) {
     this.dataConn = conn; 
-    setTimeout(() => requestDeckSyncFromPartner(), 600);
+    setTimeout(() => requestAllSyncsFromPartner(), 600);
   }
 });
             conn.on('data', (data) => this.handleIncomingData(data));
@@ -2140,12 +2155,17 @@ if (!state.game.penalties || !Array.isArray(state.game.penalties) || state.game.
       },
 
       handleIncomingData(data) {
-        if (data.type === 'wishes_sync') {
-          state.wishes = data.wishes || [];
-          saveState();
-          playSensualSound('heartbeat');
-          if (state.activeView === 'wishes') renderWishesList();
-        } else if (data.type === 'profile_names_sync') {
+        if (data.type === 'wishes_full_sync') {
+  applyIncomingWishesSync(data);
+} else if (data.type === 'wishes_sync_request') {
+  // Partner fragt nach Wünsche-Stand
+  LiveStream.sendData({
+    type: 'wishes_full_sync',
+    wishes: state.wishes,
+    wishesUpdatedAt: state.wishesUpdatedAt || 0,
+    sender: state.currentUser
+  });
+} else if (data.type === 'profile_names_sync') {
           if (data.names) {
             state.names = Object.assign(state.names || {}, data.names);
             localStorage.setItem('cp_name_er', state.names.Er || 'Er');
@@ -2186,21 +2206,26 @@ if (!state.game.penalties || !Array.isArray(state.game.penalties) || state.game.
           showToast("🎉 Partner-Signal", data.message, "💬");
           playSensualSound('chime');
           saveState();
-        } else if (data.type === 'catalog_sync') {
-          state.kopfkino.practicesCatalog = data.practicesCatalog;
-          if (data.cumCatalog) state.kopfkino.cumCatalog = data.cumCatalog;
-          saveState();
-          playSensualSound('heartbeat');
-          showToast("✨ Katalog aktualisiert", "Praktiken wurden vom Partner synchronisiert.", "✏️");
-          if (document.getElementById('catalog-edit-modal') && !document.getElementById('catalog-edit-modal').classList.contains('hidden')) {
-            renderCatalogItemsList();
-          }
-        } else if (data.type === 'kopfkino_v8_sync') {
-          const wasUnlockedBefore = Boolean(state.kopfkino.erPreferences && state.kopfkino.siePreferences);
+        } else if (data.type === 'catalog_full_sync') {
+  applyIncomingCatalogSync(data);
+} else if (data.type === 'catalog_sync_request') {
+  // Partner fragt nach Katalog-Stand
+  LiveStream.sendData({
+    type: 'catalog_full_sync',
+    practicesCatalog: state.kopfkino.practicesCatalog,
+    cumCatalog: state.kopfkino.cumCatalog,
+    catalogUpdatedAt: state.kopfkino.catalogUpdatedAt || 0,
+    cumUpdatedAt: state.kopfkino.cumUpdatedAt || 0,
+    sender: state.currentUser
+  });
+} else if (data.type === 'kopfkino_v8_sync') {
+  const wasUnlockedBefore = Boolean(state.kopfkino.erPreferences && state.kopfkino.siePreferences);
 
-          if (data.sender === 'Er') state.kopfkino.erPreferences = data.preferences;
-          if (data.sender === 'Sie') state.kopfkino.siePreferences = data.preferences;
-          if (data.practicesCatalog) state.kopfkino.practicesCatalog = data.practicesCatalog;
+  if (data.sender === 'Er') state.kopfkino.erPreferences = data.preferences;
+  if (data.sender === 'Sie') state.kopfkino.siePreferences = data.preferences;
+  // Katalog wird NICHT mehr hier überschrieben – das übernimmt jetzt der
+  // dedizierte catalog_full_sync mit Timestamp-Check!
+  // (Der Katalog wird nur beim regulären Sync übertragen)
           
           checkKopfkinoUnlock();
           playSensualSound('chime');
@@ -2702,11 +2727,11 @@ if (!state.game.penalties || !Array.isArray(state.game.penalties) || state.game.
       saveState();
 
       LiveStream.sendData({
-        type: 'kopfkino_v8_sync',
-        sender: state.currentUser,
-        preferences: currentDraftPreferences,
-        practicesCatalog: state.kopfkino.practicesCatalog
-      });
+  type: 'kopfkino_v8_sync',
+  sender: state.currentUser,
+  preferences: currentDraftPreferences
+  // practicesCatalog wird nicht mehr mitgeschickt - nutzt jetzt dedizierten Sync
+});
 
       triggerPushNotification(state.currentUser);
 
@@ -3129,12 +3154,20 @@ if (!state.game.penalties || !Array.isArray(state.game.penalties) || state.game.
     }
 
     function broadcastCatalogSync() {
-      LiveStream.sendData({
-        type: 'catalog_sync',
-        practicesCatalog: state.kopfkino.practicesCatalog,
-        cumCatalog: state.kopfkino.cumCatalog
-      });
-    }
+  state.kopfkino.catalogUpdatedAt = Date.now();
+  state.kopfkino.cumUpdatedAt = Date.now();
+
+  LiveStream.sendData({
+    type: 'catalog_full_sync',
+    practicesCatalog: state.kopfkino.practicesCatalog,
+    cumCatalog: state.kopfkino.cumCatalog,
+    catalogUpdatedAt: state.kopfkino.catalogUpdatedAt,
+    cumUpdatedAt: state.kopfkino.cumUpdatedAt,
+    sender: state.currentUser
+  });
+
+  saveState();
+}
 
     function saveNewCatalogItem() {
       const category = document.getElementById('new-item-category').value;
@@ -3987,6 +4020,80 @@ function requestDeckSyncFromPartner() {
   }
 }
 
+// =========================================================================
+// KATALOG SYNC (Praktiken + Cum-Locations)
+// =========================================================================
+function applyIncomingCatalogSync(data) {
+  const incomingCatalogNewer = (data.catalogUpdatedAt || 0) > (state.kopfkino.catalogUpdatedAt || 0);
+  const incomingCumNewer = (data.cumUpdatedAt || 0) > (state.kopfkino.cumUpdatedAt || 0);
+
+  let changed = false;
+
+  if (incomingCatalogNewer && Array.isArray(data.practicesCatalog) && data.practicesCatalog.length > 0) {
+    state.kopfkino.practicesCatalog = data.practicesCatalog;
+    state.kopfkino.catalogUpdatedAt = data.catalogUpdatedAt;
+    changed = true;
+  }
+
+  if (incomingCumNewer && Array.isArray(data.cumCatalog) && data.cumCatalog.length > 0) {
+    state.kopfkino.cumCatalog = data.cumCatalog;
+    state.kopfkino.cumUpdatedAt = data.cumUpdatedAt;
+    changed = true;
+  }
+
+  if (changed) {
+    saveState();
+    playSensualSound('chime');
+
+    // UI aktualisieren, falls gerade relevant
+    if (document.getElementById('catalog-edit-modal') && !document.getElementById('catalog-edit-modal').classList.contains('hidden')) {
+      renderCatalogItemsList();
+    }
+    if (state.activeView === 'match') {
+      renderKopfkinoTab();
+    }
+
+    showToast("🔄 Katalog synchronisiert", `${getPartnerName()} hat Praktiken angepasst.`, "✏️");
+  }
+}
+
+function requestCatalogSyncFromPartner() {
+  LiveStream.sendData({ type: 'catalog_sync_request', sender: state.currentUser });
+}
+
+// =========================================================================
+// WÜNSCHE/TRESOR SYNC
+// =========================================================================
+function applyIncomingWishesSync(data) {
+  const incomingWishesNewer = (data.wishesUpdatedAt || 0) > (state.wishesUpdatedAt || 0);
+
+  if (incomingWishesNewer && Array.isArray(data.wishes)) {
+    state.wishes = data.wishes;
+    state.wishesUpdatedAt = data.wishesUpdatedAt;
+    saveState();
+    playSensualSound('chime');
+
+    if (state.activeView === 'wishes') {
+      renderWishesList();
+    }
+
+    showToast("🔄 Tresor synchronisiert", `${getPartnerName()} hat Wünsche angepasst.`, "🗝️");
+  }
+}
+
+function requestWishesSyncFromPartner() {
+  LiveStream.sendData({ type: 'wishes_sync_request', sender: state.currentUser });
+}
+
+// =========================================================================
+// ALLE SYNCS ANFORDERN (beim Verbindungsaufbau)
+// =========================================================================
+function requestAllSyncsFromPartner() {
+  requestDeckSyncFromPartner();
+  requestCatalogSyncFromPartner();
+  requestWishesSyncFromPartner();
+}
+
     // =========================================================================
     // STRAFEN-VERWALTUNG (EDIT, DELETE, ADD, RESTORE)
     // =========================================================================
@@ -4325,11 +4432,17 @@ function requestDeckSyncFromPartner() {
     }
 
     function broadcastWishesSync() {
-      LiveStream.sendData({
-        type: 'wishes_sync',
-        wishes: state.wishes
-      });
-    }
+  state.wishesUpdatedAt = Date.now();
+
+  LiveStream.sendData({
+    type: 'wishes_full_sync',
+    wishes: state.wishes,
+    wishesUpdatedAt: state.wishesUpdatedAt,
+    sender: state.currentUser
+  });
+
+  saveState();
+}
 
     // =========================================================================
     // INIT
