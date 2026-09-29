@@ -816,6 +816,7 @@
       shoutboxMessages: [],
       activeCraving: null,
       matchUpdateNotice: false,
+      lastReactionNotice: null,
       eveningReservation: null,
       game: {
         stage: 1,
@@ -973,6 +974,7 @@
         state.kopfkino.isUnlocked = false;
         state.activeCraving = null; 
         state.matchUpdateNotice = false;
+        state.lastReactionNotice = null;
         state.eveningReservation = null;
         state.lastActiveDayKey = currentDay;
         wizardEditing = false;
@@ -1091,7 +1093,7 @@
             }
             if (bannerDesc) {
               bannerDesc.className = 'text-xs font-bold text-amber-100 bg-slate-950/80 p-2 rounded-xl border border-amber-500/40 leading-snug flex items-center min-h-[36px] cursor-pointer';
-              bannerDesc.innerText = `${partner} hat die Auswahl für heute angepasst.`;
+              bannerDesc.innerText = state.lastReactionNotice || `${partner} hat die Auswahl für heute angepasst.`;
             }
           } else {
             // Standard ruhiges Lila-Design
@@ -1837,11 +1839,13 @@
           if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
           if (data.text) {
             state.kopfkino.itemReactions[data.itemKey] = { user: data.sender, text: data.text };
+            state.matchUpdateNotice = true;
+            state.lastReactionNotice = `${data.sender} hat einen Wunsch bestätigt! (${data.text})`;
           } else {
             delete state.kopfkino.itemReactions[data.itemKey];
           }
           saveState();
-          playSensualSound('heartbeat');
+          playSensualSound('chime');
           if (state.activeView === 'match') {
             renderKopfkinoTab();
           }
@@ -2068,6 +2072,7 @@
 
     function openKopfkinoModal() {
       state.matchUpdateNotice = false;
+      state.lastReactionNotice = null;
       saveState();
       switchAppView('match');
     }
