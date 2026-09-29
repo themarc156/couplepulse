@@ -126,8 +126,8 @@
 
       <!-- BENACHRICHTIGUNGS-BEREICH (EXPANDIERT NUR BEI AKTIVEN ALARMEN) -->
       <div id="pulse-notification-area" class="space-y-2 shrink-0">
-        <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK (NUR RAHMEN PULSIERT) -->
-        <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950/90 to-purple-950/90 border-2 border-rose-500/70 rounded-2xl p-3 space-y-2 animate-border-pulse">
+        <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK (RUHIG & DEZENT) -->
+        <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950/90 to-purple-950/90 border border-rose-500/60 rounded-2xl p-3 glow-rose space-y-2">
           <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
             <span>💖 Rückmeldung vom Partner</span>
             <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Schließen</button>
@@ -135,18 +135,17 @@
           <div id="incoming-feedback-text" class="text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-rose-800/40 leading-relaxed"></div>
         </section>
 
-        <!-- BANNER: ABEND-MATCH STATUS -->
-        <section id="kopfkino-match-ready-banner" class="hidden bg-gradient-to-r from-purple-950 via-indigo-950 to-pink-950 border border-purple-500/70 rounded-2xl p-3 glow-purple space-y-2">
+        <!-- BANNER: ABEND-MATCH STATUS (KOMPAKT & EXAKT GLEICHE HÖHE) -->
+        <section id="kopfkino-match-ready-banner" class="hidden bg-gradient-to-r from-purple-950/90 via-indigo-950/90 to-pink-950/90 border border-purple-500/60 rounded-2xl p-3 glow-purple space-y-2">
           <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
-            <span id="kopfkino-banner-title">✨ Unser Abend-Match ist bereit!</span>
-            <span class="bg-purple-900/80 px-2 py-0.5 rounded-full text-[10px] border border-purple-500/40 font-bold">MATCH 🔥</span>
+            <span id="kopfkino-banner-title">✨ Abend-Match bereit</span>
+            <button onclick="openKopfkinoModal()" class="text-[10px] bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold px-2.5 py-0.5 rounded-lg shadow active:scale-95 transition-all">
+              🔍 Öffnen →
+            </button>
           </div>
-          <div id="kopfkino-banner-desc" class="text-xs text-slate-200 bg-slate-950/60 p-2 rounded-xl border border-purple-800/40">
-            Beide haben gewählt. Enthüllt jetzt euer gemeinsames Match & den Abend-Fahrplan!
+          <div id="kopfkino-banner-desc" onclick="openKopfkinoModal()" class="text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-purple-800/40 leading-relaxed cursor-pointer">
+            Euer gemeinsamer Abend-Fahrplan steht fest!
           </div>
-          <button onclick="openKopfkinoModal()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase rounded-xl transition-all shadow-lg active:scale-[0.98]">
-            🔍 Match-Tab öffnen
-          </button>
         </section>
 
         <!-- LIVE-BANNER: EINGEHENDES SPONTAN-SIGNAL -->
@@ -1140,31 +1139,31 @@
         bannerOccupied = true;
       }
 
-      // 3. Dritte Priorität: Abend-Match Status / Einladung / Warten
+      // 3. Dritte Priorität: Abend-Match Status / Einladung / Warten (Kompakt formuliert)
       if (!bannerOccupied) {
         if (state.kopfkino.isUnlocked) {
           if (!myRated) {
             if (partnerRated) {
               matchBanner.classList.remove('hidden');
-              document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat den Abend bewertet!`;
-              document.getElementById('kopfkino-banner-desc').innerText = `${partner} hat eine Rückmeldung hinterlassen. Schließe das Erlebnis mit deiner Bewertung ab!`;
+              document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat bewertet`;
+              document.getElementById('kopfkino-banner-desc').innerText = `${partner} hat eine Rückmeldung hinterlassen. Jetzt abschließen!`;
               bannerOccupied = true;
             } else {
               matchBanner.classList.remove('hidden');
-              document.getElementById('kopfkino-banner-title').innerText = '✨ Unser Abend-Match ist bereit!';
-              document.getElementById('kopfkino-banner-desc').innerText = 'Beide haben gewählt. Entdeckt euer Match & den Abend-Fahrplan!';
+              document.getElementById('kopfkino-banner-title').innerText = '✨ Abend-Match bereit';
+              document.getElementById('kopfkino-banner-desc').innerText = 'Euer gemeinsamer Abend-Fahrplan steht fest!';
               bannerOccupied = true;
             }
           }
         } else if (partnerPrefs && !myPrefs) {
           matchBanner.classList.remove('hidden');
-          document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat Vorlieben eingeloggt!`;
-          document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um euer Match für heute Abend zu enthüllen.`;
+          document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat gewählt`;
+          document.getElementById('kopfkino-banner-desc').innerText = `Mache jetzt mit, um euer Match zu enthüllen.`;
           bannerOccupied = true;
         } else if (myPrefs && !partnerPrefs) {
           matchBanner.classList.remove('hidden');
           document.getElementById('kopfkino-banner-title').innerText = `⏳ Warten auf ${partner}...`;
-          document.getElementById('kopfkino-banner-desc').innerText = `Deine Vorlieben sind eingeloggt. Sobald ${partner} fertig ist, steht euer Abend-Fahrplan!`;
+          document.getElementById('kopfkino-banner-desc').innerText = `Deine Vorlieben sind gespeichert.`;
           bannerOccupied = true;
         }
       }
