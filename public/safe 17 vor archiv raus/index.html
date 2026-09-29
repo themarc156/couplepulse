@@ -85,7 +85,7 @@
   <!-- ================================================================= -->
   <div class="w-full max-w-md h-[100dvh] bg-slate-950 md:border-x md:border-slate-800/80 md:shadow-[0_0_60px_-15px_rgba(0,0,0,0.9)] flex flex-col justify-between relative overflow-hidden pb-20">
 
-    <!-- TOP BAR (GLOBAL - CLEAN & AUFGERÄUMT) -->
+    <!-- TOP BAR (GLOBAL) -->
     <header id="global-app-header" class="border-b border-slate-855 sticky top-0 bg-slate-950/95 backdrop-blur z-30">
       <div class="p-3.5 flex items-center justify-between">
         <div class="flex items-center gap-2">
@@ -94,6 +94,10 @@
           <button onclick="setCustomRoomKey()" title="Paar-Schlüssel bearbeiten" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-1.5 py-0.5 rounded-md font-mono">🔑 PIN</button>
         </div>
         <div class="flex items-center gap-2">
+          <button onclick="openPendingReviewsModal()" id="header-review-btn" class="relative p-1.5 bg-slate-900 border border-slate-800 hover:border-rose-500/50 rounded-full text-slate-300 hover:text-white text-xs flex items-center justify-center transition-all shadow" title="Erlebnis-Archiv & Rückmeldungen">
+            💌 <span id="header-review-count" class="hidden absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold animate-pulse">0</span>
+          </button>
+          
           <button onclick="resetGlobalDay()" class="text-[10px] text-slate-500 hover:text-slate-300 px-1.5 py-1">Reset</button>
           <div class="flex items-center bg-slate-900 rounded-full p-0.5 border border-slate-800 text-xs">
             <button id="btn-user-er" onclick="switchUser('Er')" class="px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all">Er</button>
@@ -477,6 +481,66 @@
       </div>
     </div>
 
+    <!-- MODAL: ERLEBNIS-ARCHIV & HIGHLIGHTS -->
+    <div id="pending-reviews-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl max-h-[85vh] flex flex-col justify-between">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+          <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
+            <span>💌</span> Erlebnis-Archiv & Highlights
+          </h3>
+          <button onclick="closePendingReviewsModal()" class="text-slate-400 hover:text-slate-200 text-xl font-bold px-2">✕</button>
+        </div>
+        <div id="pending-reviews-container" class="space-y-2.5 overflow-y-auto pr-1 text-xs flex-1 my-1"></div>
+        <button onclick="closePendingReviewsModal()" class="w-full py-2.5 bg-slate-950 border border-slate-800 text-slate-300 font-semibold text-xs rounded-xl active:scale-[0.98]">
+          Schließen
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL: FEEDBACK NACH EVENT (MIT ABBRECH-OPTION) -->
+    <div id="feedback-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl text-center">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <span class="text-xs font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
+            <span>💖</span> Rückmeldung geben
+          </span>
+          <button onclick="closeFeedbackModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold px-1.5" title="Abbrechen">✕</button>
+        </div>
+
+        <h3 class="font-bold text-sm text-slate-100">Wie war der Moment für dich?</h3>
+        <p class="text-xs text-slate-400">Gib deinem Partner eine kurze Rückmeldung:</p>
+        
+        <!-- BEWERTUNGS-AUSWAHL (NUR HIGHLIGHTEN, NOCH NICHT SENDEN) -->
+        <div class="grid grid-cols-3 gap-2 pt-1">
+          <button type="button" id="btn-rating-10_10" onclick="selectFeedbackRating('10_10')" class="p-2.5 bg-rose-950/50 border-2 border-rose-500 rounded-2xl text-xs font-bold text-rose-200 transition-all flex flex-col items-center gap-1 shadow-lg glow-rose">
+            <span class="text-lg">🌋</span>
+            <span>10/10</span>
+          </button>
+          <button type="button" id="btn-rating-hot" onclick="selectFeedbackRating('hot')" class="p-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-semibold text-slate-400 transition-all flex flex-col items-center gap-1 hover:border-amber-500">
+            <span class="text-lg">🔥</span>
+            <span>Heiß</span>
+          </button>
+          <button type="button" id="btn-rating-nice" onclick="selectFeedbackRating('nice')" class="p-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-semibold text-slate-400 transition-all flex flex-col items-center gap-1 hover:border-indigo-500">
+            <span class="text-lg">✨</span>
+            <span>Schön</span>
+          </button>
+        </div>
+
+        <div class="pt-1">
+          <input id="feedback-custom-text" onkeydown="if(event.key==='Enter'){event.preventDefault();submitSelectedFeedback();}" type="text" placeholder="Persönliches Kompliment (optional)..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button type="button" onclick="closeFeedbackModal()" class="py-2.5 px-3.5 bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 text-xs font-semibold rounded-xl">
+            Abbrechen
+          </button>
+          <button type="button" onclick="submitSelectedFeedback()" class="flex-1 py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg active:scale-[0.98] transition-all">
+            Abschicken ✨
+          </button>
+        </div>
+      </div>
+    </div>
+
 
     <!-- MODAL: KURZE LUST-PAUSE (AUF EINGABEHÖHE DER FLÜSTERBOX POSITIONIERT) -->
     <div id="craving-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex flex-col justify-end p-4 pb-20">
@@ -798,12 +862,6 @@
       "Verwöhne die Füße oder Waden deines Partners 60 Sekunden lang mit deinen Lippen."
     ];
 
-    function getGameDayKey(date = new Date()) {
-      // Ein Spieltag läuft von 06:00 Uhr morgens bis 05:59 Uhr des Folgetages
-      const d = new Date(date.getTime() - 6 * 3600 * 1000);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    }
-
     // =========================================================================
     // UNIFIED STATE
     // =========================================================================
@@ -811,13 +869,16 @@
       activeView: 'pulse',
       currentUser: localStorage.getItem('cp_current_user') || 'Er',
       coupleKey: localStorage.getItem('cp_couple_key') || 'unser-paar-code',
-      lastActiveDayKey: getGameDayKey(),
+      pendingReviews: [],
+      completedReviews: [],
       kopfkino: {
         practicesCatalog: defaultPracticesCatalog,
         cumCatalog: defaultCumLocations,
         erPreferences: null,
         siePreferences: null,
         itemReactions: {},
+        erRated: false,
+        sieRated: false,
         isUnlocked: false
       },
       shoutboxMessages: [],
@@ -965,29 +1026,6 @@
       updateUI();
     }
 
-    function checkAutoDailyReset() {
-      const currentDay = getGameDayKey();
-      if (!state.lastActiveDayKey) {
-        state.lastActiveDayKey = currentDay;
-        return;
-      }
-
-      // Automatischer Reset ab 06:00 Uhr morgens des neuen Tages
-      if (state.lastActiveDayKey !== currentDay) {
-        state.kopfkino.erPreferences = null;
-        state.kopfkino.siePreferences = null;
-        state.kopfkino.itemReactions = {};
-        state.kopfkino.isUnlocked = false;
-        state.activeCraving = null;
-        state.activeFeedbackBanner = null;
-        state.eveningReservation = null;
-        state.lastActiveDayKey = currentDay;
-        wizardEditing = false;
-        wizardCurrentStep = 1;
-        currentDraftPreferences = {};
-      }
-    }
-
     function loadState() {
       const saved = localStorage.getItem('couple_pulse_all_in_one_v1');
       if (saved) { 
@@ -997,18 +1035,17 @@
         } catch (e) {} 
       }
       
-      checkAutoDailyReset();
-
       // Fallbacks
       if (!state.kopfkino) state.kopfkino = {};
       if (!state.kopfkino.practicesCatalog || state.kopfkino.practicesCatalog.length === 0) state.kopfkino.practicesCatalog = defaultPracticesCatalog;
       if (!state.kopfkino.cumCatalog || state.kopfkino.cumCatalog.length === 0) state.kopfkino.cumCatalog = defaultCumLocations;
       if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
       
+      // Altdaten & System-Nachrichten restlos aus dem Speicher filtern
       if (!state.shoutboxMessages) state.shoutboxMessages = [];
       state.shoutboxMessages = state.shoutboxMessages.filter(m => m.from !== 'System' && !m.text.includes('Neuer Tag gestartet'));
 
-      if (!state.game) state.game = { stage: 1, currentTurn: 'Er', roundsCount: 0, scores: { Er: 0, Sie: 0 }, targetScore: 20, isCriticalHit: false, audioMuted: false, filters: { allowToys: true, allowSpanking: true, syncKopfkino: true }, cards: JSON.parse(JSON.stringify(defaultMasterDeck)), penalties: [...defaultPenalties], drawPiles: {} };
+      if (!state.game) state.game = { stage: 1, currentTurn: 'Er', roundsCount: 0, scores: { Er: 0, Sie: 0 }, targetScore: 7, isCriticalHit: false, audioMuted: false, filters: { allowToys: true, allowSpanking: true, syncKopfkino: true }, cards: JSON.parse(JSON.stringify(defaultMasterDeck)), penalties: [...defaultPenalties], drawPiles: {} };
       
       if (!state.game.penalties || state.game.penalties.length === 0) {
         state.game.penalties = [...defaultPenalties];
@@ -1032,12 +1069,27 @@
     function updateUI() {
       const partner = state.currentUser === 'Er' ? 'Sie' : 'Er';
 
+      const reviewCount = document.getElementById('header-review-count');
+      const pendingCount = (state.pendingReviews || []).filter(r => r.from === state.currentUser).length;
+      if (reviewCount) {
+        if (pendingCount > 0) {
+          reviewCount.classList.remove('hidden');
+          reviewCount.innerText = pendingCount;
+        } else {
+          reviewCount.classList.add('hidden');
+        }
+      }
+
       const myPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
       const partnerPrefs = state.currentUser === 'Er' ? state.kopfkino.siePreferences : state.kopfkino.erPreferences;
 
+      const isEr = state.currentUser === 'Er';
+      const myRated = Boolean(isEr ? state.kopfkino.erRated : state.kopfkino.sieRated);
+      const partnerRated = Boolean(isEr ? state.kopfkino.sieRated : state.kopfkino.erRated);
+
       const matchBadge = document.getElementById('nav-badge-match');
       if (matchBadge) {
-        if (state.kopfkino.isUnlocked) {
+        if (state.kopfkino.isUnlocked && !myRated) {
           matchBadge.classList.remove('hidden');
         } else if (partnerPrefs && !myPrefs) {
           matchBadge.classList.remove('hidden');
@@ -1054,6 +1106,7 @@
       const matchBanner = document.getElementById('kopfkino-match-ready-banner');
       const eveningBanner = document.getElementById('evening-reservation-banner');
 
+      // Zunächst alle Banner ausblenden
       if (fbBanner) fbBanner.classList.add('hidden');
       if (cravingBanner) cravingBanner.classList.add('hidden');
       if (matchBanner) matchBanner.classList.add('hidden');
@@ -1076,7 +1129,7 @@
         bannerOccupied = true;
       }
 
-      // 2. Zweite Priorität: Frische Status-Meldung vom Partner (z. B. Vorlieben angepasst)
+      // 2. Zweite Priorität: Frisches Feedback / Rückmeldung vom Partner
       if (!bannerOccupied && state.activeFeedbackBanner) {
         if (fbBanner) {
           fbBanner.classList.remove('hidden');
@@ -1086,13 +1139,22 @@
         bannerOccupied = true;
       }
 
-      // 3. Dritte Priorität: Abend-Match Status / Einladung / Warten
+      // 3. Dritte Priorität: Abend-Match Status / Einladung / Warten (Kompakt formuliert)
       if (!bannerOccupied) {
         if (state.kopfkino.isUnlocked) {
-          matchBanner.classList.remove('hidden');
-          document.getElementById('kopfkino-banner-title').innerText = '✨ Abend-Match bereit';
-          document.getElementById('kopfkino-banner-desc').innerText = 'Euer gemeinsamer Abend-Fahrplan steht fest!';
-          bannerOccupied = true;
+          if (!myRated) {
+            if (partnerRated) {
+              matchBanner.classList.remove('hidden');
+              document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat bewertet`;
+              document.getElementById('kopfkino-banner-desc').innerText = `${partner} hat eine Rückmeldung hinterlassen. Jetzt abschließen!`;
+              bannerOccupied = true;
+            } else {
+              matchBanner.classList.remove('hidden');
+              document.getElementById('kopfkino-banner-title').innerText = '✨ Abend-Match bereit';
+              document.getElementById('kopfkino-banner-desc').innerText = 'Euer gemeinsamer Abend-Fahrplan steht fest!';
+              bannerOccupied = true;
+            }
+          }
         } else if (partnerPrefs && !myPrefs) {
           matchBanner.classList.remove('hidden');
           document.getElementById('kopfkino-banner-title').innerText = `💌 ${partner} hat gewählt`;
@@ -1191,22 +1253,25 @@
     }
 
     function resetGlobalDay() {
-      if (confirm("Möchtest du den Tag komplett zurücksetzen? (Abend-Match, Vorlieben und Spielstand werden genullt, Katalog bleibt erhalten)")) {
+      if (confirm("Möchtest du den Tag komplett zurücksetzen? (Abend-Match, Vorlieben, Bewertungen und Spielstand werden genullt, Katalog bleibt erhalten)")) {
         wizardEditing = false;
         wizardCurrentStep = 1;
         currentDraftPreferences = {};
+        state.pendingReviews = []; 
+        state.completedReviews = []; 
         state.activeCraving = null; 
         state.activeFeedbackBanner = null;
         state.eveningReservation = null;
         state.kopfkino.erPreferences = null;
         state.kopfkino.siePreferences = null;
         state.kopfkino.itemReactions = {};
+        state.kopfkino.erRated = false;
+        state.kopfkino.sieRated = false;
         state.kopfkino.isUnlocked = false;
         state.shoutboxMessages = [];
         state.game.scores = { Er: 0, Sie: 0 };
         state.game.roundsCount = 0;
         state.game.drawPiles = {};
-        state.lastActiveDayKey = getGameDayKey();
         saveState(); 
         showToast("✨ Tag zurückgesetzt!", "Match, Vorlieben und Spielstand wurden genullt.", "🔄");
       }
@@ -1753,9 +1818,34 @@
           saveState();
           playSensualSound('chime');
           updateUI();
+        } else if (data.type === 'craving_accepted') {
+          if (data.craving && data.craving.from === state.currentUser) {
+            state.pendingReviews.push({ id: data.craving.id, title: data.craving.title, from: state.currentUser });
+            saveState();
+            playSensualSound('chime');
+            showFeedbackBanner(`🎉 Dein Partner hat deinen Wunsch ("${data.craving.title}") angenommen!`);
+          }
         } else if (data.type === 'craving_response') {
           state.activeCraving = null;
-          showFeedbackBanner(`🎉 Partner: ${data.message}`);
+          showFeedbackBanner(`🎉 Partner-Rückmeldung: ${data.message}`);
+          playSensualSound('chime');
+          saveState();
+        } else if (data.type === 'craving_feedback') {
+          if (data.entry) {
+            if (!state.completedReviews) state.completedReviews = [];
+            const existingIdx = state.completedReviews.findIndex(r => r.id === data.entry.id || (r.type === 'abend_match' && data.entry.type === 'abend_match'));
+            if (existingIdx >= 0) {
+              state.completedReviews[existingIdx] = data.entry;
+            } else {
+              state.completedReviews.unshift(data.entry);
+            }
+          }
+          if (data.shoutMsg) {
+            if (!state.shoutboxMessages) state.shoutboxMessages = [];
+            state.shoutboxMessages.push(data.shoutMsg);
+            renderAllShoutboxes();
+          }
+          showFeedbackBanner(data.feedback);
           playSensualSound('chime');
           saveState();
         } else if (data.type === 'catalog_sync') {
@@ -1825,6 +1915,17 @@
             this.showStreamFloatingWhisper(data.message);
           } else {
             showFeedbackBanner(`💬 ${data.message.from}: ${data.message.text}`);
+          }
+        } else if (data.type === 'kopfkino_fulfilled_event') {
+          saveState();
+          playSensualSound('chime');
+          showFeedbackBanner(`🎉 Euer gemeinsamer Abend ("${data.title}") wurde als erfüllt markiert!`);
+        } else if (data.type === 'kopfkino_rated_sync') {
+          if (data.sender === 'Er') state.kopfkino.erRated = true;
+          if (data.sender === 'Sie') state.kopfkino.sieRated = true;
+          saveState();
+          if (state.activeView === 'match') {
+            renderKopfkinoTab();
           }
         }
       }
@@ -2541,11 +2642,21 @@
             </div>
           </div>
 
-          </div>
+          <!-- ALS ERFÜLLT MARKIEREN ODER STATUS ANZEIGEN -->
+          ${(isEr ? state.kopfkino.erRated : state.kopfkino.sieRated) ? `
+            <div class="bg-emerald-950/60 border border-emerald-500/50 rounded-2xl p-3 text-center text-xs text-emerald-300 font-bold flex items-center justify-center gap-2 mt-2">
+              <span>✓</span> <span>Du hast dein Feedback für diesen Abend abgegeben ✨</span>
+            </div>
+          ` : `
+            <button onclick="markKopfkinoFulfilled()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 mt-2">
+              <span>✨</span> <span>Unser Abend-Erlebnis als erfüllt markieren</span>
+            </button>
+          `}
+        </div>
       `;
 
       actions.innerHTML = `
-        <button onclick="openKopfkinoRestart()" class="w-full py-3 bg-slate-800 hover:bg-slate-750 text-xs font-bold rounded-xl text-purple-200 border border-purple-500/30 active:scale-95 transition-all shadow">
+        <button onclick="openKopfkinoRestart()" class="w-full py-2.5 bg-slate-800 text-xs font-semibold rounded-xl text-slate-400">
           ✏️ Eigene Vorlieben neu anpassen
         </button>
       `;
@@ -3107,13 +3218,14 @@
         const cravingObj = state.activeCraving;
         state.activeCraving = null;
         playSensualSound('chime');
-        showToast("❤️ Angenommen!", "Viel Spaß beim Verwöhnen!", "🔥");
+        alert("❤️ Angenommen! Viel Spaß.");
         
         if (cravingObj) {
           LiveStream.sendData({ type: 'craving_response', action: 'accepted', message: 'Kommt sofort! ❤️', craving: cravingObj });
+          LiveStream.sendData({ type: 'craving_accepted', craving: cravingObj });
         }
       } else if (action === 'later') {
-        showToast("⏳ Aufgeschoben", "Dein Partner wartet 10 Minuten.", "⏳");
+        alert("⏳ Dein Partner hat auf in 10 Minuten verschoben!");
         state.activeCraving = null;
         LiveStream.sendData({ type: 'craving_response', action: 'later', message: 'Braucht noch 10 Minuten ⏳' });
       } else if (action === 'evening') {
@@ -3124,7 +3236,6 @@
           note: state.activeCraving.note 
         };
         state.activeCraving = null;
-        showToast("🌙 Reserviert!", "Für heute Abend vorgemerkt.", "🌙");
         LiveStream.sendData({ type: 'craving_response', action: 'evening', message: 'Für heute Abend reserviert 🌙' });
       }
       saveState();
