@@ -998,14 +998,16 @@
   filters: { allowToys: true, allowSpanking: true, syncKopfkino: true },
   cards: JSON.parse(JSON.stringify(defaultMasterDeck)),
   penalties: [...defaultPenalties],
-  deckVersion: 2, // NEU: Wird nur beim Standard-Restore erhöht
+  deckVersion: 2,
+  deckUpdatedAt: 0,        // NEU: Zeitstempel der letzten Deck-Änderung
+  penaltiesUpdatedAt: 0,   // NEU: Zeitstempel der letzten Strafen-Änderung
   drawPiles: { 1: [], 2: [], 3: [] },
-        timerTotal: 0,
-        timerSeconds: 0,
-        timerInterval: null,
-        isTimerRunning: false,
-        currentCard: null
-      }
+  timerTotal: 0,
+  timerSeconds: 0,
+  timerInterval: null,
+  isTimerRunning: false,
+  currentCard: null
+}
     };
 
     function getRoleName(role) {
@@ -1218,7 +1220,22 @@
       if (!state.shoutboxMessages) state.shoutboxMessages = [];
       state.shoutboxMessages = state.shoutboxMessages.filter(m => m.from !== 'System' && !m.text.includes('Neuer Tag gestartet'));
 
-      if (!state.game) state.game = { stage: 1, currentTurn: 'Er', roundsCount: 0, scores: { Er: 0, Sie: 0 }, targetScore: 20, isCriticalHit: false, audioMuted: false, filters: { allowToys: true, allowSpanking: true, syncKopfkino: true }, cards: JSON.parse(JSON.stringify(defaultMasterDeck)), penalties: [...defaultPenalties], drawPiles: {} };
+      if (!state.game) state.game = { 
+  stage: 1, 
+  currentTurn: 'Er', 
+  roundsCount: 0, 
+  scores: { Er: 0, Sie: 0 }, 
+  targetScore: 20, 
+  isCriticalHit: false, 
+  audioMuted: false, 
+  filters: { allowToys: true, allowSpanking: true, syncKopfkino: true }, 
+  cards: JSON.parse(JSON.stringify(defaultMasterDeck)), 
+  penalties: [...defaultPenalties], 
+  deckVersion: 2, 
+  deckUpdatedAt: 0, 
+  penaltiesUpdatedAt: 0, 
+  drawPiles: {} 
+};
       
       if (!state.game.penalties || state.game.penalties.length === 0) {
         state.game.penalties = [...defaultPenalties];
@@ -1634,13 +1651,19 @@ if (!state.game.penalties || !Array.isArray(state.game.penalties) || state.game.
           debug: 1
         });
 
-        this.peer.on('open', () => { this.connectData(); });
+                        this.peer.on('open', () => { 
+          this.connectData();
+        });
 
         this.peer.on('connection', (conn) => {
-          this.dataConn = conn;
-          conn.on('data', (data) => this.handleIncomingData(data));
-          conn.on('close', () => { this.dataConn = null; });
-        });
+  this.dataConn = conn;
+  conn.on('data', (data) => this.handleIncomingData(data));
+  conn.on('open', () => {
+    // Auch bei eingehender Verbindung den aktuellen Stand abgleichen
+    setTimeout(() => requestDeckSyncFromPartner(), 800);
+  });
+  conn.on('close', () => { this.dataConn = null; });
+});
 
         this.peer.on('call', (call) => {
           this.incomingCall = call;
@@ -1691,7 +1714,13 @@ if (!state.game.penalties || !Array.isArray(state.game.penalties) || state.game.
         try {
           const conn = this.peer.connect(partnerId);
           if (conn) {
-            conn.on('open', () => { this.dataConn = conn; });
+            conn.on('open', () => { 
+  // Nur übernehmen, wenn wir nicht schon eine offene Verbindung haben
+  if (!this.dataConn || !this.dataConn.open) {
+    this.dataConn = conn; 
+    setTimeout(() => requestDeckSyncFromPartner(), 600);
+  }
+});
             conn.on('data', (data) => this.handleIncomingData(data));
             conn.on('close', () => {
               this.dataConn = null;
@@ -2225,15 +2254,27 @@ if (!state.game.penalties || !Array.isArray(state.game.penalties) || state.game.
             renderKopfkinoTab();
           }
         } else if (data.type === 'shoutbox_message') {
-          if (!state.shoutboxMessages) state.shoutboxMessages = [];
-          state.shoutboxMessages.push(data.message);
-          saveState();
-          playSensualSound('heartbeat');
-          renderAllShoutboxes();
-          if (this.isStreaming) {
-            this.showStreamFloatingWhisper(data.message);
-          }
-        }
+  if (!state.shoutboxMessages) state.shoutboxMessages = [];
+  state.shoutboxMessages.push(data.message);
+  saveState();
+  playSensualSound('heartbeat');
+  renderAllShoutboxes();
+  if (this.isStreaming) {
+    this.showStreamFloatingWhisper(data.message);
+  }
+} else if (data.type === 'deck_full_sync') {
+  applyIncomingDeckSync(data);
+} else if (data.type === 'deck_sync_request') {
+  // Partner fragt nach aktuellem Stand → wir senden unseren
+  LiveStream.sendData({
+    type: 'deck_full_sync',
+    cards: state.game.cards,
+    penalties: state.game.penalties,
+    deckUpdatedAt: state.game.deckUpdatedAt || 0,
+    penaltiesUpdatedAt: state.game.penaltiesUpdatedAt || 0,
+    sender: state.currentUser
+  });
+}
       }
     };
 
@@ -3811,60 +3852,134 @@ if (!state.game.penalties || !Array.isArray(state.game.penalties) || state.game.
     }
 
     function editGameCard(idx) {
-      const c = state.game.cards[idx];
-      const newText = prompt("Aufgabentext bearbeiten:", c.text);
-      if (newText === null) return;
-      if (!newText.trim()) { alert("Text darf nicht leer sein."); return; }
+  const c = state.game.cards[idx];
+  const newText = prompt("Aufgabentext bearbeiten:", c.text);
+  if (newText === null) return;
+  if (!newText.trim()) { alert("Text darf nicht leer sein."); return; }
 
-      const newStageStr = prompt("Stufe wählen (1, 2 oder 3):", c.stage);
-      if (newStageStr === null) return;
-      const newStage = parseInt(newStageStr) || c.stage;
+  const newStageStr = prompt("Stufe wählen (1, 2 oder 3):", c.stage);
+  if (newStageStr === null) return;
+  const newStage = parseInt(newStageStr) || c.stage;
 
-      const newTimerStr = prompt("Timer in Sekunden (0 = ohne Timer):", c.timer || 0);
-      if (newTimerStr === null) return;
-      const newTimer = parseInt(newTimerStr) || 0;
+  const newTimerStr = prompt("Timer in Sekunden (0 = ohne Timer):", c.timer || 0);
+  if (newTimerStr === null) return;
+  const newTimer = parseInt(newTimerStr) || 0;
 
-      c.text = newText.trim();
-      c.stage = Math.max(1, Math.min(3, newStage));
-      c.timer = Math.max(0, newTimer);
+  c.text = newText.trim();
+  c.stage = Math.max(1, Math.min(3, newStage));
+  c.timer = Math.max(0, newTimer);
 
-      saveState();
-      renderCardManagerList();
-      playSensualSound('chime');
-    }
+  state.game.drawPiles = { 1: [], 2: [], 3: [] };
+  state.game.deckVersion = 2;
+
+  broadcastDeckSync();   // NEU
+  renderCardManagerList();
+  playSensualSound('chime');
+}
 
     function deleteGameCard(idx) {
-      if (confirm("Karte wirklich aus dem Deck löschen?")) {
-        state.game.cards.splice(idx, 1);
-        saveState();
-        renderCardManagerList();
-      }
-    }
+  if (confirm("Karte wirklich aus dem Deck löschen?")) {
+    state.game.cards.splice(idx, 1);
+    state.game.drawPiles = { 1: [], 2: [], 3: [] };
+    state.game.deckVersion = 2;
+
+    broadcastDeckSync();   // NEU
+    renderCardManagerList();
+  }
+}
 
     function saveNewCard() {
-      const stage = parseInt(document.getElementById('new-card-stage').value) || 1;
-      const role = document.getElementById('new-card-role').value || 'any';
-      const text = document.getElementById('new-card-text').value.trim();
-      const timer = parseInt(document.getElementById('new-card-timer').value) || 0;
+  const stage = parseInt(document.getElementById('new-card-stage').value) || 1;
+  const role = document.getElementById('new-card-role').value || 'any';
+  const text = document.getElementById('new-card-text').value.trim();
+  const timer = parseInt(document.getElementById('new-card-timer').value) || 0;
 
-      if (!text) { alert("Bitte Text eingeben."); return; }
+  if (!text) { alert("Bitte Text eingeben."); return; }
 
-      state.game.cards.push({ id: 'custom_' + Date.now(), role, text, stage, timer, tags: ['custom'] });
-      state.game.drawPiles = {};
-      saveState();
-      renderCardManagerList();
-      document.getElementById('new-card-text').value = '';
-      document.getElementById('new-card-timer').value = '';
-      playSensualSound('chime');
+  state.game.cards.push({ id: 'custom_' + Date.now(), role, text, stage, timer, tags: ['custom'] });
+  state.game.drawPiles = { 1: [], 2: [], 3: [] };
+  state.game.deckVersion = 2;
+
+  broadcastDeckSync();   // NEU: An Partner senden
+  renderCardManagerList();
+  document.getElementById('new-card-text').value = '';
+  document.getElementById('new-card-timer').value = '';
+  playSensualSound('chime');
+}
+
+// =========================================================================
+// DECK & STRAFEN SYNC ZWISCHEN DEN GERÄTEN
+// =========================================================================
+function broadcastDeckSync() {
+  state.game.deckUpdatedAt = Date.now();
+  state.game.penaltiesUpdatedAt = Date.now();
+
+  LiveStream.sendData({
+    type: 'deck_full_sync',
+    cards: state.game.cards,
+    penalties: state.game.penalties,
+    deckUpdatedAt: state.game.deckUpdatedAt,
+    penaltiesUpdatedAt: state.game.penaltiesUpdatedAt,
+    sender: state.currentUser
+  });
+
+  saveState();
+}
+
+// Wird aufgerufen, wenn der Partner sein Deck ändert
+function applyIncomingDeckSync(data) {
+  // Nur übernehmen, wenn der Partner den NEUEREN Stand hat
+  const incomingDeckNewer = (data.deckUpdatedAt || 0) > (state.game.deckUpdatedAt || 0);
+  const incomingPenaltiesNewer = (data.penaltiesUpdatedAt || 0) > (state.game.penaltiesUpdatedAt || 0);
+
+  let changed = false;
+
+  if (incomingDeckNewer && Array.isArray(data.cards) && data.cards.length > 0) {
+    state.game.cards = data.cards;
+    state.game.deckUpdatedAt = data.deckUpdatedAt;
+    state.game.drawPiles = { 1: [], 2: [], 3: [] };
+    state.game.currentCard = null; // Neue Karte ziehen, da Deck sich geändert hat
+    changed = true;
+  }
+
+  if (incomingPenaltiesNewer && Array.isArray(data.penalties) && data.penalties.length > 0) {
+    state.game.penalties = data.penalties;
+    state.game.penaltiesUpdatedAt = data.penaltiesUpdatedAt;
+    changed = true;
+  }
+
+  if (changed) {
+    saveState();
+    playSensualSound('chime');
+
+    // UI aktualisieren, falls gerade offen
+    if (state.activeView === 'game') {
+      if (!state.game.currentCard) drawCurrentTurnCard();
+      updateGameScoreUI();
     }
+    const modal = document.getElementById('card-manager-modal');
+    if (modal && !modal.classList.contains('hidden')) {
+      if (currentManagerTab === 'cards') renderCardManagerList();
+      else renderPenaltiesManagerList();
+    }
+
+    showToast("🔄 Deck synchronisiert", `${getPartnerName()} hat die Inhalte angepasst.`, "✏️");
+  }
+}
+
+// Wird beim Öffnen der P2P-Verbindung aufgerufen, um den aktuellsten Stand abzugleichen
+function requestDeckSyncFromPartner() {
+  LiveStream.sendData({ type: 'deck_sync_request', sender: state.currentUser });
+}
 
     function restoreDefaultDeck() {
   if (confirm("Möchtest du das Standard-Deck (32 Meister-Karten mit Stufen-Trennung) wiederherstellen?")) {
     state.game.cards = JSON.parse(JSON.stringify(defaultMasterDeck));
-    state.game.deckVersion = 2; // NEU: Verhindert ungewollte Migration
+    state.game.deckVersion = 2;
     state.game.drawPiles = {};
     state.game.currentCard = null;
-    saveState();
+
+    broadcastDeckSync();   // NEU
     renderCardManagerList();
     drawCurrentTurnCard();
     playSensualSound('chime');
@@ -3897,48 +4012,52 @@ if (!state.game.penalties || !Array.isArray(state.game.penalties) || state.game.
     }
 
     function editPenalty(idx) {
-      const currentText = state.game.penalties[idx];
-      const newText = prompt("Strafen-Text bearbeiten:", currentText);
-      if (newText === null) return;
-      if (!newText.trim()) { alert("Text darf nicht leer sein."); return; }
+  const currentText = state.game.penalties[idx];
+  const newText = prompt("Strafen-Text bearbeiten:", currentText);
+  if (newText === null) return;
+  if (!newText.trim()) { alert("Text darf nicht leer sein."); return; }
 
-      state.game.penalties[idx] = newText.trim();
-      saveState();
-      renderPenaltiesManagerList();
-      playSensualSound('chime');
-    }
+  state.game.penalties[idx] = newText.trim();
+
+  broadcastDeckSync();   // NEU
+  renderPenaltiesManagerList();
+  playSensualSound('chime');
+}
 
     function deletePenalty(idx) {
-      if (confirm("Diese Strafe wirklich löschen?")) {
-        state.game.penalties.splice(idx, 1);
-        saveState();
-        renderPenaltiesManagerList();
-      }
-    }
+  if (confirm("Diese Strafe wirklich löschen?")) {
+    state.game.penalties.splice(idx, 1);
+
+    broadcastDeckSync();   // NEU
+    renderPenaltiesManagerList();
+  }
+}
 
     function saveNewPenalty() {
-      const input = document.getElementById('new-penalty-text');
-      if (!input) return;
-      const text = input.value.trim();
-      if (!text) { alert("Bitte einen Strafen-Text eingeben."); return; }
+  const input = document.getElementById('new-penalty-text');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) { alert("Bitte einen Strafen-Text eingeben."); return; }
 
-      if (!state.game.penalties) state.game.penalties = [...defaultPenalties];
-      state.game.penalties.push(text);
-      saveState();
-      renderPenaltiesManagerList();
-      input.value = '';
-      playSensualSound('chime');
-    }
+  if (!state.game.penalties) state.game.penalties = [...defaultPenalties];
+  state.game.penalties.push(text);
+
+  broadcastDeckSync();   // NEU
+  renderPenaltiesManagerList();
+  input.value = '';
+  playSensualSound('chime');
+}
 
     function restoreDefaultPenalties() {
-      if (confirm("Möchtest du die Standard-Strafen (8 Herausforderungen) wiederherstellen?")) {
-        state.game.penalties = [...defaultPenalties];
-        saveState();
-        renderPenaltiesManagerList();
-        playSensualSound('chime');
-        alert("✓ Standard-Strafen (8 Stück) sauber geladen!");
-      }
-    }
+  if (confirm("Möchtest du die Standard-Strafen (8 Herausforderungen) wiederherstellen?")) {
+    state.game.penalties = [...defaultPenalties];
+
+    broadcastDeckSync();   // NEU
+    renderPenaltiesManagerList();
+    playSensualSound('chime');
+    alert("✓ Standard-Strafen (8 Stück) sauber geladen!");
+  }
+}
 
     function resetGame() {
       if (confirm("Spiel komplett zurücksetzen? (Punkte & Runden werden genullt)")) {
