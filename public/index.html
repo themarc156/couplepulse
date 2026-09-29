@@ -988,16 +988,18 @@
         { id: 2, title: 'Augen verbinden & nur mit Atem und Eiswürfel necken 🧊', notes: 'Völlig unvorhersehbar und langsam...', from: 'Sie', done: false, timestamp: Date.now() - 43200000 }
       ],
       game: {
-        stage: 1,
-        currentTurn: 'Er',
-        roundsCount: 0,
-        scores: { Er: 0, Sie: 0 },
-        targetScore: 20,
-        isCriticalHit: false,
-        audioMuted: false,
-        filters: { allowToys: true, allowSpanking: true, syncKopfkino: true },
-        cards: JSON.parse(JSON.stringify(defaultMasterDeck)),
-        drawPiles: { 1: [], 2: [], 3: [] },
+  stage: 1,
+  currentTurn: 'Er',
+  roundsCount: 0,
+  scores: { Er: 0, Sie: 0 },
+  targetScore: 20,
+  isCriticalHit: false,
+  audioMuted: false,
+  filters: { allowToys: true, allowSpanking: true, syncKopfkino: true },
+  cards: JSON.parse(JSON.stringify(defaultMasterDeck)),
+  penalties: [...defaultPenalties],
+  deckVersion: 2, // NEU: Wird nur beim Standard-Restore erhöht
+  drawPiles: { 1: [], 2: [], 3: [] },
         timerTotal: 0,
         timerSeconds: 0,
         timerInterval: null,
@@ -1222,13 +1224,27 @@
         state.game.penalties = [...defaultPenalties];
       }
 
-      // AUTOMATISCHE DECK-MIGRATION: Veraltetes Deck sofort mit dem sauberen 32-Karten-Deck synchronisieren
-      const isDeckOutdated = !state.game.cards || state.game.cards.length !== defaultMasterDeck.length || state.game.cards.some(c => !c.role || (c.tags && c.tags.includes('joker')));
-      if (isDeckOutdated) {
-        state.game.cards = JSON.parse(JSON.stringify(defaultMasterDeck));
-        state.game.drawPiles = {};
-        state.game.currentCard = null;
-      }
+      // DECK-MIGRATION: Nur bei expliziter Versions-Erhöhung (z. B. Standard-Restore) eingreifen
+// So bleiben benutzerdefinierte Karten dauerhaft erhalten!
+const CURRENT_DECK_VERSION = 2;
+if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
+  // Einmalige Migration alter Spielstände auf das neue Schema
+  const hasValidCustomCards = Array.isArray(state.game.cards) && state.game.cards.length > 0 && state.game.cards.every(c => c && c.role && c.text);
+  
+  if (!hasValidCustomCards) {
+    // Nur wenn das Deck wirklich kaputt/leer ist, Standard laden
+    state.game.cards = JSON.parse(JSON.stringify(defaultMasterDeck));
+    state.game.drawPiles = {};
+    state.game.currentCard = null;
+  }
+  // Deck als "aktuell" markieren – ab jetzt wird nie wieder automatisch überschrieben
+  state.game.deckVersion = CURRENT_DECK_VERSION;
+}
+
+// Sicherheitsnetz: Penalties immer gültig halten
+if (!state.game.penalties || !Array.isArray(state.game.penalties) || state.game.penalties.length === 0) {
+  state.game.penalties = [...defaultPenalties];
+}
       checkKopfkinoUnlock();
       updateUI();
     }
@@ -3843,17 +3859,18 @@
     }
 
     function restoreDefaultDeck() {
-      if (confirm("Möchtest du das Standard-Deck (32 Meister-Karten mit Stufen-Trennung) wiederherstellen?")) {
-        state.game.cards = JSON.parse(JSON.stringify(defaultMasterDeck));
-        state.game.drawPiles = {};
-        state.game.currentCard = null;
-        saveState();
-        renderCardManagerList();
-        drawCurrentTurnCard();
-        playSensualSound('chime');
-        alert("✓ Standard-Deck (32 Karten) sauber geladen!");
-      }
-    }
+  if (confirm("Möchtest du das Standard-Deck (32 Meister-Karten mit Stufen-Trennung) wiederherstellen?")) {
+    state.game.cards = JSON.parse(JSON.stringify(defaultMasterDeck));
+    state.game.deckVersion = 2; // NEU: Verhindert ungewollte Migration
+    state.game.drawPiles = {};
+    state.game.currentCard = null;
+    saveState();
+    renderCardManagerList();
+    drawCurrentTurnCard();
+    playSensualSound('chime');
+    alert("✓ Standard-Deck (32 Karten) sauber geladen!");
+  }
+}
 
     // =========================================================================
     // STRAFEN-VERWALTUNG (EDIT, DELETE, ADD, RESTORE)
