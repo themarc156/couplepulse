@@ -291,7 +291,7 @@
     <!-- ================================================================= -->
     <main id="view-game" class="hidden w-full p-4 space-y-3.5 flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
       
-      <!-- SUB-HEADER DUELL (AUFGERÄUMT & OHNE DOPPELTE BUTTONS) -->
+      <!-- SUB-HEADER DUELL (AUFGERÄUMT & MIT SCHNELLEM PROFIL-ZUGRIFF) -->
       <div class="space-y-2 shrink-0">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1.5">
@@ -303,6 +303,7 @@
             </button>
           </div>
           <div class="flex items-center gap-1.5">
+            <button onclick="openProfileSetupModal()" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-2 py-1 rounded-lg font-bold" title="Namen & PIN bearbeiten">⚙️ Profil</button>
             <button onclick="toggleAudioMute()" id="btn-audio-mute" class="text-[11px] p-1.5 bg-slate-900 border border-slate-800 rounded-lg text-slate-300" title="Sound An/Aus">🔊</button>
             <button onclick="openCardManagerModal()" id="btn-deck-count" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-2 py-1 rounded-lg font-bold">✏️ Deck (32)</button>
             <button onclick="resetGame()" class="text-[10px] text-slate-500 hover:text-slate-300 px-1.5 py-1">Reset</button>
@@ -567,6 +568,17 @@
             <label class="text-[10px] text-purple-300 font-bold block pb-1">🔑 Gemeinsamer Paar-PIN:</label>
             <input id="setup-couple-key" type="text" placeholder="z. B. unser-geheimnis" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-100 font-mono focus:outline-none focus:border-purple-500">
             <span class="text-[9px] text-slate-500 block mt-0.5">Muss auf beiden Handys exakt übereinstimmen.</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[10px] text-rose-300 font-bold block pb-1">Name für Ihn (Er):</label>
+              <input id="setup-name-er" oninput="updateSetupRoleButtons()" type="text" placeholder="z. B. Marc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-rose-500">
+            </div>
+            <div>
+              <label class="text-[10px] text-pink-300 font-bold block pb-1">Name für Sie (Sie):</label>
+              <input id="setup-name-sie" oninput="updateSetupRoleButtons()" type="text" placeholder="z. B. Schlumpfine" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-pink-500">
+            </div>
           </div>
 
           <div class="pt-1">
@@ -1079,6 +1091,18 @@
       }
       
       checkAutoDailyReset();
+
+      // Fallbacks & Namen-Sicherung
+      if (!state.names) state.names = {};
+      if (!state.names.Er || state.names.Er === 'Er') {
+        state.names.Er = localStorage.getItem('cp_name_er') || 'Er';
+      }
+      if (!state.names.Sie || state.names.Sie === 'Sie') {
+        state.names.Sie = localStorage.getItem('cp_name_sie') || 'Sie';
+      }
+      if (localStorage.getItem('cp_current_user')) {
+        state.currentUser = localStorage.getItem('cp_current_user');
+      }
 
       // Fallbacks
       if (!state.kopfkino) state.kopfkino = {};
