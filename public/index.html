@@ -89,15 +89,23 @@
     <header id="global-app-header" class="border-b border-slate-855 sticky top-0 bg-slate-950/95 backdrop-blur z-30">
       <div class="p-3.5 flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <span id="header-main-icon" class="text-xl animate-pulse">✨</span>
-          <span id="header-main-title" class="font-bold tracking-wider text-xs uppercase text-slate-300">CouplePulse</span>
-          <button onclick="setCustomRoomKey()" title="Paar-Schlüssel bearbeiten" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-1.5 py-0.5 rounded-md font-mono">🔑 PIN</button>
+          <span id="header-main-icon" onclick="handleLogoTripleTap()" class="text-xl animate-pulse cursor-pointer">✨</span>
+          <span id="header-main-title" onclick="handleLogoTripleTap()" class="font-bold tracking-wider text-xs uppercase text-slate-300 cursor-pointer">CouplePulse</span>
+          <button onclick="openProfileSetupModal()" title="Profil & PIN verwalten" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-1.5 py-0.5 rounded-md font-mono">⚙️ Profil</button>
         </div>
         <div class="flex items-center gap-2">
           <button onclick="resetGlobalDay()" class="text-[10px] text-slate-500 hover:text-slate-300 px-1.5 py-1">Reset</button>
-          <div class="flex items-center bg-slate-900 rounded-full p-0.5 border border-slate-800 text-xs">
-            <button id="btn-user-er" onclick="switchUser('Er')" class="px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all">Er</button>
-            <button id="btn-user-sie" onclick="switchUser('Sie')" class="px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all">Sie</button>
+          
+          <!-- FESTES PROFIL-BADGE FÜR PRODUKTION -->
+          <div id="header-profile-badge" onclick="openProfileSetupModal()" class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-full px-3 py-1 text-xs text-rose-300 font-bold cursor-pointer hover:border-rose-500/50 transition-all shadow">
+            <span id="header-profile-icon">👑</span>
+            <span id="header-profile-name">Er</span>
+          </div>
+
+          <!-- DEV-UMSCHALTER (NUR IM DEV-MODUS AKTIV) -->
+          <div id="header-dev-switcher" class="hidden flex items-center bg-slate-900 rounded-full p-0.5 border border-purple-500/60 text-xs">
+            <button id="btn-user-er" onclick="switchUser('Er')" class="px-2.5 py-1 rounded-full bg-rose-600 font-medium transition-all text-[11px]">Er</button>
+            <button id="btn-user-sie" onclick="switchUser('Sie')" class="px-2.5 py-1 rounded-full text-slate-400 font-medium transition-all text-[11px]">Sie</button>
           </div>
         </div>
       </div>
@@ -537,6 +545,59 @@
       </div>
     </div>
 
+    <!-- MODAL: PROFIL & GERÄTE-ROLLEN SETUP -->
+    <div id="profile-setup-modal" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-purple-500/50 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl glow-purple">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">⚙️</span>
+            <h3 class="font-bold text-sm text-purple-200">Paar-Profil & Rollen</h3>
+          </div>
+          <button onclick="closeProfileSetupModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold">✕</button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="text-[10px] text-purple-300 font-bold block pb-1">🔑 Gemeinsamer Paar-PIN:</label>
+            <input id="setup-couple-key" type="text" placeholder="z. B. unser-geheimnis" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-100 font-mono focus:outline-none focus:border-purple-500">
+            <span class="text-[9px] text-slate-500 block mt-0.5">Muss auf beiden Handys exakt übereinstimmen.</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[10px] text-rose-300 font-bold block pb-1">Name für Ihn (Er):</label>
+              <input id="setup-name-er" oninput="updateSetupRoleButtons()" type="text" placeholder="z. B. Stefan" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-rose-500">
+            </div>
+            <div>
+              <label class="text-[10px] text-pink-300 font-bold block pb-1">Name für Sie (Sie):</label>
+              <input id="setup-name-sie" oninput="updateSetupRoleButtons()" type="text" placeholder="z. B. Sarah" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-pink-500">
+            </div>
+          </div>
+
+          <div class="pt-1">
+            <label class="text-[10px] text-amber-300 font-bold block pb-1.5">Wer nutzt dieses Handy?</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" id="btn-setup-role-er" onclick="selectSetupDeviceRole('Er')" class="py-2.5 rounded-xl border font-bold transition-all text-xs flex items-center justify-center gap-1.5">
+                <span>👑</span> <span id="label-setup-role-er">Er</span>
+              </button>
+              <button type="button" id="btn-setup-role-sie" onclick="selectSetupDeviceRole('Sie')" class="py-2.5 rounded-xl border font-bold transition-all text-xs flex items-center justify-center gap-1.5">
+                <span>👑</span> <span id="label-setup-role-sie">Sie</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="pt-1 flex items-center justify-between border-t border-slate-800/80">
+            <span class="text-[10px] text-slate-400">Entwickler-Modus (Umschalter im Header)</span>
+            <input type="checkbox" id="setup-dev-mode-check" class="w-4 h-4 accent-purple-500">
+          </div>
+        </div>
+
+        <button onclick="saveProfileSetup()" class="w-full py-3 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-95 transition-all">
+          Einstellungen speichern ✨
+        </button>
+      </div>
+    </div>
+
     <!-- MODAL: SIEGER-ENTSCHEIDUNG (LUST-DUELL FINALE) -->
     <div id="winner-modal" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div class="bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 border-amber-500/80 w-full max-w-sm rounded-3xl p-6 space-y-5 shadow-2xl glow-amber text-center">
@@ -804,6 +865,12 @@
       activeView: 'pulse',
       currentUser: localStorage.getItem('cp_current_user') || 'Er',
       coupleKey: localStorage.getItem('cp_couple_key') || 'unser-paar-code',
+      names: {
+        Er: localStorage.getItem('cp_name_er') || 'Er',
+        Sie: localStorage.getItem('cp_name_sie') || 'Sie'
+      },
+      devMode: localStorage.getItem('cp_dev_mode') === 'true',
+      isConfigured: Boolean(localStorage.getItem('cp_device_configured')),
       lastActiveDayKey: getGameDayKey(),
       kopfkino: {
         practicesCatalog: defaultPracticesCatalog,
@@ -836,6 +903,23 @@
         currentCard: null
       }
     };
+
+    function getRoleName(role) {
+      if (!role) return '';
+      return (state.names && state.names[role]) ? state.names[role] : role;
+    }
+
+    function getMyName() {
+      return getRoleName(state.currentUser);
+    }
+
+    function getPartnerRole() {
+      return state.currentUser === 'Er' ? 'Sie' : 'Er';
+    }
+
+    function getPartnerName() {
+      return getRoleName(getPartnerRole());
+    }
 
     let selectedCravingLevel = 'fummeln';
     let activeReviewItem = null;
@@ -1037,7 +1121,7 @@
     }
 
     function updateUI() {
-      const partner = state.currentUser === 'Er' ? 'Sie' : 'Er';
+      const partner = getPartnerName();
 
       const myPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
       const partnerPrefs = state.currentUser === 'Er' ? state.kopfkino.siePreferences : state.kopfkino.erPreferences;
@@ -1051,6 +1135,31 @@
         } else {
           matchBadge.classList.add('hidden');
         }
+      }
+
+      // Header Profil / Dev-Switcher anpassen
+      const profileBadge = document.getElementById('header-profile-badge');
+      const devSwitcher = document.getElementById('header-dev-switcher');
+      const profileName = document.getElementById('header-profile-name');
+      const btnEr = document.getElementById('btn-user-er');
+      const btnSie = document.getElementById('btn-user-sie');
+
+      if (profileName) profileName.innerText = getMyName();
+
+      if (state.devMode) {
+        if (profileBadge) profileBadge.classList.add('hidden');
+        if (devSwitcher) devSwitcher.classList.remove('hidden');
+        if (btnEr) {
+          btnEr.innerText = getRoleName('Er');
+          btnEr.className = state.currentUser === 'Er' ? 'px-2.5 py-1 rounded-full bg-rose-600 font-bold transition-all text-[11px] text-white' : 'px-2.5 py-1 rounded-full text-slate-400 font-medium transition-all text-[11px]';
+        }
+        if (btnSie) {
+          btnSie.innerText = getRoleName('Sie');
+          btnSie.className = state.currentUser === 'Sie' ? 'px-2.5 py-1 rounded-full bg-rose-600 font-bold transition-all text-[11px] text-white' : 'px-2.5 py-1 rounded-full text-slate-400 font-medium transition-all text-[11px]';
+        }
+      } else {
+        if (profileBadge) profileBadge.classList.remove('hidden');
+        if (devSwitcher) devSwitcher.classList.add('hidden');
       }
 
       // =======================================================================
@@ -1093,7 +1202,6 @@
           if (state.matchUpdateNotice) {
             const isWishOrOffer = state.matchNoticeType === 'wish' || state.matchNoticeType === 'offer';
             
-            // Design anpassen: Warmes Rose/Gold bei Zusage, Bernstein bei reinem Einstellungs-Update
             matchBanner.className = isWishOrOffer 
               ? 'bg-gradient-to-r from-rose-950/95 via-purple-950/95 to-amber-950/95 border-2 border-rose-400/90 rounded-2xl p-3 glow-rose space-y-2'
               : 'bg-gradient-to-r from-amber-950/95 via-orange-950/95 to-rose-950/95 border-2 border-amber-400/90 rounded-2xl p-3 glow-amber space-y-2';
@@ -1121,7 +1229,6 @@
               bannerDesc.innerText = state.lastReactionNotice || `${partner} hat die Auswahl für heute angepasst.`;
             }
           } else {
-            // Standard ruhiges Lila-Design
             matchBanner.className = 'bg-gradient-to-r from-purple-950/90 via-indigo-950/90 to-pink-950/90 border border-purple-500/60 rounded-2xl p-3 glow-purple space-y-2';
             if (titleBox) {
               titleBox.innerHTML = `<span class="truncate text-purple-300">✨ Abend-Match bereit</span>`;
@@ -1177,9 +1284,6 @@
         bannerOccupied = true;
       }
 
-      document.getElementById('btn-user-er').className = state.currentUser === 'Er' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
-      document.getElementById('btn-user-sie').className = state.currentUser === 'Sie' ? 'px-3.5 py-1.5 rounded-full bg-rose-600 font-medium transition-all' : 'px-3.5 py-1.5 rounded-full text-slate-400 font-medium transition-all';
-
       renderAllShoutboxes();
       if (state.activeView === 'match') renderKopfkinoTab();
       updateGameScoreUI();
@@ -1197,16 +1301,109 @@
       playSensualSound('heartbeat');
     }
 
-    function setCustomRoomKey() {
-      const current = state.coupleKey || 'unser-paar-code';
-      const input = prompt("Gemeinsamen Paar-PIN / Schlüssel festlegen (muss auf beiden Handys identisch sein):", current);
-      if (input && input.trim()) {
-        state.coupleKey = input.trim().toLowerCase();
-        localStorage.setItem('cp_couple_key', state.coupleKey);
+    let logoTapCount = 0;
+    let logoTapTimeout = null;
+    let setupSelectedRole = 'Er';
+
+    function handleLogoTripleTap() {
+      logoTapCount++;
+      clearTimeout(logoTapTimeout);
+      if (logoTapCount >= 3) {
+        logoTapCount = 0;
+        state.devMode = !state.devMode;
+        localStorage.setItem('cp_dev_mode', state.devMode ? 'true' : 'false');
         saveState();
-        alert(`🔑 PIN geändert auf: ${state.coupleKey}\nVerbindung wird neu aufgebaut...`);
-        LiveStream.initPeer();
+        showToast(
+          state.devMode ? "🛠️ Dev-Modus aktiviert" : "🔒 Dev-Modus deaktiviert",
+          state.devMode ? "Er/Sie Umschalter im Header sichtbar." : "Header auf normales Profil umgestellt.",
+          "⚙️"
+        );
+        return;
       }
+      logoTapTimeout = setTimeout(() => { logoTapCount = 0; }, 500);
+    }
+
+    function openProfileSetupModal() {
+      setupSelectedRole = state.currentUser || 'Er';
+      const keyInput = document.getElementById('setup-couple-key');
+      const nameErInput = document.getElementById('setup-name-er');
+      const nameSieInput = document.getElementById('setup-name-sie');
+      const devCheck = document.getElementById('setup-dev-mode-check');
+
+      if (keyInput) keyInput.value = state.coupleKey || 'unser-paar-code';
+      if (nameErInput) nameErInput.value = (state.names && state.names.Er) ? state.names.Er : 'Er';
+      if (nameSieInput) nameSieInput.value = (state.names && state.names.Sie) ? state.names.Sie : 'Sie';
+      if (devCheck) devCheck.checked = Boolean(state.devMode);
+
+      updateSetupRoleButtons();
+      document.getElementById('profile-setup-modal').classList.remove('hidden');
+    }
+
+    function closeProfileSetupModal() {
+      document.getElementById('profile-setup-modal').classList.add('hidden');
+    }
+
+    function selectSetupDeviceRole(role) {
+      setupSelectedRole = role;
+      updateSetupRoleButtons();
+    }
+
+    function updateSetupRoleButtons() {
+      const nameErInput = document.getElementById('setup-name-er');
+      const nameSieInput = document.getElementById('setup-name-sie');
+      const labelEr = document.getElementById('label-setup-role-er');
+      const labelSie = document.getElementById('label-setup-role-sie');
+      const btnEr = document.getElementById('btn-setup-role-er');
+      const btnSie = document.getElementById('btn-setup-role-sie');
+
+      const valEr = (nameErInput && nameErInput.value.trim()) ? nameErInput.value.trim() : 'Er';
+      const valSie = (nameSieInput && nameSieInput.value.trim()) ? nameSieInput.value.trim() : 'Sie';
+
+      if (labelEr) labelEr.innerText = valEr;
+      if (labelSie) labelSie.innerText = valSie;
+
+      if (btnEr) {
+        btnEr.className = (setupSelectedRole === 'Er')
+          ? 'py-2.5 rounded-xl border border-rose-500 bg-rose-950/60 text-rose-200 font-black shadow glow-rose transition-all text-xs flex items-center justify-center gap-1.5'
+          : 'py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-bold hover:border-slate-700 transition-all text-xs flex items-center justify-center gap-1.5';
+      }
+      if (btnSie) {
+        btnSie.className = (setupSelectedRole === 'Sie')
+          ? 'py-2.5 rounded-xl border border-pink-500 bg-pink-950/60 text-pink-200 font-black shadow glow-rose transition-all text-xs flex items-center justify-center gap-1.5'
+          : 'py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-bold hover:border-slate-700 transition-all text-xs flex items-center justify-center gap-1.5';
+      }
+    }
+
+    function saveProfileSetup() {
+      const keyInput = document.getElementById('setup-couple-key');
+      const nameErInput = document.getElementById('setup-name-er');
+      const nameSieInput = document.getElementById('setup-name-sie');
+      const devCheck = document.getElementById('setup-dev-mode-check');
+
+      const rawKey = keyInput ? keyInput.value.trim().toLowerCase() : '';
+      const safeKey = rawKey.replace(/[^a-zA-Z0-9_-]/g, '') || 'unser-paar-code';
+      const nameEr = (nameErInput && nameErInput.value.trim()) ? nameErInput.value.trim() : 'Er';
+      const nameSie = (nameSieInput && nameSieInput.value.trim()) ? nameSieInput.value.trim() : 'Sie';
+
+      state.coupleKey = safeKey;
+      state.names = { Er: nameEr, Sie: nameSie };
+      state.currentUser = setupSelectedRole;
+      state.devMode = devCheck ? devCheck.checked : false;
+      state.isConfigured = true;
+
+      localStorage.setItem('cp_couple_key', safeKey);
+      localStorage.setItem('cp_name_er', nameEr);
+      localStorage.setItem('cp_name_sie', nameSie);
+      localStorage.setItem('cp_current_user', setupSelectedRole);
+      localStorage.setItem('cp_dev_mode', state.devMode ? 'true' : 'false');
+      localStorage.setItem('cp_device_configured', 'true');
+
+      closeProfileSetupModal();
+      saveState();
+      LiveStream.initPeer();
+      LiveStream.sendData({ type: 'profile_names_sync', names: state.names });
+
+      showToast("✨ Profil gespeichert", `Rolle: ${getMyName()} | PIN: ${safeKey}`, "⚙️");
     }
 
     let toastTimeout = null;
@@ -1781,10 +1978,18 @@
       },
 
       handleIncomingData(data) {
-        if (data.type === 'stream_started') {
+        if (data.type === 'profile_names_sync') {
+          if (data.names) {
+            state.names = Object.assign(state.names || {}, data.names);
+            localStorage.setItem('cp_name_er', state.names.Er || 'Er');
+            localStorage.setItem('cp_name_sie', state.names.Sie || 'Sie');
+            saveState();
+            showToast("✨ Profil synchronisiert", "Partner-Namen wurden aktualisiert.", "⚙️");
+          }
+        } else if (data.type === 'stream_started') {
           const incomingBtn = document.getElementById('btn-stream-incoming');
           if (incomingBtn) incomingBtn.classList.remove('hidden');
-          showToast("👁️ Live-Stream", `${data.sender} hat die Kamera gestartet!`, "👁️");
+          showToast("👁️ Live-Stream", `${getRoleName(data.sender)} hat die Kamera gestartet!`, "👁️");
           playSensualSound('chime');
         } else if (data.type === 'stream_swap_takeover') {
           this.isSwapping = true;
@@ -1918,12 +2123,13 @@
         const isMe = m.from === state.currentUser;
         const timeSource = m.timestamp || m.id;
         const timeStr = timeSource ? new Date(timeSource).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const displayName = getRoleName(m.from);
 
         return `
           <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
             <div class="max-w-[85%] rounded-2xl px-3 py-1.5 text-xs ${isMe ? 'bg-slate-800/95 border border-slate-700 text-slate-100 rounded-br-none shadow' : 'bg-slate-950/90 border border-slate-800 text-slate-200 rounded-bl-none'}">
               <div class="flex items-center justify-between gap-3 mb-0.5">
-                <span class="text-[9px] ${isMe ? 'text-purple-300' : 'text-rose-400'} font-bold">${m.from}</span>
+                <span class="text-[9px] ${isMe ? 'text-purple-300' : 'text-rose-400'} font-bold">${displayName}</span>
                 ${timeStr ? `<span class="text-[8px] text-slate-400/80 font-mono">${timeStr}</span>` : ''}
               </div>
               <span class="leading-relaxed whitespace-pre-wrap">${m.text}</span>
@@ -2952,8 +3158,12 @@
 
     function updateRoleVisuals(user, isCrit = false) {
       const isEr = (user === 'Er');
+      const senderRole = user;
+      const receiverRole = (user === 'Er') ? 'Sie' : 'Er';
+      const senderDisplay = getRoleName(senderRole);
+      const receiverDisplay = getRoleName(receiverRole);
+
       const card = state.game.currentCard;
-      // Nur echte gemeinsame Karten (mutual / Beide:) sind beidseitig
       const isMutual = Boolean(card && (
         (card.tags && card.tags.includes('mutual')) || 
         (card.text && (card.text.includes('Beide:') || card.text.includes('💑')))
@@ -2969,7 +3179,6 @@
       const arrowIcon = document.getElementById('card-arrow-icon');
       const cardTextEl = document.getElementById('card-text');
 
-      // Text immer sicher synchron befüllen
       if (cardTextEl && card && card.text) {
         cardTextEl.innerText = card.text;
       }
@@ -2990,28 +3199,28 @@
         if (isMutual) {
           senderPill.className = 'flex items-center gap-1.5 bg-purple-600 text-white px-2.5 py-1 rounded-xl shadow font-bold text-xs';
           senderIcon.innerText = '👑';
-          senderName.innerText = 'ER:';
+          senderName.innerText = `${getRoleName('Er')}:`;
           receiverPill.className = 'flex items-center gap-1.5 bg-pink-600 text-white px-2.5 py-1 rounded-xl shadow font-bold text-xs';
           receiverIcon.innerText = '👑';
-          receiverName.innerText = 'SIE:';
+          receiverName.innerText = `${getRoleName('Sie')}:`;
           arrowIcon.className = 'text-purple-300 text-xs font-bold';
           arrowIcon.innerText = '⟵ 💑 ⟶';
         } else if (isEr) {
           senderPill.className = 'flex items-center gap-1.5 bg-amber-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs';
           senderIcon.innerText = '👑';
-          senderName.innerText = 'ER:';
+          senderName.innerText = `${senderDisplay}:`;
           receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs';
           receiverIcon.innerText = '🧘';
-          receiverName.innerText = 'SIE:';
+          receiverName.innerText = `${receiverDisplay}:`;
           arrowIcon.className = 'text-amber-400 text-sm font-bold animate-pulse';
           arrowIcon.innerText = '────▶';
         } else {
           senderPill.className = 'flex items-center gap-1.5 bg-pink-500 text-slate-950 px-3 py-1 rounded-xl shadow font-bold text-xs';
           senderIcon.innerText = '👑';
-          senderName.innerText = 'SIE:';
+          senderName.innerText = `${senderDisplay}:`;
           receiverPill.className = 'flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs';
           receiverIcon.innerText = '🧘';
-          receiverName.innerText = 'ER:';
+          receiverName.innerText = `${receiverDisplay}:`;
           arrowIcon.className = 'text-pink-400 text-sm font-bold animate-pulse';
           arrowIcon.innerText = '────▶';
         }
@@ -3022,9 +3231,8 @@
         if (isMutual) {
           promptEl.innerHTML = `💑 Wie intensiv war es für <span class="text-purple-300 font-black">euch beide</span>?`;
         } else {
-          const receiverLabel = isEr ? 'Sie' : 'Ihn';
           const receiverColor = isEr ? 'text-rose-400' : 'text-amber-400';
-          promptEl.innerHTML = `Wie intensiv war es für <span class="${receiverColor} font-black">${receiverLabel}</span>?`;
+          promptEl.innerHTML = `Wie intensiv war es für <span class="${receiverColor} font-black">${receiverDisplay}</span>?`;
         }
       }
 
@@ -3357,15 +3565,17 @@
       const t = document.getElementById('winner-title');
       const b = document.getElementById('winner-score-badge');
       const d = document.getElementById('winner-desc');
+      const nameEr = getRoleName('Er');
+      const nameSie = getRoleName('Sie');
 
       if (er > sie) {
-        t.innerText = "👑 ER HAT GEWONNEN!";
-        b.innerText = `Endstand: ${er} : ${sie} für Ihn ⚡`;
-        d.innerText = "Du hast dir die Herrschaft über das Finale verdient! Bestimme jetzt die Stellung, das Tempo und wie du deinen Höhepunkt erleben willst – legt das Handy weg und genießt es!";
+        t.innerText = `👑 ${nameEr.toUpperCase()} HAT GEWONNEN!`;
+        b.innerText = `Endstand: ${er} : ${sie} für ${nameEr} ⚡`;
+        d.innerText = `Du hast dir die Herrschaft über das Finale verdient! Bestimme jetzt die Stellung, das Tempo und wie du deinen Höhepunkt erleben willst – legt das Handy weg und genießt es!`;
       } else if (sie > er) {
-        t.innerText = "👑 SIE HAT GEWONNEN!";
-        b.innerText = `Endstand: ${sie} : ${er} für Sie ⚡`;
-        d.innerText = "Du hast dir die Herrschaft über das Finale verdient! Bestimme jetzt die Stellung, das Tempo und wie er dich zum Höhepunkt bringen muss – legt das Handy weg und genießt es!";
+        t.innerText = `👑 ${nameSie.toUpperCase()} HAT GEWONNEN!`;
+        b.innerText = `Endstand: ${sie} : ${er} für ${nameSie} ⚡`;
+        d.innerText = `Du hast dir die Herrschaft über das Finale verdient! Bestimme jetzt die Stellung, das Tempo und wie ${nameEr} dich zum Höhepunkt bringen muss – legt das Handy weg und genießt es!`;
       } else {
         t.innerText = "🔥 PERFEKTES UNENTSCHIEDEN!";
         b.innerText = `Endstand: ${er} : ${sie} Unentschieden ⚡`;
@@ -3608,6 +3818,13 @@
       drawCurrentTurnCard();
     } else {
       updateRoleVisuals(state.game.currentTurn, state.game.isCriticalHit);
+    }
+
+    // Beim allerersten Start automatisch das Profil-Setup öffnen
+    if (!state.isConfigured) {
+      setTimeout(() => {
+        openProfileSetupModal();
+      }, 400);
     }
   </script>
 </body>
