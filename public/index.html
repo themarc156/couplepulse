@@ -124,26 +124,24 @@
     <!-- ================================================================= -->
     <main id="view-pulse" class="w-full p-4 space-y-3 flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
 
-      <!-- BENACHRICHTIGUNGS-BEREICH (EXPANDIERT NUR BEI AKTIVEN ALARMEN) -->
-      <div id="pulse-notification-area" class="space-y-2 shrink-0">
-        <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK (RUHIG & DEZENT) -->
+      <!-- BANNER: EINGEHENDES PARTNER-FEEDBACK -->
         <section id="incoming-feedback-banner" class="hidden bg-gradient-to-r from-rose-950/90 to-purple-950/90 border border-rose-500/60 rounded-2xl p-3 glow-rose space-y-2">
-          <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider">
-            <span>💖 Rückmeldung vom Partner</span>
-            <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-400 hover:text-slate-200">✕ Schließen</button>
+          <div class="flex items-center justify-between text-xs font-bold text-rose-300 uppercase tracking-wider h-5">
+            <span class="truncate">💖 Rückmeldung vom Partner</span>
+            <button onclick="closeFeedbackBanner()" class="text-[10px] text-slate-300 hover:text-white px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-800 transition-all shrink-0">✕ Schließen</button>
           </div>
-          <div id="incoming-feedback-text" class="text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-rose-800/40 leading-relaxed"></div>
+          <div id="incoming-feedback-text" class="text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-rose-800/40 leading-snug flex items-center min-h-[36px]"></div>
         </section>
 
-        <!-- BANNER: ABEND-MATCH STATUS (KOMPAKT & EXAKT GLEICHE HÖHE) -->
+        <!-- BANNER: ABEND-MATCH STATUS (EXAKT GLEICHE HÖHE) -->
         <section id="kopfkino-match-ready-banner" class="hidden bg-gradient-to-r from-purple-950/90 via-indigo-950/90 to-pink-950/90 border border-purple-500/60 rounded-2xl p-3 glow-purple space-y-2">
-          <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider">
-            <span id="kopfkino-banner-title">✨ Abend-Match bereit</span>
-            <button onclick="openKopfkinoModal()" class="text-[10px] bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold px-2.5 py-0.5 rounded-lg shadow active:scale-95 transition-all">
+          <div class="flex items-center justify-between text-xs font-bold text-purple-300 uppercase tracking-wider h-5">
+            <span id="kopfkino-banner-title" class="truncate">✨ Abend-Match bereit</span>
+            <button onclick="openKopfkinoModal()" class="text-[10px] bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold px-2.5 py-0.5 rounded-lg shadow active:scale-95 transition-all shrink-0">
               🔍 Öffnen →
             </button>
           </div>
-          <div id="kopfkino-banner-desc" onclick="openKopfkinoModal()" class="text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-purple-800/40 leading-relaxed cursor-pointer">
+          <div id="kopfkino-banner-desc" onclick="openKopfkinoModal()" class="text-xs font-bold text-slate-100 bg-slate-950/70 p-2 rounded-xl border border-purple-800/40 leading-snug flex items-center min-h-[36px] cursor-pointer">
             Euer gemeinsamer Abend-Fahrplan steht fest!
           </div>
         </section>
