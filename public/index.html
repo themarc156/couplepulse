@@ -983,6 +983,15 @@
         wizardEditing = false;
         wizardCurrentStep = 1;
         currentDraftPreferences = {};
+
+        // Flüsterbox aufräumen: Nachrichten älter als 6 Stunden löschen, Spät-Nachrichten behalten
+        const sixHoursAgo = Date.now() - (6 * 60 * 60 * 1000);
+        if (state.shoutboxMessages && Array.isArray(state.shoutboxMessages)) {
+          state.shoutboxMessages = state.shoutboxMessages.filter(m => {
+            const msgTime = m.timestamp || m.id || 0;
+            return msgTime > sixHoursAgo;
+          });
+        }
       }
     }
 
@@ -1673,8 +1682,6 @@
         this.isSender = false;
         this.isSwapping = false;
 
-        closeFeedbackBanner();
-
         // Benachrichtigungs-Bereich ausblenden für maximale Video-Höhe
         const notifArea = document.getElementById('pulse-notification-area');
         if (notifArea) notifArea.classList.add('hidden');
@@ -1894,41 +1901,39 @@
 
     function renderAllShoutboxes() {
       const homeBox = document.getElementById('home-shoutbox-messages');
-      const modalBox = document.getElementById('modal-shoutbox-messages');
       const messages = (state.shoutboxMessages || []).filter(m => m.from !== 'System');
 
+      if (!homeBox) return;
+
       if (messages.length === 0) {
-        const emptyHtml = `
+        homeBox.innerHTML = `
           <div class="text-slate-500 italic text-center py-6 text-xs flex flex-col items-center justify-center gap-1.5 h-full opacity-70">
             <span class="text-2xl">✨</span>
             <span>Eure private Flüsterbox ist bereit.<br>Hinterlasst euch Gedanken, Küsse & Signale!</span>
           </div>
         `;
-        if (homeBox) homeBox.innerHTML = emptyHtml;
-        if (modalBox) modalBox.innerHTML = emptyHtml;
         return;
       }
 
-      const html = messages.map(m => {
+      homeBox.innerHTML = messages.map(m => {
         const isMe = m.from === state.currentUser;
+        const timeSource = m.timestamp || m.id;
+        const timeStr = timeSource ? new Date(timeSource).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
         return `
           <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
             <div class="max-w-[85%] rounded-2xl px-3 py-1.5 text-xs ${isMe ? 'bg-slate-800/95 border border-slate-700 text-slate-100 rounded-br-none shadow' : 'bg-slate-950/90 border border-slate-800 text-slate-200 rounded-bl-none'}">
-              <span class="text-[9px] block ${isMe ? 'text-purple-300' : 'text-rose-400'} font-bold mb-0.5">${m.from}</span>
+              <div class="flex items-center justify-between gap-3 mb-0.5">
+                <span class="text-[9px] ${isMe ? 'text-purple-300' : 'text-rose-400'} font-bold">${m.from}</span>
+                ${timeStr ? `<span class="text-[8px] text-slate-400/80 font-mono">${timeStr}</span>` : ''}
+              </div>
               <span class="leading-relaxed whitespace-pre-wrap">${m.text}</span>
             </div>
           </div>
         `;
       }).join('');
 
-      if (homeBox) { 
-        homeBox.innerHTML = html; 
-        setTimeout(() => { homeBox.scrollTop = homeBox.scrollHeight; }, 50);
-      }
-      if (modalBox) { 
-        modalBox.innerHTML = html; 
-        setTimeout(() => { modalBox.scrollTop = modalBox.scrollHeight; }, 50);
-      }
+      setTimeout(() => { homeBox.scrollTop = homeBox.scrollHeight; }, 50);
     }
 
     let lastPushTimestamp = 0;
@@ -2609,17 +2614,6 @@
             </div>
           ` : ''}
 
-          <div class="bg-slate-950 border border-purple-500/40 rounded-2xl p-3 space-y-2">
-            <span class="text-[9px] font-bold text-purple-300 uppercase tracking-wider block flex items-center gap-1.5">
-              <span>💬</span> Flüsterbox
-            </span>
-            <div id="modal-shoutbox-messages" class="space-y-1 max-h-24 overflow-y-auto text-xs no-scrollbar"></div>
-            <div class="flex gap-1.5 items-center">
-              <input id="modal-shout-input" onkeydown="if(event.key==='Enter'){event.preventDefault();sendShoutboxMessage('modal-shout-input');}" type="text" placeholder="Gedanke, Emojis oder Teaser..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
-              <button onclick="sendShoutboxMessage('modal-shout-input')" class="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-[0.98]">Senden</button>
-            </div>
-          </div>
-
           </div>
       `;
 
@@ -2628,8 +2622,6 @@
           ✏️ Eigene Vorlieben neu anpassen
         </button>
       `;
-
-      renderAllShoutboxes();
     }
 
     function openKopfkinoRestart() {
