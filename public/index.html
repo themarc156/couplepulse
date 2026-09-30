@@ -811,6 +811,7 @@
       { id: 'cum_tits', title: 'Auf die Brüste / Dekolleté 🍒', labelSie: 'Auf meine Brüste / Dekolleté 🍒', labelEr: 'Auf ihre Brüste / Dekolleté 🍒' },
       { id: 'cum_ass_in', title: 'Tief ins Arschloch 🍑', labelSie: 'Tief in mein Arschloch 🍑', labelEr: 'Tief in ihren Arsch 🍑' },
       { id: 'cum_body', title: 'Auf Bauch / Po / Rücken ✨', labelSie: 'Auf meinen Bauch / Po / Rücken ✨', labelEr: 'Auf ihren Bauch / Po / Rücken ✨' },
+      { id: 'cum_hand_self', title: 'In ihrer Hand / auf ihn selbst 🤲', labelSie: 'In meine Hand / auf ihn selbst 🤲', labelEr: 'In ihre Hand / auf mich selbst 🤲' },
       { id: 'cum_face', title: 'Ins Gesicht 💦', labelSie: 'In mein Gesicht 💦', labelEr: 'In ihr Gesicht 💦' }
     ];
 
@@ -1134,7 +1135,20 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
       // Fallbacks
       if (!state.kopfkino) state.kopfkino = {};
 if (!state.kopfkino.practicesCatalog || state.kopfkino.practicesCatalog.length === 0) state.kopfkino.practicesCatalog = defaultPracticesCatalog;
-if (!state.kopfkino.cumCatalog || state.kopfkino.cumCatalog.length === 0) state.kopfkino.cumCatalog = defaultCumLocations;
+if (!state.kopfkino.cumCatalog || state.kopfkino.cumCatalog.length === 0) {
+  state.kopfkino.cumCatalog = defaultCumLocations;
+} else {
+  // Bestehende Kataloge um 'cum_hand_self' ergänzen, falls noch nicht vorhanden
+  const hasHandSelf = state.kopfkino.cumCatalog.some(c => c.id === 'cum_hand_self');
+  if (!hasHandSelf) {
+    state.kopfkino.cumCatalog.push({
+      id: 'cum_hand_self',
+      title: 'In ihrer Hand / auf ihn selbst 🤲',
+      labelSie: 'In meine Hand / auf ihn selbst 🤲',
+      labelEr: 'In ihre Hand / auf mich selbst 🤲'
+    });
+  }
+}
 if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
 
 // NEU: Timestamps sicherstellen
