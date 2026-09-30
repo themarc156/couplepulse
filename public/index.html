@@ -1571,14 +1571,14 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         this.peer.on('call', (call) => {
           this.incomingCall = call;
 
-          if (this.isStreaming && this.localStream) {
-            call.answer(this.localStream);
-            this.bindCallEvents(call);
-            return;
-          }
-
+          // Wenn wir bereits im Stream-Container sind, sofort automatisch annehmen
           if (this.isStreaming) {
-            call.answer(this.localStream || undefined);
+            const streamToAnswer = this.localStream || this.createDummyStream();
+            if (streamToAnswer) {
+              call.answer(streamToAnswer);
+            } else {
+              call.answer();
+            }
             this.bindCallEvents(call);
             return;
           }
@@ -1686,11 +1686,30 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         }
       },
 
+      createDummyStream() {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 16;
+          canvas.height = 16;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, 16, 16);
+          }
+          const videoStream = canvas.captureStream ? canvas.captureStream(5) : null;
+          if (videoStream && videoStream.getVideoTracks().length > 0) {
+            videoStream.getVideoTracks()[0].enabled = false;
+            return videoStream;
+          }
+        } catch(e) {}
+        return null;
+      },
+
       async startStream() {
         try {
           await this.startLocalCamera();
           this.isStreaming = true;
-          this.showingSource = 'local';
+          this.showingSource = 'local'; // Startet beim Sender zum bequemen Ausrichten
 
           const notifArea = document.getElementById('pulse-notification-area');
           if (notifArea) notifArea.classList.add('hidden');
@@ -1708,6 +1727,17 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           document.getElementById('stream-status-overlay').classList.add('hidden');
           this.updateDisplayView();
 
+          // Sender ruft sofort mit seinem aktiven lokalen Video-Stream beim Partner an
+          const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
+          const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
+          const partnerId = `cp_${safeRoom}_${targetUser}`;
+
+          this.connectData();
+          this.primaryCall = this.peer.call(partnerId, this.localStream);
+          if (this.primaryCall) {
+            this.bindCallEvents(this.primaryCall);
+          }
+
           this.sendData({ type: 'stream_started', sender: state.currentUser });
           triggerPushNotification(state.currentUser, true);
         } catch (e) {
@@ -1719,7 +1749,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       async acceptIncomingCall() {
         try {
           this.isStreaming = true;
-          this.showingSource = 'remote';
+          this.showingSource = 'remote'; // Zuschauer sieht SOFORT den Partner
 
           const notifArea = document.getElementById('pulse-notification-area');
           if (notifArea) notifArea.classList.add('hidden');
@@ -1735,19 +1765,22 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             activeControls.classList.add('flex');
           }
 
-          const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
-          const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
-          const partnerId = `cp_${safeRoom}_${targetUser}`;
+          const dummyStream = this.createDummyStream();
 
-          this.connectData();
-
-          // Zuschauer ruft den aktiven Streamer gezielt an
           if (this.incomingCall) {
             this.primaryCall = this.incomingCall;
-            this.incomingCall.answer(this.localStream || undefined);
+            if (dummyStream) {
+              this.incomingCall.answer(dummyStream);
+            } else {
+              this.incomingCall.answer();
+            }
             this.bindCallEvents(this.incomingCall);
           } else {
-            this.primaryCall = this.peer.call(partnerId, this.localStream || undefined);
+            const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
+            const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
+            const partnerId = `cp_${safeRoom}_${targetUser}`;
+            
+            this.primaryCall = this.peer.call(partnerId, dummyStream || undefined);
             if (this.primaryCall) {
               this.bindCallEvents(this.primaryCall);
             }
