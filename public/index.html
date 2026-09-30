@@ -234,8 +234,8 @@
 
         <!-- STREAM VIDEO CONTAINER (INLINE IN DER FLÜSTERBOX MIT ZOOM & THEATER-MODUS) -->
         <div id="stream-video-container" class="hidden relative flex-1 min-h-[190px] rounded-xl overflow-hidden bg-black border border-purple-500/50 my-1 flex items-center justify-center select-none touch-none">
-          <video id="remote-video" autoplay playsinline class="w-full h-full object-cover transition-transform duration-150 origin-center"></video>
-          <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover hidden transition-transform duration-150 origin-center"></video>
+          <video id="remote-video" autoplay playsinline class="absolute inset-0 w-full h-full object-cover transition-transform duration-150 origin-center opacity-0 pointer-events-none z-0"></video>
+          <video id="local-video" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover transition-transform duration-150 origin-center opacity-100 z-10"></video>
 
           <!-- Status Overlay -->
           <div id="stream-status-overlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-xs flex flex-col items-center justify-center text-center p-3 space-y-1.5 z-10">
@@ -1640,15 +1640,20 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             rVideo.muted = false;
             rVideo.play().catch(e => {});
           }
-          document.getElementById('stream-status-overlay').classList.add('hidden');
+          const overlay = document.getElementById('stream-status-overlay');
+          if (overlay && this.showingSource === 'remote') {
+            overlay.classList.add('hidden');
+          }
           playSensualSound('chime');
           this.updateDisplayView();
         });
 
         call.on('close', () => {
           this.remoteStream = null;
-          document.getElementById('stream-status-text').innerText = 'Partner getrennt';
-          document.getElementById('stream-status-overlay').classList.remove('hidden');
+          if (this.showingSource === 'remote') {
+            document.getElementById('stream-status-text').innerText = 'Partner getrennt';
+            document.getElementById('stream-status-overlay').classList.remove('hidden');
+          }
         });
       },
 
@@ -1748,17 +1753,27 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         const statusText = document.getElementById('stream-status-text');
 
         if (this.showingSource === 'local') {
-          // Eigene Kamera zum Ausrichten: Immer klar sichtbar, kein störendes Overlay
-          if (localVid) localVid.classList.remove('hidden');
-          if (remoteVid) remoteVid.classList.add('hidden');
+          // Eigene Kamera aktivieren & nach vorne holen
+          if (localVid) {
+            localVid.className = 'absolute inset-0 w-full h-full object-cover transition-transform duration-150 origin-center opacity-100 z-10 pointer-events-auto';
+            if (localVid.paused) localVid.play().catch(e => {});
+          }
+          if (remoteVid) {
+            remoteVid.className = 'absolute inset-0 w-full h-full object-cover transition-transform duration-150 origin-center opacity-0 z-0 pointer-events-none';
+          }
           if (viewText) viewText.innerText = 'Partner';
           if (viewIcon) viewIcon.innerText = '👁️';
           if (roleBadge) roleBadge.innerText = 'ICH SELBST 🪞';
           if (statusOverlay) statusOverlay.classList.add('hidden');
         } else {
-          // Partner-Ansicht: Falls noch kein Partner-Video empfangen wird, Overlay zeigen
-          if (localVid) localVid.classList.add('hidden');
-          if (remoteVid) remoteVid.classList.remove('hidden');
+          // Partner-Stream aktivieren & nach vorne holen
+          if (localVid) {
+            localVid.className = 'absolute inset-0 w-full h-full object-cover transition-transform duration-150 origin-center opacity-0 z-0 pointer-events-none';
+          }
+          if (remoteVid) {
+            remoteVid.className = 'absolute inset-0 w-full h-full object-cover transition-transform duration-150 origin-center opacity-100 z-10 pointer-events-auto';
+            if (remoteVid.paused) remoteVid.play().catch(e => {});
+          }
           if (viewText) viewText.innerText = 'Ich selbst';
           if (viewIcon) viewIcon.innerText = '🪞';
           if (roleBadge) roleBadge.innerText = 'PARTNER LIVE 🔴';
