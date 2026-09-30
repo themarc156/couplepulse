@@ -490,19 +490,14 @@
         
         <div id="catalog-items-container" class="space-y-2 overflow-y-auto pr-1 text-xs flex-1 my-2"></div>
 
-        <div class="pt-1 border-t border-slate-800 shrink-0">
-          <button id="btn-toggle-add-catalog" onclick="openAddCatalogForm()" class="w-full py-2.5 bg-slate-950 hover:bg-slate-850 border border-purple-500/40 text-purple-300 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all shadow">
+        <div class="pt-1 border-t border-slate-800">
+          <button id="btn-toggle-add-catalog" onclick="toggleAddCatalogForm()" class="w-full py-2 bg-slate-950 hover:bg-slate-800 border border-purple-500/40 text-purple-300 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all">
             <span>➕</span> <span>Neues Element anlegen</span>
           </button>
 
-          <div id="add-catalog-form" class="hidden bg-slate-950 border border-purple-500/50 p-3.5 rounded-2xl space-y-2.5 mt-2 glow-purple">
-            <div class="flex justify-between items-center border-b border-slate-800/80 pb-1.5">
-              <span id="catalog-form-title" class="text-xs font-bold text-purple-300">➕ Neues Element anlegen</span>
-              <button onclick="closeCatalogForm()" class="text-slate-400 hover:text-slate-200 text-xs px-1">✕</button>
-            </div>
-
+          <div id="add-catalog-form" class="hidden bg-slate-950 border border-purple-500/40 p-3 rounded-2xl space-y-2 mt-2">
             <div>
-              <label class="text-[10px] text-slate-400 block pb-0.5 font-medium">Bereich & Richtung:</label>
+              <label class="text-[10px] text-slate-400 block pb-0.5">Bereich & Richtung:</label>
               <select id="new-item-category" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
                 <option value="er_gives">👑 Er verwöhnt Sie (Er gibt / Sie empfängt)</option>
                 <option value="sie_gives">👑 Sie verwöhnt Ihn (Sie gibt / Er empfängt)</option>
@@ -511,20 +506,20 @@
             </div>
 
             <div>
-              <label class="text-[10px] text-rose-300 font-bold block pb-0.5">1. Text für Ihn (seine Sicht):</label>
+              <label class="text-[10px] text-rose-300 font-semibold block pb-0.5">1. Text für Ihn (seine Sicht):</label>
               <input id="new-item-label-er" type="text" placeholder="z. B. Schwanz lutschen & verwöhnen 💋" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
             </div>
 
             <div>
-              <label class="text-[10px] text-purple-300 font-bold block pb-0.5">2. Text für Sie (ihre Sicht):</label>
+              <label class="text-[10px] text-purple-300 font-semibold block pb-0.5">2. Text für Sie (ihre Sicht):</label>
               <input id="new-item-label-sie" type="text" placeholder="z. B. Ihn mit Mund & Zunge verwöhnen 💋" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
             </div>
 
             <div class="flex gap-2 pt-1">
-              <button id="btn-save-catalog-form" onclick="saveCatalogFormItem()" class="flex-1 py-2.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-[0.98] transition-all">
+              <button onclick="saveNewCatalogItem()" class="flex-1 py-2 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-[0.98]">
                 Speichern ✨
               </button>
-              <button onclick="closeCatalogForm()" class="py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs rounded-xl transition-all">
+              <button onclick="toggleAddCatalogForm()" class="py-2 px-3 bg-slate-900 text-slate-400 text-xs rounded-xl">
                 Abbrechen
               </button>
             </div>
@@ -3058,41 +3053,11 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       }
     }
 
-    let catalogEditingIndex = null;
-    let catalogEditingType = null; // 'practice' oder 'cum'
-
-    function openAddCatalogForm() {
-      catalogEditingIndex = null;
-      catalogEditingType = null;
-      
+    function toggleAddCatalogForm() {
       const form = document.getElementById('add-catalog-form');
       const btn = document.getElementById('btn-toggle-add-catalog');
-      const title = document.getElementById('catalog-form-title');
-      const saveBtn = document.getElementById('btn-save-catalog-form');
-      const catSelect = document.getElementById('new-item-category');
-      const inputEr = document.getElementById('new-item-label-er');
-      const inputSie = document.getElementById('new-item-label-sie');
-
-      if (title) title.innerText = '➕ Neues Element anlegen';
-      if (saveBtn) saveBtn.innerText = 'Speichern ✨';
-      if (catSelect) {
-        catSelect.value = 'er_gives';
-        catSelect.disabled = false;
-      }
-      if (inputEr) inputEr.value = '';
-      if (inputSie) inputSie.value = '';
-
-      if (form) form.classList.remove('hidden');
-      if (btn) btn.classList.add('hidden');
-    }
-
-    function closeCatalogForm() {
-      const form = document.getElementById('add-catalog-form');
-      const btn = document.getElementById('btn-toggle-add-catalog');
-      if (form) form.classList.add('hidden');
-      if (btn) btn.classList.remove('hidden');
-      catalogEditingIndex = null;
-      catalogEditingType = null;
+      form.classList.toggle('hidden');
+      btn.classList.toggle('hidden');
     }
 
     function moveCatalogPractice(index, direction) {
@@ -3135,104 +3100,71 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     }
 
     function editCatalogPractice(index) {
-      const list = state.kopfkino.practicesCatalog || defaultPracticesCatalog;
-      const p = list[index];
-      if (!p) return;
+      const p = state.kopfkino.practicesCatalog[index];
+      const newLabelEr = prompt("1. Text für Ihn (seine Sicht):", p.labelEr || p.title);
+      if (newLabelEr === null) return;
+      const newLabelSie = prompt("2. Text für Sie (ihre Sicht):", p.labelSie || newLabelEr || p.title);
+      if (newLabelSie === null) return;
 
-      catalogEditingIndex = index;
-      catalogEditingType = 'practice';
-
-      const form = document.getElementById('add-catalog-form');
-      const btn = document.getElementById('btn-toggle-add-catalog');
-      const title = document.getElementById('catalog-form-title');
-      const saveBtn = document.getElementById('btn-save-catalog-form');
-      const catSelect = document.getElementById('new-item-category');
-      const inputEr = document.getElementById('new-item-label-er');
-      const inputSie = document.getElementById('new-item-label-sie');
-
-      if (title) title.innerText = '✏️ Praktik bearbeiten';
-      if (saveBtn) saveBtn.innerText = 'Änderungen speichern ✨';
-      if (catSelect) {
-        catSelect.value = p.type || 'er_gives';
-        catSelect.disabled = false;
+      if (newLabelEr.trim() || newLabelSie.trim()) {
+        p.labelEr = newLabelEr.trim() || newLabelSie.trim();
+        p.labelSie = newLabelSie.trim() || newLabelEr.trim();
+        saveState();
+        broadcastCatalogSync();
+        renderCatalogItemsList();
       }
-      if (inputEr) inputEr.value = p.labelEr || p.title || '';
-      if (inputSie) inputSie.value = p.labelSie || p.title || '';
-
-      if (form) form.classList.remove('hidden');
-      if (btn) btn.classList.add('hidden');
-
-      form.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      playSensualSound('chime');
     }
 
     function deleteCatalogPractice(index) {
       if (confirm("Diese Praktik wirklich entfernen?")) {
         state.kopfkino.practicesCatalog.splice(index, 1);
-        if (catalogEditingIndex === index) {
-          closeCatalogForm();
-        }
         saveState();
         broadcastCatalogSync();
         renderCatalogItemsList();
-        playSensualSound('chime');
       }
     }
 
     function broadcastCatalogSync() {
-      state.kopfkino.catalogUpdatedAt = Date.now();
-      state.kopfkino.cumUpdatedAt = Date.now();
+  state.kopfkino.catalogUpdatedAt = Date.now();
+  state.kopfkino.cumUpdatedAt = Date.now();
 
-      LiveStream.sendData({
-        type: 'catalog_full_sync',
-        practicesCatalog: state.kopfkino.practicesCatalog,
-        cumCatalog: state.kopfkino.cumCatalog,
-        catalogUpdatedAt: state.kopfkino.catalogUpdatedAt,
-        cumUpdatedAt: state.kopfkino.cumUpdatedAt,
-        sender: state.currentUser
-      });
+  LiveStream.sendData({
+    type: 'catalog_full_sync',
+    practicesCatalog: state.kopfkino.practicesCatalog,
+    cumCatalog: state.kopfkino.cumCatalog,
+    catalogUpdatedAt: state.kopfkino.catalogUpdatedAt,
+    cumUpdatedAt: state.kopfkino.cumUpdatedAt,
+    sender: state.currentUser
+  });
 
-      saveState();
-    }
+  saveState();
+}
 
-    function saveCatalogFormItem() {
+    function saveNewCatalogItem() {
       const category = document.getElementById('new-item-category').value;
       const labelEr = document.getElementById('new-item-label-er').value.trim();
       const labelSie = document.getElementById('new-item-label-sie').value.trim();
       
-      if (!labelEr && !labelSie) {
-        showToast("⚠️ Text fehlt", "Bitte mindestens eine Bezeichnung eingeben.", "✏️");
-        return;
-      }
+      if (!labelEr && !labelSie) { alert("Bitte mindestens eine Bezeichnung eingeben."); return; }
 
+      const safeId = 'custom_' + Date.now();
       const finalLabelEr = labelEr || labelSie;
       const finalLabelSie = labelSie || labelEr;
 
-      if (catalogEditingIndex !== null && catalogEditingType === 'practice') {
-        // Bestehendes Element aktualisieren
-        const item = state.kopfkino.practicesCatalog[catalogEditingIndex];
-        if (item) {
-          item.type = category;
-          item.labelEr = finalLabelEr;
-          item.labelSie = finalLabelSie;
-        }
+      if (category === 'cum') {
+        if (!state.kopfkino.cumCatalog) state.kopfkino.cumCatalog = defaultCumLocations;
+        state.kopfkino.cumCatalog.push({ id: safeId, title: finalLabelEr, labelSie: finalLabelSie, labelEr: finalLabelEr });
       } else {
-        // Neues Element anlegen
-        const safeId = 'custom_' + Date.now();
-        if (category === 'cum') {
-          if (!state.kopfkino.cumCatalog) state.kopfkino.cumCatalog = defaultCumLocations;
-          state.kopfkino.cumCatalog.push({ id: safeId, title: finalLabelEr, labelSie: finalLabelSie, labelEr: finalLabelEr });
-        } else {
-          state.kopfkino.practicesCatalog.push({ id: safeId, type: category, labelEr: finalLabelEr, labelSie: finalLabelSie });
-        }
+        state.kopfkino.practicesCatalog.push({ id: safeId, type: category, labelEr: finalLabelEr, labelSie: finalLabelSie });
       }
 
-      closeCatalogForm();
+      document.getElementById('new-item-label-er').value = '';
+      document.getElementById('new-item-label-sie').value = '';
+      toggleAddCatalogForm();
       saveState();
       broadcastCatalogSync();
       renderCatalogItemsList();
-      playSensualSound('chime');
-      showToast("✨ Katalog aktualisiert", "Element wurde erfolgreich gespeichert & synchronisiert.", "✏️");
+      alert(`✓ Erfolgreich mit beiden Texten gespeichert & synchronisiert!`);
     }
 
 
