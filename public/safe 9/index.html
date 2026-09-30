@@ -234,32 +234,24 @@
             <span id="stream-status-text" class="text-xs font-semibold text-slate-300">Verbindung wird aufgebaut...</span>
           </div>
 
-          <!-- Video Overlays: Status oben links -->
-          <div class="absolute top-2 left-2 z-20">
-            <span id="stream-role-badge" class="px-2 py-0.5 bg-black/80 border border-rose-500/70 rounded-md text-[9px] font-bold text-rose-300 backdrop-blur-xs">LIVE 🔴</span>
+          <!-- Video Overlays & Controls in den Ecken -->
+          <div class="absolute top-2 left-2 z-20 flex items-center gap-1.5">
+            <span id="stream-role-badge" class="px-2 py-0.5 bg-black/75 border border-rose-500/70 rounded-md text-[9px] font-bold text-rose-300">LIVE 🔴</span>
+            <button id="btn-stream-swap" onclick="LiveStream.switchStreamDirection()" class="px-2 py-1 bg-purple-900/80 hover:bg-purple-800 border border-purple-400 text-purple-200 rounded-lg text-[9px] font-bold shadow flex items-center gap-1 transition-all active:scale-95" title="Kamera-Rolle tauschen">
+              <span>🔁</span>
+              <span id="btn-stream-swap-text">Ich zeig mich</span>
+            </button>
           </div>
-
-          <!-- Video Overlays: Ansichts-Tools oben rechts -->
           <div class="absolute top-2 right-2 z-20 flex items-center gap-1.5">
-            <button id="btn-stream-zoom" onclick="LiveStream.toggleZoom()" class="px-2 py-1 bg-black/75 border border-slate-700/80 hover:border-purple-400 rounded-lg text-[10px] text-slate-200 font-bold shadow backdrop-blur-xs active:scale-95 transition-all" title="Zoom umschalten">🔍 1x</button>
-            <button id="btn-stream-expand" onclick="LiveStream.toggleTheaterMode()" class="p-1 bg-black/75 border border-slate-700/80 hover:border-purple-400 rounded-lg text-xs text-slate-200 shadow backdrop-blur-xs active:scale-95 transition-all" title="Theater-Modus (Vollbild)">⛶</button>
-          </div>
-
-          <!-- Video Overlays: Kamera- & Rollensteuerung unten zentriert -->
-          <div class="absolute bottom-2 inset-x-0 z-20 flex items-center justify-center gap-1.5 px-3 pointer-events-none">
-            <div class="pointer-events-auto flex items-center gap-1.5 bg-slate-950/85 border border-purple-500/50 rounded-xl p-1 shadow-lg backdrop-blur-sm">
-              <button id="btn-stream-swap" onclick="LiveStream.switchStreamDirection()" class="px-2.5 py-1 bg-purple-900/90 hover:bg-purple-800 border border-purple-400/80 text-purple-200 rounded-lg text-[10px] font-bold shadow flex items-center gap-1 transition-all active:scale-95" title="Kamera-Rolle tauschen">
-                <span>🔁</span>
-                <span id="btn-stream-swap-text">Ich zeig mich</span>
-              </button>
-              <button id="btn-stream-flip" onclick="LiveStream.flipCamera()" class="p-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 rounded-lg text-xs shadow transition-all active:scale-95" title="Kamera wechseln">
-                🔄
-              </button>
-            </div>
+            <button id="btn-stream-zoom" onclick="LiveStream.toggleZoom()" class="px-2 py-1 bg-black/70 border border-slate-700 hover:border-purple-400 rounded-lg text-[10px] text-slate-200 font-bold shadow" title="Zoom / Bildausschnitt umschalten">🔍 1x</button>
+            <button id="btn-stream-expand" onclick="LiveStream.toggleTheaterMode()" class="p-1.5 bg-black/70 border border-slate-700 hover:border-purple-400 rounded-lg text-xs text-slate-200 shadow" title="Theater-Modus (Maximieren)">⛶</button>
+            <button id="btn-stream-flip" onclick="LiveStream.flipCamera()" class="p-1.5 bg-black/70 border border-slate-700 hover:border-purple-400 rounded-lg text-xs text-slate-200 shadow" title="Kamera wechseln">🔄</button>
+            <button id="btn-stream-audio" onclick="LiveStream.toggleAudio()" class="p-1.5 bg-black/70 border border-slate-700 hover:border-purple-400 rounded-lg text-xs text-slate-200 shadow" title="Ton An/Aus">🔇</button>
+            <button onclick="LiveStream.endStream()" class="p-1.5 bg-rose-600 hover:bg-rose-500 rounded-lg text-xs text-white font-bold shadow" title="Stream beenden">✕</button>
           </div>
 
           <!-- Floating Overlays für Chat & Flüster-Nachrichten während des Streams -->
-          <div id="stream-floating-box" class="absolute inset-x-3 bottom-12 z-20 pointer-events-none flex flex-col items-center space-y-1.5"></div>
+          <div id="stream-floating-box" class="absolute inset-x-3 bottom-2 z-20 pointer-events-none flex flex-col items-center space-y-1.5"></div>
         </div>
 
         <!-- SCROLLBARE NACHRICHTEN-LISTE (WIRD WÄHREND DES STREAMS DURCH DAS VIDEO ERSETZT) -->
@@ -1524,6 +1516,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       isSender: false,
       isSwapping: false,
       currentFacingMode: 'user',
+      audioMuted: true,
       zoomLevel: 1,
       panX: 0,
       panY: 0,
@@ -1583,7 +1576,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               const rVideo = document.getElementById('remote-video');
               rVideo.classList.remove('hidden');
               rVideo.srcObject = remoteStream;
-              rVideo.muted = false;
+              rVideo.muted = this.audioMuted;
               rVideo.play().catch(e => {});
               document.getElementById('stream-status-overlay').classList.add('hidden');
               playSensualSound('chime');
@@ -1962,7 +1955,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         this.incomingCall.on('stream', (remoteStream) => {
           const rVideo = document.getElementById('remote-video');
           rVideo.srcObject = remoteStream;
-          rVideo.muted = false;
+          rVideo.muted = this.audioMuted;
           rVideo.play().catch(e => {});
           document.getElementById('stream-status-overlay').classList.add('hidden');
           playSensualSound('chime');
@@ -1983,6 +1976,14 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           const videoSender = this.primaryCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
           if (videoSender) videoSender.replaceTrack(this.localStream.getVideoTracks()[0]);
         }
+      },
+
+      toggleAudio() {
+        this.audioMuted = !this.audioMuted;
+        const btn = document.getElementById('btn-stream-audio');
+        btn.innerText = this.audioMuted ? '🔇' : '🔊';
+        const rVideo = document.getElementById('remote-video');
+        if (rVideo) rVideo.muted = this.audioMuted;
       },
 
       showStreamFloatingWhisper(msg) {
