@@ -837,9 +837,10 @@
       { id: 'd1_09', role: 'any', text: "Verbinde deinem Partner die Augen mit einem Tuch und necke seinen Körper nur mit warmen Atemzügen und sanften Fingertipps.", stage: 1, timer: 60, tags: ['sensual', 'touch'] },
 
       // ==========================================
-      // STUFE 2 (HÜLLENLOS & PETTING) [10 Karten]
+      // STUFE 2 (HÜLLENLOS & PETTING) [11 Karten]
       // ==========================================
       { id: 'd2_01', role: 'any', text: "Präsentiere deinen nackten Körper und lass dich 60 Sekunden lang intensiv bestaunen und berühren.", stage: 2, timer: 60, tags: ['tease'] },
+      { id: 'd2_spank_01', role: 'any', text: "Gib deinem Partner 5 feste Klapse auf den nackten Hintern!", stage: 2, timer: 0, tags: ['spanking'] },
       { id: 'dom_38_sie', role: 'sie_gives', text: "Verwöhne seinen nackten Schwanz & seine Hoden nur mit Mund & Zunge. Keine Hände!", stage: 2, timer: 60, tags: ['oral'] },
       { id: 'c2_23_sie', role: 'sie_gives', text: "Führe langsame, kreisende Daumenbewegungen auf seiner Eichelspitze aus – nutze austretende Lusttropfen als Gleitmittel.", stage: 2, timer: 60, tags: ['touch'] },
       { id: 'c2_02_sie', role: 'sie_gives', text: "Verwöhne seine Eichelspitze im Wechsel mit deiner Zunge und deinen nackten Brustwarzen.", stage: 2, timer: 60, tags: ['touch', 'sensual'] },
@@ -863,7 +864,7 @@
       { id: 'c3_24', role: 'any', text: "💑 Beide (Hingabe): Umschlingt und streichelt euch – ihr dürft euch küssen, aber noch nicht zum Höhepunkt kommen.", stage: 3, timer: 60, tags: ['touch', 'mutual'] },
       { id: 'd3_08', role: 'any', text: "Po & Anal: Verwöhne den Po deines Partners mit Küssen & sanften Berührungen.", stage: 3, timer: 60, tags: ['oral', 'anal'] },
       { id: 'dom_35', role: 'any', text: "Leg deinen Partner über dein Knie: Du bestimmst über feste Klapse auf den Po oder sinnliche Streicheleinheiten.", stage: 3, timer: 60, tags: ['command', 'spanking'] },
-      { id: 'dom_14', role: 'any', text: "Orgasmus-Verbot: Dein Partner darf ab jetzt nur noch nach deiner ausdrücklichen Erlaubnis kommen.", stage: 3, timer: 0, tags: ['command'] },
+      { id: 'dom_14', role: 'any', text: "Flüstere deinem Partner bestimmend ins Ohr: „Du darfst heute erst kommen, wenn ich es dir erlaube.“ – und tease ihn danach 30 Sekunden am Intimbereich.", stage: 3, timer: 30, tags: ['command', 'tease'] },
       { id: 'c3_21', role: 'any', text: "Hemmungslos: Verwöhne deinen Partner 90 Sekunden lang hemmungslos mit Mund & Zunge.", stage: 3, timer: 90, tags: ['oral'] }
     ];
 
@@ -3687,15 +3688,15 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       if (er > sie) {
         t.innerText = `👑 ${nameEr.toUpperCase()} HAT GEWONNEN!`;
         b.innerText = `Endstand: ${er} : ${sie} für ${nameEr} ⚡`;
-        d.innerText = `Du hast dir die Herrschaft über das Finale verdient! Bestimme jetzt die Stellung, das Tempo und wie du deinen Höhepunkt erleben willst – legt das Handy weg und genießt es!`;
+        d.innerText = `Du hast dir die Herrschaft über das Finale verdient! Bestimme jetzt die Stellung, das Tempo und wie du deinen Höhepunkt erleben willst. ${nameSie} darf heute erst kommen, wenn du ihr ausdrücklich die Erlaubnis erteilst – legt das Handy weg und gebt euch völlig hin! 💦`;
       } else if (sie > er) {
         t.innerText = `👑 ${nameSie.toUpperCase()} HAT GEWONNEN!`;
         b.innerText = `Endstand: ${sie} : ${er} für ${nameSie} ⚡`;
-        d.innerText = `Du hast dir die Herrschaft über das Finale verdient! Bestimme jetzt die Stellung, das Tempo und wie ${nameEr} dich zum Höhepunkt bringen muss – legt das Handy weg und genießt es!`;
+        d.innerText = `Du hast dir die Herrschaft über das Finale verdient! Bestimme jetzt die Stellung, das Tempo und wie ${nameEr} dich zum Höhepunkt bringen muss. ${nameEr} darf heute erst kommen, wenn du ihm ausdrücklich die Erlaubnis erteilst – legt das Handy weg und gebt euch völlig hin! 💦`;
       } else {
         t.innerText = "🔥 PERFEKTES UNENTSCHIEDEN!";
         b.innerText = `Endstand: ${er} : ${sie} Unentschieden ⚡`;
-        d.innerText = "Beide haben alles gegeben! Lasst jetzt alle Hemmungen fallen, verschmelzt im Finale miteinander und kommt gemeinsam!";
+        d.innerText = "Beide haben alles gegeben! Ihr bestimmt das Finale gemeinsam: Lasst jetzt alle Hemmungen fallen, verschmelzt miteinander und kommt zusammen!";
       }
 
       document.getElementById('winner-modal').classList.remove('hidden');
