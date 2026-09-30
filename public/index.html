@@ -1125,16 +1125,14 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
       
       checkAutoDailyReset();
 
-      // Fallbacks & Namen-Sicherung
+      // Namen und User aus separaten LocalStorage-Keys absichern
       if (!state.names) state.names = {};
-      if (!state.names.Er || state.names.Er === 'Er') {
-        state.names.Er = localStorage.getItem('cp_name_er') || 'Er';
-      }
-      if (!state.names.Sie || state.names.Sie === 'Sie') {
-        state.names.Sie = localStorage.getItem('cp_name_sie') || 'Sie';
-      }
-      if (localStorage.getItem('cp_current_user')) {
-        state.currentUser = localStorage.getItem('cp_current_user');
+      state.names.Er = localStorage.getItem('cp_name_er') || state.names.Er || 'Er';
+      state.names.Sie = localStorage.getItem('cp_name_sie') || state.names.Sie || 'Sie';
+      
+      const savedUser = localStorage.getItem('cp_current_user');
+      if (savedUser) {
+        state.currentUser = savedUser;
       }
 
       // Fallbacks
