@@ -1568,13 +1568,17 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           conn.on('close', () => { this.dataConn = null; });
         });
 
-        this.peer.on('call', async (call) => {
+        this.peer.on('call', (call) => {
           this.incomingCall = call;
-          this.primaryCall = call;
 
           if (this.isStreaming && this.localStream) {
-            // Wenn wir bereits selbst die Kamera anhaben -> sofort gegenseitig verbinden
             call.answer(this.localStream);
+            this.bindCallEvents(call);
+            return;
+          }
+
+          if (this.isStreaming) {
+            call.answer(this.localStream || undefined);
             this.bindCallEvents(call);
             return;
           }
@@ -1642,6 +1646,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
       bindCallEvents(call) {
         call.on('stream', (remoteMediaStream) => {
+          if (!remoteMediaStream || remoteMediaStream.getVideoTracks().length === 0) return;
           this.remoteStream = remoteMediaStream;
           const rVideo = document.getElementById('remote-video');
           if (rVideo) {
@@ -1649,18 +1654,14 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             rVideo.muted = false;
             rVideo.setAttribute('playsinline', 'true');
             rVideo.setAttribute('autoplay', 'true');
-            const playPromise = rVideo.play();
-            if (playPromise !== undefined) {
-              playPromise.catch(() => {
-                // Fallback für Autoplay-Richtlinien auf iOS: stumm starten, falls Ton blockiert
-                rVideo.muted = true;
-                rVideo.play().catch(e => {});
-              });
-            }
+            rVideo.play().catch(() => {
+              rVideo.muted = true;
+              rVideo.play().catch(e => {});
+            });
           }
           
           const overlay = document.getElementById('stream-status-overlay');
-          if (overlay) {
+          if (overlay && this.showingSource === 'remote') {
             overlay.classList.add('hidden');
           }
 
@@ -1689,7 +1690,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         try {
           await this.startLocalCamera();
           this.isStreaming = true;
-          this.showingSource = 'local'; // Startet in der glasklaren "Ich selbst"-Ansicht zum Ausrichten
+          this.showingSource = 'local';
 
           const notifArea = document.getElementById('pulse-notification-area');
           if (notifArea) notifArea.classList.add('hidden');
@@ -1704,20 +1705,8 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             activeControls.classList.add('flex');
           }
 
-          // Overlay sofort verstecken, damit das eigene Kamerabild sofort frei sichtbar ist
           document.getElementById('stream-status-overlay').classList.add('hidden');
-
           this.updateDisplayView();
-
-          const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
-          const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
-          const partnerId = `cp_${safeRoom}_${targetUser}`;
-
-          this.connectData();
-          this.primaryCall = this.peer.call(partnerId, this.localStream);
-          if (this.primaryCall) {
-            this.bindCallEvents(this.primaryCall);
-          }
 
           this.sendData({ type: 'stream_started', sender: state.currentUser });
           triggerPushNotification(state.currentUser, true);
@@ -1727,25 +1716,8 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         }
       },
 
-      createSilentDummyStream() {
-        try {
-          const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const oscillator = ctx.createOscillator();
-          const dst = oscillator.connect(ctx.createMediaStreamDestination());
-          oscillator.start();
-          const track = dst.stream.getAudioTracks()[0];
-          track.enabled = false;
-          return new MediaStream([track]);
-        } catch(e) {
-          return null;
-        }
-      },
-
       async acceptIncomingCall() {
-        if (!this.incomingCall) return;
         try {
-          // Reiner Peepshow-Modus: Eigene Kamera bleibt aus, Dummy-Stream sichert WebRTC-Handshake
-          this.localStream = null;
           this.isStreaming = true;
           this.showingSource = 'remote';
 
@@ -1763,16 +1735,24 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             activeControls.classList.add('flex');
           }
 
-          this.primaryCall = this.incomingCall;
-          
-          const dummyStream = this.createSilentDummyStream();
-          if (dummyStream) {
-            this.incomingCall.answer(dummyStream);
+          const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
+          const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
+          const partnerId = `cp_${safeRoom}_${targetUser}`;
+
+          this.connectData();
+
+          // Zuschauer ruft den aktiven Streamer gezielt an
+          if (this.incomingCall) {
+            this.primaryCall = this.incomingCall;
+            this.incomingCall.answer(this.localStream || undefined);
+            this.bindCallEvents(this.incomingCall);
           } else {
-            this.incomingCall.answer();
+            this.primaryCall = this.peer.call(partnerId, this.localStream || undefined);
+            if (this.primaryCall) {
+              this.bindCallEvents(this.primaryCall);
+            }
           }
 
-          this.bindCallEvents(this.incomingCall);
           this.updateDisplayView();
         } catch(e) {
           showToast("⚠️ Fehler", "Stream konnte nicht angenommen werden: " + e.message, "📹");
@@ -1781,48 +1761,28 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
       async toggleMyCamera() {
         if (this.localStream) {
-          // Eigene Kamera abschalten
+          // Eigene Kamera stoppen
           this.localStream.getTracks().forEach(t => t.stop());
           this.localStream = null;
           const localVid = document.getElementById('local-video');
           if (localVid) localVid.srcObject = null;
 
-          if (this.primaryCall && this.primaryCall.peerConnection) {
-            const senders = this.primaryCall.peerConnection.getSenders();
-            senders.forEach(s => {
-              if (s.track && s.track.kind === 'video') {
-                s.track.stop();
-                try { this.primaryCall.peerConnection.removeTrack(s); } catch (e) {}
-              }
-            });
-          }
-
           this.showingSource = 'remote';
           this.updateDisplayView();
-          showToast("📷 Cam aus", "Deine Kamera ist stummgeschaltet.", "👁️");
+          showToast("📷 Cam aus", "Deine Kamera ist deaktiviert.", "👁️");
         } else {
-          // Eigene Kamera freiwillig aktivieren
+          // Eigene Kamera starten und sauberen Call zum Partner aufbauen
           try {
             await this.startLocalCamera();
-            if (this.primaryCall && this.primaryCall.peerConnection) {
-              const videoTrack = this.localStream.getVideoTracks()[0];
-              const audioTrack = this.localStream.getAudioTracks()[0];
-              const senders = this.primaryCall.peerConnection.getSenders();
-              
-              const videoSender = senders.find(s => s.track && s.track.kind === 'video');
-              if (videoSender && videoTrack) {
-                videoSender.replaceTrack(videoTrack);
-              } else if (videoTrack) {
-                this.primaryCall.peerConnection.addTrack(videoTrack, this.localStream);
-              }
-
-              const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
-              if (audioSender && audioTrack) {
-                audioSender.replaceTrack(audioTrack);
-              } else if (audioTrack) {
-                this.primaryCall.peerConnection.addTrack(audioTrack, this.localStream);
-              }
+            const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
+            const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
+            const partnerId = `cp_${safeRoom}_${targetUser}`;
+            
+            const secondaryCall = this.peer.call(partnerId, this.localStream);
+            if (secondaryCall) {
+              this.bindCallEvents(secondaryCall);
             }
+
             this.showingSource = 'local';
             this.updateDisplayView();
             showToast("✨ Cam aktiv", "Du überträgst jetzt auch dein Bild!", "📹");
