@@ -422,25 +422,14 @@
     <main id="view-wishes" class="hidden w-full p-4 space-y-3 flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
       <div class="bg-slate-900/90 border border-amber-500/40 w-full rounded-3xl p-4 space-y-3 shadow-2xl glow-amber flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
         
-        <!-- HEADER & PARTNER-FILTER -->
-        <div class="space-y-2.5 shrink-0 border-b border-slate-800 pb-2">
-          <div class="flex justify-between items-center">
-            <div>
-              <h3 class="font-bold text-sm text-amber-300 flex items-center gap-1.5">
-                <span>🗝️</span> <span>Fantasie-Tresor</span>
-              </h3>
-              <p class="text-[10px] text-slate-400 mt-0.5">Geheime Wünsche & Bucket-List</p>
-            </div>
-            <span id="wishes-counter-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-950/80 border border-amber-500/50 text-amber-300 shrink-0">0 Einträge</span>
-          </div>
-
-          <!-- DYNAMISCHE PARTNER-TABS (2 REITER) -->
-          <div class="grid grid-cols-2 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold text-center">
-            <button id="btn-filter-wish-partner" onclick="setWishFilter(getPartnerRole())" class="py-2 rounded-lg bg-amber-500 text-slate-950 font-black shadow transition-all truncate px-2">
-              💖 <span id="label-filter-wish-partner">Partner</span>
+        <!-- PARTNER-TABS (DIREKT OBEN AUF DER KARTE) -->
+        <div class="shrink-0 border-b border-slate-800 pb-2.5">
+          <div class="grid grid-cols-2 gap-1.5 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-xs font-bold text-center">
+            <button id="btn-filter-wish-partner" onclick="setWishFilter(getPartnerRole())" class="py-2.5 rounded-xl bg-amber-500 text-slate-950 font-black shadow transition-all truncate px-2 flex items-center justify-center gap-1.5">
+              <span>💖</span> <span id="label-filter-wish-partner">Partner</span>
             </button>
-            <button id="btn-filter-wish-me" onclick="setWishFilter(state.currentUser)" class="py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all truncate px-2 font-bold">
-              👑 <span id="label-filter-wish-me">Ich</span>
+            <button id="btn-filter-wish-me" onclick="setWishFilter(state.currentUser)" class="py-2.5 rounded-xl text-slate-400 hover:text-slate-200 transition-all truncate px-2 font-bold flex items-center justify-center gap-1.5">
+              <span>👑</span> <span id="label-filter-wish-me">Ich</span>
             </button>
           </div>
         </div>
@@ -4198,7 +4187,6 @@ function requestAllSyncsFromPartner() {
 
     function renderWishesList() {
       const container = document.getElementById('wishes-items-container');
-      const badge = document.getElementById('wishes-counter-badge');
       const allWishes = state.wishes || [];
 
       // Standardmäßig immer Partner aktiv, wenn noch kein Filter gesetzt ist
@@ -4220,19 +4208,18 @@ function requestAllSyncsFromPartner() {
 
       if (btnPartner) {
         btnPartner.className = (wishActiveFilter === partnerRole)
-          ? 'py-2 rounded-lg bg-amber-500 text-slate-950 font-black shadow transition-all truncate px-2'
-          : 'py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all truncate px-2 font-bold';
+          ? 'py-2.5 rounded-xl bg-amber-500 text-slate-950 font-black shadow transition-all truncate px-2 flex items-center justify-center gap-1.5'
+          : 'py-2.5 rounded-xl text-slate-400 hover:text-slate-200 transition-all truncate px-2 font-bold flex items-center justify-center gap-1.5';
       }
       if (btnMe) {
         btnMe.className = (wishActiveFilter === myRole)
-          ? 'py-2 rounded-lg bg-rose-600 text-white font-black shadow transition-all truncate px-2'
-          : 'py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all truncate px-2 font-bold';
+          ? 'py-2.5 rounded-xl bg-rose-600 text-white font-black shadow transition-all truncate px-2 flex items-center justify-center gap-1.5'
+          : 'py-2.5 rounded-xl text-slate-400 hover:text-slate-200 transition-all truncate px-2 font-bold flex items-center justify-center gap-1.5';
       }
 
       // Liste filtern: Zeigt exakt die Wünsche des aktiven Tabs
       const filteredList = allWishes.filter(w => w.from === wishActiveFilter);
 
-      if (badge) badge.innerText = `${filteredList.length} Wunsch${filteredList.length === 1 ? '' : 'e'}`;
       if (!container) return;
 
       if (filteredList.length === 0) {
@@ -4248,26 +4235,20 @@ function requestAllSyncsFromPartner() {
 
       container.innerHTML = filteredList.map(w => {
         const isFromMe = (w.from === state.currentUser);
-        const fromName = getRoleName(w.from);
         const isDone = Boolean(w.done);
 
         return `
           <div class="bg-slate-950/90 border ${isDone ? 'border-emerald-500/30 opacity-65' : 'border-amber-500/40 glow-amber'} p-3.5 rounded-2xl space-y-2 text-xs transition-all shadow-md">
             <div class="flex justify-between items-start gap-1">
-              <div class="flex-1 min-w-0 pr-1">
-                <span class="text-[9px] font-bold ${isFromMe ? 'text-rose-400' : 'text-amber-400'} uppercase block mb-0.5">
-                  Von ${fromName}:
-                </span>
-                <h4 onclick="openWishModal(${w.id})" class="font-bold text-slate-100 text-xs leading-snug cursor-pointer hover:text-amber-300 transition-colors ${isDone ? 'line-through text-slate-400' : ''}">
-                  ${w.title}
-                </h4>
-              </div>
+              <h4 onclick="openWishModal(${w.id})" class="flex-1 min-w-0 font-bold text-slate-100 text-xs leading-snug cursor-pointer hover:text-amber-300 transition-colors ${isDone ? 'line-through text-slate-400' : ''}">
+                ${w.title}
+              </h4>
               ${isFromMe ? `
-                <button onclick="openWishModal(${w.id})" class="text-slate-400 hover:text-amber-300 text-xs px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg shrink-0 font-bold active:scale-95" title="Bearbeiten">
+                <button onclick="openWishModal(${w.id})" class="text-slate-400 hover:text-amber-300 text-xs px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg shrink-0 font-bold active:scale-95 ml-1" title="Bearbeiten">
                   ✏️
                 </button>
               ` : `
-                <button onclick="openWishModal(${w.id})" class="text-slate-500 hover:text-slate-300 text-[10px] px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg shrink-0 font-bold active:scale-95" title="Details ansehen">
+                <button onclick="openWishModal(${w.id})" class="text-slate-500 hover:text-slate-300 text-[10px] px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg shrink-0 font-bold active:scale-95 ml-1" title="Details ansehen">
                   🔍
                 </button>
               `}
