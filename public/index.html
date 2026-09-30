@@ -1647,12 +1647,23 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           if (rVideo) {
             rVideo.srcObject = remoteMediaStream;
             rVideo.muted = false;
-            rVideo.play().catch(e => {});
+            rVideo.setAttribute('playsinline', 'true');
+            rVideo.setAttribute('autoplay', 'true');
+            const playPromise = rVideo.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(() => {
+                // Fallback für Autoplay-Richtlinien auf iOS: stumm starten, falls Ton blockiert
+                rVideo.muted = true;
+                rVideo.play().catch(e => {});
+              });
+            }
           }
+          
           const overlay = document.getElementById('stream-status-overlay');
-          if (overlay && this.showingSource === 'remote') {
+          if (overlay) {
             overlay.classList.add('hidden');
           }
+
           playSensualSound('chime');
           this.updateDisplayView();
         });
@@ -1716,13 +1727,27 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         }
       },
 
+      createSilentDummyStream() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = ctx.createOscillator();
+          const dst = oscillator.connect(ctx.createMediaStreamDestination());
+          oscillator.start();
+          const track = dst.stream.getAudioTracks()[0];
+          track.enabled = false;
+          return new MediaStream([track]);
+        } catch(e) {
+          return null;
+        }
+      },
+
       async acceptIncomingCall() {
         if (!this.incomingCall) return;
         try {
-          // Reiner Peepshow-Modus: Eigene Kamera bleibt aus!
+          // Reiner Peepshow-Modus: Eigene Kamera bleibt aus, Dummy-Stream sichert WebRTC-Handshake
           this.localStream = null;
           this.isStreaming = true;
-          this.showingSource = 'remote'; // Wer auf "Ansehen" tippt, sieht sofort den Partner
+          this.showingSource = 'remote';
 
           const notifArea = document.getElementById('pulse-notification-area');
           if (notifArea) notifArea.classList.add('hidden');
@@ -1739,8 +1764,14 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           }
 
           this.primaryCall = this.incomingCall;
-          // Antwort ohne eigenen Stream -> reine Peepshow
-          this.incomingCall.answer();
+          
+          const dummyStream = this.createSilentDummyStream();
+          if (dummyStream) {
+            this.incomingCall.answer(dummyStream);
+          } else {
+            this.incomingCall.answer();
+          }
+
           this.bindCallEvents(this.incomingCall);
           this.updateDisplayView();
         } catch(e) {
@@ -1759,8 +1790,10 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           if (this.primaryCall && this.primaryCall.peerConnection) {
             const senders = this.primaryCall.peerConnection.getSenders();
             senders.forEach(s => {
-              if (s.track) s.track.stop();
-              try { this.primaryCall.peerConnection.removeTrack(s); } catch (e) {}
+              if (s.track && s.track.kind === 'video') {
+                s.track.stop();
+                try { this.primaryCall.peerConnection.removeTrack(s); } catch (e) {}
+              }
             });
           }
 
@@ -1774,8 +1807,21 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             if (this.primaryCall && this.primaryCall.peerConnection) {
               const videoTrack = this.localStream.getVideoTracks()[0];
               const audioTrack = this.localStream.getAudioTracks()[0];
-              if (videoTrack) this.primaryCall.peerConnection.addTrack(videoTrack, this.localStream);
-              if (audioTrack) this.primaryCall.peerConnection.addTrack(audioTrack, this.localStream);
+              const senders = this.primaryCall.peerConnection.getSenders();
+              
+              const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+              if (videoSender && videoTrack) {
+                videoSender.replaceTrack(videoTrack);
+              } else if (videoTrack) {
+                this.primaryCall.peerConnection.addTrack(videoTrack, this.localStream);
+              }
+
+              const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
+              if (audioSender && audioTrack) {
+                audioSender.replaceTrack(audioTrack);
+              } else if (audioTrack) {
+                this.primaryCall.peerConnection.addTrack(audioTrack, this.localStream);
+              }
             }
             this.showingSource = 'local';
             this.updateDisplayView();
