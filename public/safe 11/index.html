@@ -1712,7 +1712,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         try {
           await this.startLocalCamera();
           this.isStreaming = true;
-          this.showingSource = 'remote'; // Wer auf "Ansehen" tippt, sieht sofort den Partner
+          this.showingSource = 'remote'; // Zuschauer sieht sofort den Partner
 
           const notifArea = document.getElementById('pulse-notification-area');
           if (notifArea) notifArea.classList.add('hidden');
@@ -1753,7 +1753,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         const statusText = document.getElementById('stream-status-text');
 
         if (this.showingSource === 'local') {
-          // 1. ZUSTAND: EIGENE KAMERA (ZUM AUSRICHTEN)
+          // Eigene Kamera aktivieren & nach vorne holen
           if (localVid) {
             localVid.className = 'absolute inset-0 w-full h-full object-cover transition-transform duration-150 origin-center opacity-100 z-10 pointer-events-auto';
             if (localVid.paused) localVid.play().catch(e => {});
@@ -1761,15 +1761,12 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           if (remoteVid) {
             remoteVid.className = 'absolute inset-0 w-full h-full object-cover transition-transform duration-150 origin-center opacity-0 z-0 pointer-events-none';
           }
-          // Button bietet Aktion an: Zum Partner wechseln
           if (viewText) viewText.innerText = 'Partner';
           if (viewIcon) viewIcon.innerText = '👁️';
           if (roleBadge) roleBadge.innerText = 'ICH SELBST 🪞';
-          
-          // Eigene Kamera wird niemals durch das Warte-Overlay überdeckt
           if (statusOverlay) statusOverlay.classList.add('hidden');
         } else {
-          // 2. ZUSTAND: PARTNER-STREAM SEHEN
+          // Partner-Stream aktivieren & nach vorne holen
           if (localVid) {
             localVid.className = 'absolute inset-0 w-full h-full object-cover transition-transform duration-150 origin-center opacity-0 z-0 pointer-events-none';
           }
@@ -1777,12 +1774,10 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             remoteVid.className = 'absolute inset-0 w-full h-full object-cover transition-transform duration-150 origin-center opacity-100 z-10 pointer-events-auto';
             if (remoteVid.paused) remoteVid.play().catch(e => {});
           }
-          // Button bietet Aktion an: Zurück zur eigenen Kamera
           if (viewText) viewText.innerText = 'Ich selbst';
           if (viewIcon) viewIcon.innerText = '🪞';
           if (roleBadge) roleBadge.innerText = 'PARTNER LIVE 🔴';
 
-          // Nur im Partner-Modus das Warte-Overlay zeigen, falls noch kein Stream da ist
           if (!this.remoteStream) {
             if (statusText) statusText.innerText = 'Warte auf Partner-Signal...';
             if (statusOverlay) statusOverlay.classList.remove('hidden');
