@@ -209,33 +209,37 @@
 
       <!-- DYNAMISCHE FLÜSTERBOX (FÜLLT DEN GESAMTEN FREIEN PLATZ ELASTISCH AUS) -->
       <section class="bg-gradient-to-b from-slate-950/95 via-purple-950/20 to-slate-950/95 border border-purple-500/35 rounded-2xl p-3 flex-1 min-h-0 flex flex-col justify-between overflow-hidden glow-purple relative shadow-inner">
-        <div class="flex justify-between items-center border-b border-purple-900/40 pb-1.5 shrink-0">
-          <span class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
-            <span>💬</span> Flüsterbox
+        <div class="flex justify-between items-center border-b border-purple-900/40 pb-1.5 shrink-0 gap-1.5 min-h-[30px]">
+          <!-- Titel (wird während des Streams kompakt gehalten) -->
+          <span id="shoutbox-header-title" class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1 shrink-0">
+            <span>💬</span> <span id="shoutbox-header-text">Flüsterbox</span>
           </span>
-          <div class="flex items-center gap-1">
-            <button id="btn-stream-incoming" onclick="LiveStream.acceptIncomingCall()" class="hidden px-2 py-0.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-[10px] rounded-lg shadow animate-pulse">
+          <div class="flex items-center gap-1 justify-end flex-1 min-w-0">
+            <button id="btn-stream-incoming" onclick="LiveStream.acceptIncomingCall()" class="hidden px-2.5 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-[10px] rounded-lg shadow animate-pulse shrink-0">
               👁️ Ansehen
             </button>
-            <div id="stream-active-controls" class="hidden items-center gap-1">
-              <!-- Eigene Kamera aktivieren/deaktivieren (für Zuschauer) -->
-              <button id="btn-stream-toggle-cam" onclick="LiveStream.toggleMyCamera()" class="px-2 py-0.5 bg-slate-950 hover:bg-purple-950 border border-purple-500/40 text-purple-300 rounded-lg text-[10px] font-bold shadow flex items-center gap-1 transition-all active:scale-95" title="Eigene Kamera an/aus">
+            <div id="stream-active-controls" class="hidden items-center gap-1 shrink-0">
+              <!-- Eigene Kamera an/aus -->
+              <button id="btn-stream-toggle-cam" onclick="LiveStream.toggleMyCamera()" class="px-1.5 py-1 bg-slate-950 border border-purple-500/40 text-purple-300 rounded-lg text-[10px] font-bold shadow flex items-center gap-1 transition-all active:scale-95 shrink-0" title="Eigene Kamera an/aus">
                 <span id="btn-stream-toggle-cam-icon">📷</span>
                 <span id="btn-stream-toggle-cam-text">Zeigen</span>
               </button>
-              <div id="stream-view-tabs" class="flex items-center bg-slate-950 rounded-lg p-0.5 border border-purple-500/50 text-[10px] font-bold">
-                <button id="tab-stream-local" onclick="LiveStream.setDisplaySource('local')" class="px-2 py-0.5 rounded-md bg-purple-600 text-white shadow transition-all">
+              <!-- Ansichts-Umschalter -->
+              <div id="stream-view-tabs" class="flex items-center bg-slate-950 rounded-lg p-0.5 border border-purple-500/50 text-[10px] font-bold shrink-0">
+                <button id="tab-stream-local" onclick="LiveStream.setDisplaySource('local')" class="px-1.5 py-0.5 rounded-md bg-purple-600 text-white shadow transition-all">
                   🪞 Ich
                 </button>
-                <button id="tab-stream-remote" onclick="LiveStream.setDisplaySource('remote')" class="px-2 py-0.5 rounded-md text-slate-400 hover:text-slate-200 transition-all">
-                  👁️ Partner
+                <button id="tab-stream-remote" onclick="LiveStream.setDisplaySource('remote')" class="px-1.5 py-0.5 rounded-md text-slate-400 hover:text-slate-200 transition-all">
+                  👁️ Du
                 </button>
               </div>
-              <button id="btn-stream-flip" onclick="LiveStream.flipCamera()" class="p-1 bg-slate-950 hover:bg-slate-900 border border-slate-700 text-slate-200 rounded-lg text-[11px] shadow transition-all active:scale-95" title="Eigene Kamera wechseln (Front/Back)">
+              <!-- Flip Camera -->
+              <button id="btn-stream-flip" onclick="LiveStream.flipCamera()" class="p-1 bg-slate-950 hover:bg-slate-900 border border-slate-700 text-slate-200 rounded-lg text-xs shadow transition-all active:scale-95 shrink-0" title="Front-/Rückkamera wechseln">
                 🔄
               </button>
             </div>
-            <button id="btn-toggle-stream" onclick="LiveStream.toggleStreamTrigger()" class="px-2.5 py-0.5 bg-slate-950 hover:bg-purple-950/60 border border-purple-500/40 text-purple-300 hover:text-purple-200 text-[10px] font-bold rounded-lg transition-all flex items-center gap-1">
+            <!-- Hauptschalter Live/Aus -->
+            <button id="btn-toggle-stream" onclick="LiveStream.toggleStreamTrigger()" class="px-2 py-1 bg-slate-950 hover:bg-purple-950/60 border border-purple-500/40 text-purple-300 hover:text-purple-200 text-[10px] font-bold rounded-lg transition-all flex items-center gap-0.5 shrink-0">
               <span>📹</span> <span id="stream-btn-label">Live</span>
             </button>
           </div>
@@ -1846,18 +1850,22 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         const flipBtn = document.getElementById('btn-stream-flip');
         const viewTabs = document.getElementById('stream-view-tabs');
 
+        const shoutboxText = document.getElementById('shoutbox-header-text');
+        if (shoutboxText) {
+          shoutboxText.classList.toggle('hidden', this.isStreaming);
+        }
+
         // Kamera-Zuschaltbutton & Flip-Button anpassen
         if (camBtn && camText) {
           if (this.localStream) {
-            camBtn.className = 'px-2 py-0.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-500/50 text-rose-200 rounded-lg text-[10px] font-bold shadow flex items-center gap-1 transition-all active:scale-95';
+            camBtn.className = 'px-1.5 py-1 bg-rose-950/80 hover:bg-rose-900 border border-rose-500/50 text-rose-200 rounded-lg text-[10px] font-bold shadow flex items-center gap-1 transition-all active:scale-95 shrink-0';
             camText.innerText = 'Cam aus';
             if (flipBtn) flipBtn.classList.remove('hidden');
             if (viewTabs) viewTabs.classList.remove('hidden');
           } else {
-            camBtn.className = 'px-2 py-0.5 bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-200 rounded-lg text-[10px] font-bold shadow flex items-center gap-1 transition-all active:scale-95';
+            camBtn.className = 'px-1.5 py-1 bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-200 rounded-lg text-[10px] font-bold shadow flex items-center gap-1 transition-all active:scale-95 shrink-0';
             camText.innerText = 'Zeigen';
             if (flipBtn) flipBtn.classList.add('hidden');
-            // Wenn man keine eigene Kamera an hat, braucht man die "Ich"-Ansicht nicht
             if (viewTabs) viewTabs.classList.add('hidden');
           }
         }
@@ -2125,6 +2133,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           activeControls.classList.add('hidden');
           activeControls.classList.remove('flex');
         }
+
+        const shoutboxText = document.getElementById('shoutbox-header-text');
+        if (shoutboxText) shoutboxText.classList.remove('hidden');
 
         document.getElementById('stream-btn-label').innerText = 'Live';
 
