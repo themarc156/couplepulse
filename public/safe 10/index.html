@@ -214,15 +214,15 @@
             <span>💬</span> Flüsterbox
           </span>
           <div class="flex items-center gap-1">
-            <button id="btn-stream-incoming" onclick="LiveStream.acceptIncomingCall()" class="hidden px-2 py-0.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-[10px] rounded-lg shadow animate-pulse">
+            <button id="btn-stream-incoming" onclick="LiveStream.joinAsViewer()" class="hidden px-2 py-0.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-[10px] rounded-lg shadow animate-pulse">
               👁️ Ansehen
             </button>
             <div id="stream-active-controls" class="hidden items-center gap-1">
-              <button id="btn-stream-view-toggle" onclick="LiveStream.toggleDisplaySource()" class="px-2 py-0.5 bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-200 rounded-lg text-[10px] font-bold shadow flex items-center gap-1 transition-all active:scale-95" title="Ansicht zwischen Partner und eigener Kamera umschalten">
-                <span id="btn-stream-view-icon">👁️</span>
-                <span id="btn-stream-view-text">Partner</span>
+              <button id="btn-stream-swap" onclick="LiveStream.switchStreamDirection()" class="px-2 py-0.5 bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-200 rounded-lg text-[10px] font-bold shadow flex items-center gap-1 transition-all active:scale-95" title="Kamera-Rolle tauschen">
+                <span>🔁</span>
+                <span id="btn-stream-swap-text">Ich zeig mich</span>
               </button>
-              <button id="btn-stream-flip" onclick="LiveStream.flipCamera()" class="p-1 bg-slate-950 hover:bg-slate-900 border border-slate-700 text-slate-200 rounded-lg text-[11px] shadow transition-all active:scale-95" title="Eigene Kamera wechseln (Front/Back)">
+              <button id="btn-stream-flip" onclick="LiveStream.flipCamera()" class="p-1 bg-slate-950 hover:bg-slate-900 border border-slate-700 text-slate-200 rounded-lg text-[11px] shadow transition-all active:scale-95" title="Kamera wechseln">
                 🔄
               </button>
             </div>
@@ -1508,7 +1508,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     }
 
     // =========================================================================
-    // PEERJS LIVE DATA SYNC & 2-WEGE LIVE PEEPSHOW ENGINE
+    // PEERJS LIVE DATA SYNC & INLINE PEEPSHOW (NAHTLOSER ROLLENTAUSCH)
     // =========================================================================
     const LiveStream = {
       peer: null,
@@ -1516,9 +1516,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       incomingCall: null,
       dataConn: null,
       localStream: null,
-      remoteStream: null,
       isStreaming: false,
-      showingSource: 'local', // 'local' = eigenes Bild (Ausrichten), 'remote' = Partner sehen
+      isSender: false,
+      isSwapping: false,
       currentFacingMode: 'user',
       zoomLevel: 1,
       panX: 0,
@@ -1536,37 +1536,58 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           host: '0.peerjs.com',
           port: 443,
           config: { 
-            iceServers: [
-              { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' },
-              { urls: 'stun:stun2.l.google.com:19302' },
-              { urls: 'stun:stun3.l.google.com:19302' }
-            ] 
-          },
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
+    { urls: 'stun:stun3.l.google.com:19302' }
+  ] 
+},
           debug: 1
         });
 
-        this.peer.on('open', () => { 
+                        this.peer.on('open', () => { 
           this.connectData();
         });
 
         this.peer.on('connection', (conn) => {
-          this.dataConn = conn;
-          conn.on('data', (data) => this.handleIncomingData(data));
-          conn.on('open', () => {
-            setTimeout(() => requestAllSyncsFromPartner(), 800);
-          });
-          conn.on('close', () => { this.dataConn = null; });
-        });
+  this.dataConn = conn;
+  conn.on('data', (data) => this.handleIncomingData(data));
+  conn.on('open', () => {
+    // Auch bei eingehender Verbindung ALLE Stände abgleichen
+    setTimeout(() => requestAllSyncsFromPartner(), 800);
+  });
+  conn.on('close', () => { this.dataConn = null; });
+});
 
-        this.peer.on('call', async (call) => {
+        this.peer.on('call', (call) => {
           this.incomingCall = call;
           this.primaryCall = call;
 
-          if (this.isStreaming && this.localStream) {
-            // Wenn wir bereits selbst die Kamera anhaben -> sofort gegenseitig verbinden
-            call.answer(this.localStream);
-            this.bindCallEvents(call);
+          // Nahtloser Rollentausch während eines bereits aktiven Streams
+          if (this.isStreaming) {
+            this.isSender = false;
+            this.updateStreamRoleUI();
+
+            call.answer();
+            call.on('stream', (remoteStream) => {
+              if (this.localStream) {
+                this.localStream.getTracks().forEach(t => t.stop());
+                this.localStream = null;
+              }
+              document.getElementById('local-video').classList.add('hidden');
+              const rVideo = document.getElementById('remote-video');
+              rVideo.classList.remove('hidden');
+              rVideo.srcObject = remoteStream;
+              rVideo.muted = false;
+              rVideo.play().catch(e => {});
+              document.getElementById('stream-status-overlay').classList.add('hidden');
+              playSensualSound('chime');
+            });
+
+            call.on('close', () => {
+              if (!this.isSwapping) this.endStream();
+            });
             return;
           }
 
@@ -1589,11 +1610,12 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           const conn = this.peer.connect(partnerId);
           if (conn) {
             conn.on('open', () => { 
-              if (!this.dataConn || !this.dataConn.open) {
-                this.dataConn = conn; 
-                setTimeout(() => requestAllSyncsFromPartner(), 600);
-              }
-            });
+  // Nur übernehmen, wenn wir nicht schon eine offene Verbindung haben
+  if (!this.dataConn || !this.dataConn.open) {
+    this.dataConn = conn; 
+    setTimeout(() => requestAllSyncsFromPartner(), 600);
+  }
+});
             conn.on('data', (data) => this.handleIncomingData(data));
             conn.on('close', () => {
               this.dataConn = null;
@@ -1616,173 +1638,12 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         }
       },
 
-      async startLocalCamera() {
-        if (this.localStream) return this.localStream;
-        this.localStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: this.currentFacingMode },
-          audio: true
-        });
-        const localVid = document.getElementById('local-video');
-        if (localVid) {
-          localVid.srcObject = this.localStream;
-          localVid.muted = true;
-          localVid.play().catch(e => {});
-        }
-        return this.localStream;
-      },
-
-      bindCallEvents(call) {
-        call.on('stream', (remoteMediaStream) => {
-          this.remoteStream = remoteMediaStream;
-          const rVideo = document.getElementById('remote-video');
-          if (rVideo) {
-            rVideo.srcObject = remoteMediaStream;
-            rVideo.muted = false;
-            rVideo.play().catch(e => {});
-          }
-          document.getElementById('stream-status-overlay').classList.add('hidden');
-          playSensualSound('chime');
-          this.updateDisplayView();
-        });
-
-        call.on('close', () => {
-          this.remoteStream = null;
-          document.getElementById('stream-status-text').innerText = 'Partner getrennt';
-          document.getElementById('stream-status-overlay').classList.remove('hidden');
-        });
-      },
-
-      async toggleStreamTrigger() {
+      toggleStreamTrigger() {
         if (this.isStreaming) {
           this.endStream();
         } else {
-          await this.startStream();
+          this.startAsSender();
         }
-      },
-
-      async startStream() {
-        try {
-          await this.startLocalCamera();
-          this.isStreaming = true;
-          this.showingSource = 'local'; // Startet in der "Ausrichten / Ich selbst"-Ansicht
-
-          const notifArea = document.getElementById('pulse-notification-area');
-          if (notifArea) notifArea.classList.add('hidden');
-
-          document.getElementById('home-shoutbox-messages').classList.add('hidden');
-          document.getElementById('stream-video-container').classList.remove('hidden');
-          document.getElementById('stream-btn-label').innerText = 'Aus';
-          
-          const activeControls = document.getElementById('stream-active-controls');
-          if (activeControls) {
-            activeControls.classList.remove('hidden');
-            activeControls.classList.add('flex');
-          }
-
-          this.updateDisplayView();
-
-          const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
-          const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
-          const partnerId = `cp_${safeRoom}_${targetUser}`;
-
-          document.getElementById('stream-status-text').innerText = 'Warte auf Partner...';
-          document.getElementById('stream-status-overlay').classList.remove('hidden');
-
-          this.connectData();
-          this.primaryCall = this.peer.call(partnerId, this.localStream);
-          if (this.primaryCall) {
-            this.bindCallEvents(this.primaryCall);
-          }
-
-          this.sendData({ type: 'stream_started', sender: state.currentUser });
-          triggerPushNotification(state.currentUser, true);
-        } catch (e) {
-          showToast("⚠️ Kamera blockiert", "Kamera-Zugriff nicht möglich: " + e.message, "📹");
-          this.endStream();
-        }
-      },
-
-      async acceptIncomingCall() {
-        if (!this.incomingCall) return;
-        try {
-          await this.startLocalCamera();
-          this.isStreaming = true;
-          this.showingSource = 'remote'; // Zuschauer sieht sofort den Partner
-
-          const notifArea = document.getElementById('pulse-notification-area');
-          if (notifArea) notifArea.classList.add('hidden');
-
-          document.getElementById('btn-stream-incoming').classList.add('hidden');
-          document.getElementById('home-shoutbox-messages').classList.add('hidden');
-          document.getElementById('stream-video-container').classList.remove('hidden');
-          document.getElementById('stream-btn-label').innerText = 'Aus';
-
-          const activeControls = document.getElementById('stream-active-controls');
-          if (activeControls) {
-            activeControls.classList.remove('hidden');
-            activeControls.classList.add('flex');
-          }
-
-          this.primaryCall = this.incomingCall;
-          this.incomingCall.answer(this.localStream);
-          this.bindCallEvents(this.incomingCall);
-          this.updateDisplayView();
-        } catch(e) {
-          showToast("⚠️ Fehler", "Stream konnte nicht angenommen werden: " + e.message, "📹");
-        }
-      },
-
-      toggleDisplaySource() {
-        this.showingSource = (this.showingSource === 'local') ? 'remote' : 'local';
-        this.updateDisplayView();
-        playSensualSound('heartbeat');
-      },
-
-      updateDisplayView() {
-        const localVid = document.getElementById('local-video');
-        const remoteVid = document.getElementById('remote-video');
-        const viewText = document.getElementById('btn-stream-view-text');
-        const viewIcon = document.getElementById('btn-stream-view-icon');
-        const roleBadge = document.getElementById('stream-role-badge');
-
-        if (this.showingSource === 'local') {
-          if (localVid) localVid.classList.remove('hidden');
-          if (remoteVid) remoteVid.classList.add('hidden');
-          if (viewText) viewText.innerText = 'Partner';
-          if (viewIcon) viewIcon.innerText = '👁️';
-          if (roleBadge) roleBadge.innerText = 'ICH SELBST 🪞';
-        } else {
-          if (localVid) localVid.classList.add('hidden');
-          if (remoteVid) remoteVid.classList.remove('hidden');
-          if (viewText) viewText.innerText = 'Ich selbst';
-          if (viewIcon) viewIcon.innerText = '🪞';
-          if (roleBadge) roleBadge.innerText = 'PARTNER LIVE 🔴';
-        }
-
-        this.applyZoom();
-      },
-
-      async flipCamera() {
-        if (!this.localStream) return;
-        try {
-          this.currentFacingMode = this.currentFacingMode === 'user' ? 'environment' : 'user';
-          this.localStream.getTracks().forEach(t => t.stop());
-          this.localStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: this.currentFacingMode },
-            audio: true
-          });
-          
-          const localVid = document.getElementById('local-video');
-          if (localVid) localVid.srcObject = this.localStream;
-
-          if (this.primaryCall && this.primaryCall.peerConnection) {
-            const videoSender = this.primaryCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
-            if (videoSender) {
-              videoSender.replaceTrack(this.localStream.getVideoTracks()[0]);
-            }
-          }
-          playSensualSound('chime');
-        } catch(e) {}
       },
 
       toggleZoom() {
@@ -1832,9 +1693,11 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         if (!container) return;
 
         if (this.isTheaterMode) {
+          // Echtes Fullscreen-Overlay über das gesamte Handy-Display
           container.className = 'fixed inset-0 z-50 bg-black flex items-center justify-center select-none touch-none overflow-hidden';
           if (btn) btn.innerText = '🗗';
         } else {
+          // Zurück in die kompakte Flüsterbox
           container.className = 'relative flex-1 min-h-[190px] rounded-xl overflow-hidden bg-black border border-purple-500/50 my-1 flex items-center justify-center select-none touch-none';
           if (btn) btn.innerText = '⛶';
         }
@@ -1856,6 +1719,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           const now = Date.now();
           const rect = container.getBoundingClientRect();
 
+          // 1. Gezielter Doppel-Tipp (Double-Tap auf gewünschten Bereich)
           if (e.touches.length === 1) {
             if (now - this.lastTapTime < 300) {
               e.preventDefault();
@@ -1881,12 +1745,14 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             }
             this.lastTapTime = now;
 
+            // 1-Finger Drag & Pan Vorbereitung
             startTouchX = e.touches[0].clientX;
             startTouchY = e.touches[0].clientY;
             startPanX = this.panX;
             startPanY = this.panY;
           }
 
+          // 2. Zwei-Finger Pinch Vorbereitung
           if (e.touches.length === 2) {
             initialDist = Math.hypot(
               e.touches[0].pageX - e.touches[1].pageX,
@@ -1903,6 +1769,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         container.addEventListener('touchmove', (e) => {
           const rect = container.getBoundingClientRect();
 
+          // 1-Finger Verschieben (Pan) wenn hineingezoomt
           if (e.touches.length === 1 && typeof this.zoomLevel === 'number' && this.zoomLevel > 1) {
             e.preventDefault();
             const deltaX = e.touches[0].clientX - startTouchX;
@@ -1913,6 +1780,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             this.applyZoom(true);
           }
 
+          // 2-Finger Pinch to Zoom
           if (e.touches.length === 2 && initialDist > 0) {
             e.preventDefault();
             const currentDist = Math.hypot(
@@ -1943,6 +1811,182 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         }, { passive: true });
       },
 
+      updateStreamRoleUI() {
+        const roleBadge = document.getElementById('stream-role-badge');
+        const swapText = document.getElementById('btn-stream-swap-text');
+        const flipBtn = document.getElementById('btn-stream-flip');
+        const activeControls = document.getElementById('stream-active-controls');
+
+        if (activeControls) {
+          activeControls.classList.remove('hidden');
+          activeControls.classList.add('flex');
+        }
+
+        if (this.isSender) {
+          if (roleBadge) roleBadge.innerText = 'DU STREAMST 🔴';
+          if (swapText) swapText.innerText = 'Übergeben';
+          if (flipBtn) flipBtn.classList.remove('hidden');
+        } else {
+          if (roleBadge) roleBadge.innerText = 'LIVE PEEPSHOW 🔴';
+          if (swapText) swapText.innerText = 'Ich zeig mich';
+          if (flipBtn) flipBtn.classList.add('hidden');
+        }
+      },
+
+      async switchStreamDirection() {
+        if (!this.isStreaming) return;
+
+        if (this.isSender) {
+          this.sendData({ type: 'stream_swap_offer' });
+          showToast("🔁 Kamera-Übergabe", "Einladung zur Übernahme an Partner gesendet.", "📹");
+        } else {
+          try {
+            const newStream = await navigator.mediaDevices.getUserMedia({ 
+              video: { facingMode: this.currentFacingMode }, 
+              audio: true 
+            });
+
+            this.isSwapping = true;
+            this.localStream = newStream;
+            this.isSender = true;
+
+            const localVid = document.getElementById('local-video');
+            const remoteVid = document.getElementById('remote-video');
+            if (remoteVid) remoteVid.classList.add('hidden');
+            if (localVid) {
+              localVid.classList.remove('hidden');
+              localVid.srcObject = this.localStream;
+              localVid.play().catch(e => {});
+            }
+
+            this.updateStreamRoleUI();
+
+            const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
+            const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
+            const partnerId = `cp_${safeRoom}_${targetUser}`;
+
+            const oldCall = this.primaryCall;
+            this.primaryCall = this.peer.call(partnerId, this.localStream);
+            
+            if (this.primaryCall) {
+              this.primaryCall.on('close', () => {
+                if (!this.isSwapping) this.endStream();
+              });
+            }
+
+            this.sendData({ type: 'stream_swap_takeover' });
+
+            setTimeout(() => {
+              if (oldCall && oldCall !== this.primaryCall) {
+                try { oldCall.close(); } catch(e) {}
+              }
+              this.isSwapping = false;
+            }, 800);
+
+            playSensualSound('chime');
+            showToast("✨ Kamera aktiv", "Du überträgst jetzt dein Video.", "📹");
+          } catch (e) {
+            this.isSwapping = false;
+            showToast("⚠️ Kamera-Fehler", "Übernahme nicht möglich: " + e.message, "📹");
+          }
+        }
+      },
+
+      async startAsSender() {
+        try {
+          this.localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.currentFacingMode }, audio: true });
+          this.isStreaming = true;
+          this.isSender = true;
+
+          // Benachrichtigungs-Bereich ausblenden, um vollen Platz für das Video bereitzustellen
+          const notifArea = document.getElementById('pulse-notification-area');
+          if (notifArea) notifArea.classList.add('hidden');
+
+          document.getElementById('home-shoutbox-messages').classList.add('hidden');
+          document.getElementById('stream-video-container').classList.remove('hidden');
+          document.getElementById('remote-video').classList.add('hidden');
+          
+          const localVid = document.getElementById('local-video');
+          localVid.classList.remove('hidden');
+          localVid.srcObject = this.localStream;
+          localVid.play().catch(e => {});
+
+          this.zoomLevel = 1;
+          this.applyZoom();
+          this.updateStreamRoleUI();
+
+          document.getElementById('stream-status-text').innerText = 'Warte auf Partner...';
+          document.getElementById('stream-btn-label').innerText = 'Aus';
+
+          const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
+          const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
+          const partnerId = `cp_${safeRoom}_${targetUser}`;
+
+          this.connectData();
+          this.primaryCall = this.peer.call(partnerId, this.localStream);
+          if (this.primaryCall) {
+            document.getElementById('stream-status-overlay').classList.add('hidden');
+          }
+
+          this.sendData({ type: 'stream_started', sender: state.currentUser });
+          triggerPushNotification(state.currentUser, true);
+        } catch (e) {
+          showToast("⚠️ Kamera blockiert", "Kamera-Zugriff nicht möglich: " + e.message, "📹");
+          this.endStream();
+        }
+      },
+
+      joinAsViewer() {
+        if (!this.incomingCall) return;
+        this.isStreaming = true;
+        this.isSender = false;
+        this.isSwapping = false;
+
+        // Benachrichtigungs-Bereich ausblenden für maximale Video-Höhe
+        const notifArea = document.getElementById('pulse-notification-area');
+        if (notifArea) notifArea.classList.add('hidden');
+
+        document.getElementById('btn-stream-incoming').classList.add('hidden');
+        document.getElementById('home-shoutbox-messages').classList.add('hidden');
+        document.getElementById('stream-video-container').classList.remove('hidden');
+        document.getElementById('local-video').classList.add('hidden');
+        document.getElementById('remote-video').classList.remove('hidden');
+
+        this.zoomLevel = 1;
+        this.applyZoom();
+        this.updateStreamRoleUI();
+
+        document.getElementById('stream-btn-label').innerText = 'Aus';
+
+        this.primaryCall = this.incomingCall;
+        this.incomingCall.answer();
+
+        this.incomingCall.on('stream', (remoteStream) => {
+          const rVideo = document.getElementById('remote-video');
+          rVideo.srcObject = remoteStream;
+          rVideo.muted = false;
+          rVideo.play().catch(e => {});
+          document.getElementById('stream-status-overlay').classList.add('hidden');
+          playSensualSound('chime');
+        });
+
+        this.incomingCall.on('close', () => {
+          if (!this.isSwapping) this.endStream();
+        });
+      },
+
+      async flipCamera() {
+        if (!this.localStream || !this.isSender) return;
+        this.currentFacingMode = this.currentFacingMode === 'user' ? 'environment' : 'user';
+        this.localStream.getTracks().forEach(t => t.stop());
+        this.localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.currentFacingMode }, audio: true });
+        document.getElementById('local-video').srcObject = this.localStream;
+        if (this.primaryCall && this.primaryCall.peerConnection) {
+          const videoSender = this.primaryCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+          if (videoSender) videoSender.replaceTrack(this.localStream.getVideoTracks()[0]);
+        }
+      },
+
       showStreamFloatingWhisper(msg) {
         const box = document.getElementById('stream-floating-box');
         if (!box) return;
@@ -1955,6 +1999,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       },
 
       endStream() {
+        this.isSwapping = false;
         if (this.localStream) {
           this.localStream.getTracks().forEach(t => t.stop());
           this.localStream = null;
@@ -1964,9 +2009,8 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           this.primaryCall = null;
         }
         this.incomingCall = null;
-        this.remoteStream = null;
         this.isStreaming = false;
-        this.showingSource = 'local';
+        this.isSender = false;
         this.zoomLevel = 1;
         this.panX = 0;
         this.panY = 0;
@@ -1975,6 +2019,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           this.toggleTheaterMode();
         }
 
+        // Benachrichtigungs-Bereich wieder sichtbar machen
         const notifArea = document.getElementById('pulse-notification-area');
         if (notifArea) notifArea.classList.remove('hidden');
 
@@ -1996,15 +2041,16 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
       handleIncomingData(data) {
         if (data.type === 'wishes_full_sync') {
-          applyIncomingWishesSync(data);
-        } else if (data.type === 'wishes_sync_request') {
-          LiveStream.sendData({
-            type: 'wishes_full_sync',
-            wishes: state.wishes,
-            wishesUpdatedAt: state.wishesUpdatedAt || 0,
-            sender: state.currentUser
-          });
-        } else if (data.type === 'profile_names_sync') {
+  applyIncomingWishesSync(data);
+} else if (data.type === 'wishes_sync_request') {
+  // Partner fragt nach Wünsche-Stand
+  LiveStream.sendData({
+    type: 'wishes_full_sync',
+    wishes: state.wishes,
+    wishesUpdatedAt: state.wishesUpdatedAt || 0,
+    sender: state.currentUser
+  });
+} else if (data.type === 'profile_names_sync') {
           if (data.names) {
             state.names = Object.assign(state.names || {}, data.names);
             localStorage.setItem('cp_name_er', state.names.Er || 'Er');
@@ -2016,6 +2062,17 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           const incomingBtn = document.getElementById('btn-stream-incoming');
           if (incomingBtn) incomingBtn.classList.remove('hidden');
           showToast("👁️ Live-Stream", `${getRoleName(data.sender)} hat die Kamera gestartet!`, "👁️");
+          playSensualSound('chime');
+        } else if (data.type === 'stream_swap_takeover') {
+          this.isSwapping = true;
+          this.isSender = false;
+          this.updateStreamRoleUI();
+          document.getElementById('local-video').classList.add('hidden');
+          document.getElementById('remote-video').classList.remove('hidden');
+          showToast("🔁 Kamera gewechselt", "Dein Partner überträgt jetzt das Video.", "📹");
+          setTimeout(() => { this.isSwapping = false; }, 1500);
+        } else if (data.type === 'stream_swap_offer') {
+          showToast("🔁 Kamera-Übergabe", "Dein Partner bietet dir die Kamera an. Tippe auf 'Ich zeig mich'!", "📹");
           playSensualSound('chime');
         } else if (data.type === 'stream_ended') {
           if (this.isStreaming) {
