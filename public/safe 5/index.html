@@ -434,13 +434,16 @@
             <span id="wishes-counter-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-950/80 border border-amber-500/50 text-amber-300 shrink-0">0 Einträge</span>
           </div>
 
-          <!-- DYNAMISCHE PARTNER-TABS (2 REITER) -->
-          <div class="grid grid-cols-2 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold text-center">
-            <button id="btn-filter-wish-partner" onclick="setWishFilter(getPartnerRole())" class="py-2 rounded-lg bg-amber-500 text-slate-950 font-black shadow transition-all truncate px-2">
-              💖 <span id="label-filter-wish-partner">Partner</span>
+          <!-- DYNAMISCHE PARTNER-TABS -->
+          <div class="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold text-center">
+            <button id="btn-filter-wish-all" onclick="setWishFilter('all')" class="py-1.5 rounded-lg bg-amber-500 text-slate-950 shadow font-black transition-all">
+              ✨ Alle
             </button>
-            <button id="btn-filter-wish-me" onclick="setWishFilter(state.currentUser)" class="py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all truncate px-2 font-bold">
-              👑 <span id="label-filter-wish-me">Ich</span>
+            <button id="btn-filter-wish-er" onclick="setWishFilter('Er')" class="py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all truncate px-1">
+              👑 <span id="label-filter-wish-er">Er</span>
+            </button>
+            <button id="btn-filter-wish-sie" onclick="setWishFilter('Sie')" class="py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all truncate px-1">
+              👑 <span id="label-filter-wish-sie">Sie</span>
             </button>
           </div>
         </div>
@@ -608,9 +611,16 @@
         </div>
 
         <div class="space-y-3 text-xs">
-          <div class="flex items-center justify-between bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 text-[11px]">
-            <span class="text-slate-400 font-medium">Verfasser:</span>
-            <span id="modal-wish-author-badge" class="font-bold text-amber-400">Er</span>
+          <div>
+            <label class="text-[10px] text-slate-400 font-bold block pb-1">Verfasser:</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" id="btn-wish-author-er" onclick="selectWishModalAuthor('Er')" class="py-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1">
+                <span>👑</span> <span id="label-wish-author-er">Er</span>
+              </button>
+              <button type="button" id="btn-wish-author-sie" onclick="selectWishModalAuthor('Sie')" class="py-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1">
+                <span>👑</span> <span id="label-wish-author-sie">Sie</span>
+              </button>
+            </div>
           </div>
 
           <div>
@@ -625,7 +635,7 @@
         </div>
 
         <div class="flex gap-2 pt-1 border-t border-slate-800">
-          <button id="btn-modal-wish-save" onclick="saveWishFromModal()" class="flex-1 py-3 bg-gradient-to-r from-amber-500 to-rose-600 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-95 transition-all">
+          <button onclick="saveWishFromModal()" class="flex-1 py-3 bg-gradient-to-r from-amber-500 to-rose-600 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-95 transition-all">
             Speichern ✨
           </button>
           <button id="btn-modal-wish-delete" onclick="deleteWishFromModal()" class="hidden py-3 px-3 bg-rose-950/80 hover:bg-rose-900 border border-rose-800/60 text-rose-300 font-bold text-xs rounded-xl active:scale-95 transition-all">
@@ -1073,10 +1083,7 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
       }
 
       if (view === 'match') renderKopfkinoTab();
-      if (view === 'wishes') {
-        wishActiveFilter = getPartnerRole();
-        renderWishesList();
-      }
+      if (view === 'wishes') renderWishesList();
       if (view === 'game') {
         if (!state.game.currentCard) {
           drawCurrentTurnCard();
@@ -4187,11 +4194,12 @@ function requestAllSyncsFromPartner() {
     // =========================================================================
     // WÜNSCHE & TRESOR LOGIK
     // =========================================================================
-    let wishActiveFilter = null;
+    let wishActiveFilter = 'all';
     let modalWishEditingId = null;
+    let modalWishAuthor = 'Er';
 
-    function setWishFilter(filterRole) {
-      wishActiveFilter = filterRole;
+    function setWishFilter(filter) {
+      wishActiveFilter = filter;
       renderWishesList();
       playSensualSound('heartbeat');
     }
@@ -4201,76 +4209,58 @@ function requestAllSyncsFromPartner() {
       const badge = document.getElementById('wishes-counter-badge');
       const allWishes = state.wishes || [];
 
-      // Standardmäßig immer Partner aktiv, wenn noch kein Filter gesetzt ist
-      if (!wishActiveFilter) {
-        wishActiveFilter = getPartnerRole();
-      }
+      // Filter-Button Visuals & Partner-Namen aktualisieren
+      const labelEr = document.getElementById('label-filter-wish-er');
+      const labelSie = document.getElementById('label-filter-wish-sie');
+      if (labelEr) labelEr.innerText = getRoleName('Er');
+      if (labelSie) labelSie.innerText = getRoleName('Sie');
 
-      const partnerRole = getPartnerRole();
-      const myRole = state.currentUser;
+      const btnAll = document.getElementById('btn-filter-wish-all');
+      const btnEr = document.getElementById('btn-filter-wish-er');
+      const btnSie = document.getElementById('btn-filter-wish-sie');
 
-      // Filter-Button Beschriftungen aktualisieren
-      const labelPartner = document.getElementById('label-filter-wish-partner');
-      const labelMe = document.getElementById('label-filter-wish-me');
-      if (labelPartner) labelPartner.innerText = getPartnerName();
-      if (labelMe) labelMe.innerText = getMyName();
+      if (btnAll) btnAll.className = wishActiveFilter === 'all' ? 'py-1.5 rounded-lg bg-amber-500 text-slate-950 font-black shadow transition-all' : 'py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all';
+      if (btnEr) btnEr.className = wishActiveFilter === 'Er' ? 'py-1.5 rounded-lg bg-rose-600 text-white font-black shadow transition-all truncate px-1' : 'py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all truncate px-1';
+      if (btnSie) btnSie.className = wishActiveFilter === 'Sie' ? 'py-1.5 rounded-lg bg-pink-600 text-white font-black shadow transition-all truncate px-1' : 'py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all truncate px-1';
 
-      const btnPartner = document.getElementById('btn-filter-wish-partner');
-      const btnMe = document.getElementById('btn-filter-wish-me');
+      // Liste filtern
+      const filteredList = allWishes.filter(w => {
+        if (wishActiveFilter === 'all') return true;
+        return w.from === wishActiveFilter;
+      });
 
-      if (btnPartner) {
-        btnPartner.className = (wishActiveFilter === partnerRole)
-          ? 'py-2 rounded-lg bg-amber-500 text-slate-950 font-black shadow transition-all truncate px-2'
-          : 'py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all truncate px-2 font-bold';
-      }
-      if (btnMe) {
-        btnMe.className = (wishActiveFilter === myRole)
-          ? 'py-2 rounded-lg bg-rose-600 text-white font-black shadow transition-all truncate px-2'
-          : 'py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all truncate px-2 font-bold';
-      }
-
-      // Liste filtern: Zeigt exakt die Wünsche des aktiven Tabs
-      const filteredList = allWishes.filter(w => w.from === wishActiveFilter);
-
-      if (badge) badge.innerText = `${filteredList.length} Wunsch${filteredList.length === 1 ? '' : 'e'}`;
+      if (badge) badge.innerText = `${filteredList.length} von ${allWishes.length}`;
       if (!container) return;
 
       if (filteredList.length === 0) {
-        const isPartnerTab = (wishActiveFilter === partnerRole);
         container.innerHTML = `
           <div class="text-slate-500 italic text-center py-12 text-xs flex flex-col items-center justify-center gap-2 opacity-70">
             <span class="text-3xl">🗝️</span>
-            <span>${isPartnerTab ? `${getPartnerName()} hat noch keine Wünsche notiert.` : 'Du hast hier noch keine eigenen Wünsche notiert.'}<br>${!isPartnerTab ? 'Tippe unten auf den Button, um deine erste Fantasie festzuhalten!' : ''}</span>
+            <span>Keine Einträge für diesen Filter vorhanden.<br>Tippe unten auf das Plus, um eine Fantasie zu notieren!</span>
           </div>
         `;
         return;
       }
 
       container.innerHTML = filteredList.map(w => {
-        const isFromMe = (w.from === state.currentUser);
         const fromName = getRoleName(w.from);
+        const isFromMe = w.from === state.currentUser;
         const isDone = Boolean(w.done);
 
         return `
           <div class="bg-slate-950/90 border ${isDone ? 'border-emerald-500/30 opacity-65' : 'border-amber-500/40 glow-amber'} p-3.5 rounded-2xl space-y-2 text-xs transition-all shadow-md">
             <div class="flex justify-between items-start gap-1">
               <div class="flex-1 min-w-0 pr-1">
-                <span class="text-[9px] font-bold ${isFromMe ? 'text-rose-400' : 'text-amber-400'} uppercase block mb-0.5">
-                  Von ${fromName}:
+                <span class="text-[9px] font-bold ${w.from === 'Er' ? 'text-amber-400' : 'text-pink-400'} uppercase block mb-0.5">
+                  Notiert von ${fromName}:
                 </span>
                 <h4 onclick="openWishModal(${w.id})" class="font-bold text-slate-100 text-xs leading-snug cursor-pointer hover:text-amber-300 transition-colors ${isDone ? 'line-through text-slate-400' : ''}">
                   ${w.title}
                 </h4>
               </div>
-              ${isFromMe ? `
-                <button onclick="openWishModal(${w.id})" class="text-slate-400 hover:text-amber-300 text-xs px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg shrink-0 font-bold active:scale-95" title="Bearbeiten">
-                  ✏️
-                </button>
-              ` : `
-                <button onclick="openWishModal(${w.id})" class="text-slate-500 hover:text-slate-300 text-[10px] px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg shrink-0 font-bold active:scale-95" title="Details ansehen">
-                  🔍
-                </button>
-              `}
+              <button onclick="openWishModal(${w.id})" class="text-slate-400 hover:text-amber-300 text-xs px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg shrink-0 font-bold active:scale-95" title="Details / Bearbeiten">
+                ✏️
+              </button>
             </div>
 
             ${w.notes ? `
@@ -4299,66 +4289,58 @@ function requestAllSyncsFromPartner() {
       const titleInput = document.getElementById('modal-wish-title');
       const notesInput = document.getElementById('modal-wish-notes');
       const headerTitle = document.getElementById('wish-modal-header-title');
-      const authorBadge = document.getElementById('modal-wish-author-badge');
-      const saveBtn = document.getElementById('btn-modal-wish-save');
       const deleteBtn = document.getElementById('btn-modal-wish-delete');
+
+      const labelEr = document.getElementById('label-wish-author-er');
+      const labelSie = document.getElementById('label-wish-author-sie');
+      if (labelEr) labelEr.innerText = getRoleName('Er');
+      if (labelSie) labelSie.innerText = getRoleName('Sie');
 
       if (wishId) {
         const wish = (state.wishes || []).find(w => w.id === wishId);
         if (wish) {
-          const isOwner = (wish.from === state.currentUser);
-
-          if (titleInput) {
-            titleInput.value = wish.title || '';
-            titleInput.readOnly = !isOwner;
-          }
-          if (notesInput) {
-            notesInput.value = wish.notes || '';
-            notesInput.readOnly = !isOwner;
-          }
-
-          if (authorBadge) authorBadge.innerText = getRoleName(wish.from);
-
-          if (isOwner) {
-            if (headerTitle) headerTitle.innerText = "Wunsch bearbeiten";
-            if (saveBtn) {
-              saveBtn.classList.remove('hidden');
-              saveBtn.innerText = "Änderungen speichern ✨";
-            }
-            if (deleteBtn) deleteBtn.classList.remove('hidden');
-          } else {
-            // Leseansicht für Wünsche des Partners
-            if (headerTitle) headerTitle.innerText = `Wunsch von ${getRoleName(wish.from)}`;
-            if (saveBtn) saveBtn.classList.add('hidden');
-            if (deleteBtn) deleteBtn.classList.add('hidden');
-          }
+          if (titleInput) titleInput.value = wish.title || '';
+          if (notesInput) notesInput.value = wish.notes || '';
+          modalWishAuthor = wish.from || state.currentUser;
+          if (headerTitle) headerTitle.innerText = "Wunsch bearbeiten";
+          if (deleteBtn) deleteBtn.classList.remove('hidden');
         }
       } else {
-        // Neuer eigener Wunsch
-        if (titleInput) {
-          titleInput.value = '';
-          titleInput.readOnly = false;
-        }
-        if (notesInput) {
-          notesInput.value = '';
-          notesInput.readOnly = false;
-        }
-
-        if (authorBadge) authorBadge.innerText = getMyName();
-        if (headerTitle) headerTitle.innerText = "Neuen Wunsch verfassen";
-        if (saveBtn) {
-          saveBtn.classList.remove('hidden');
-          saveBtn.innerText = "Speichern ✨";
-        }
+        if (titleInput) titleInput.value = '';
+        if (notesInput) notesInput.value = '';
+        modalWishAuthor = state.currentUser || 'Er';
+        if (headerTitle) headerTitle.innerText = "Wunsch festhalten";
         if (deleteBtn) deleteBtn.classList.add('hidden');
       }
 
+      updateWishModalAuthorButtons();
       document.getElementById('wish-edit-modal').classList.remove('hidden');
     }
 
     function closeWishModal() {
       document.getElementById('wish-edit-modal').classList.add('hidden');
       modalWishEditingId = null;
+    }
+
+    function selectWishModalAuthor(author) {
+      modalWishAuthor = author;
+      updateWishModalAuthorButtons();
+    }
+
+    function updateWishModalAuthorButtons() {
+      const btnEr = document.getElementById('btn-wish-author-er');
+      const btnSie = document.getElementById('btn-wish-author-sie');
+
+      if (btnEr) {
+        btnEr.className = (modalWishAuthor === 'Er')
+          ? 'py-2 rounded-xl border border-rose-500 bg-rose-950/60 text-rose-200 font-black shadow glow-rose transition-all text-xs flex items-center justify-center gap-1'
+          : 'py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-bold hover:border-slate-700 transition-all text-xs flex items-center justify-center gap-1';
+      }
+      if (btnSie) {
+        btnSie.className = (modalWishAuthor === 'Sie')
+          ? 'py-2 rounded-xl border border-pink-500 bg-pink-950/60 text-pink-200 font-black shadow glow-rose transition-all text-xs flex items-center justify-center gap-1'
+          : 'py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 font-bold hover:border-slate-700 transition-all text-xs flex items-center justify-center gap-1';
+      }
     }
 
     function saveWishFromModal() {
@@ -4377,25 +4359,22 @@ function requestAllSyncsFromPartner() {
       if (!state.wishes) state.wishes = [];
 
       if (modalWishEditingId) {
-        // Nur eigene Wünsche dürfen aktualisiert werden
-        const wish = state.wishes.find(w => w.id === modalWishEditingId && w.from === state.currentUser);
+        const wish = state.wishes.find(w => w.id === modalWishEditingId);
         if (wish) {
           wish.title = title;
           wish.notes = notes;
+          wish.from = modalWishAuthor;
         }
       } else {
-        // Neuer Wunsch gehört automatisch dem aktuellen Nutzer
         const newWish = {
           id: Date.now(),
           title: title,
           notes: notes,
-          from: state.currentUser,
+          from: modalWishAuthor,
           done: false,
           timestamp: Date.now()
         };
         state.wishes.unshift(newWish);
-        // Nach dem Erstellen direkt in den eigenen Tab wechseln, damit man den neuen Wunsch sieht
-        wishActiveFilter = state.currentUser;
       }
 
       closeWishModal();
@@ -4403,16 +4382,12 @@ function requestAllSyncsFromPartner() {
       broadcastWishesSync();
       renderWishesList();
       playSensualSound('chime');
-      showToast("🗝️ Wunsch gespeichert", "Erfolgreich im Tresor gesichert.", "✨");
+      showToast("🗝️ Wunsch gespeichert", "In eurer Liste eingeloggt.", "✨");
     }
 
     function deleteWishFromModal() {
       if (!modalWishEditingId) return;
-      // Nur eigene Wünsche dürfen gelöscht werden
-      const wish = (state.wishes || []).find(w => w.id === modalWishEditingId && w.from === state.currentUser);
-      if (!wish) return;
-
-      if (confirm("Diesen Wunsch wirklich aus deinem Tresor löschen?")) {
+      if (confirm("Diesen Wunsch wirklich aus dem Tresor löschen?")) {
         state.wishes = (state.wishes || []).filter(w => w.id !== modalWishEditingId);
         closeWishModal();
         saveState();
