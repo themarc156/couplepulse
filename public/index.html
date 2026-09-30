@@ -93,6 +93,13 @@
           <span id="header-main-title" onclick="handleLogoTripleTap()" class="font-bold tracking-wider text-xs uppercase text-slate-300 cursor-pointer">CouplePulse</span>
         </div>
         <div class="flex items-center gap-1.5">
+          <!-- MATCH AKTIONEN (NUR IM MATCH-TAB AKTIV) -->
+          <div id="header-match-actions" class="hidden items-center gap-1">
+            <button onclick="openCatalogEditModal()" class="text-[10px] text-purple-300 bg-purple-950/60 hover:bg-purple-900/60 border border-purple-500/50 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 shadow active:scale-95 transition-all" title="Optionen verwalten">
+              <span>✏️</span> <span>Katalog</span>
+            </button>
+          </div>
+
           <!-- DUELL AKTIONEN (NUR IM DUELL-TAB AKTIV) -->
           <div id="header-game-actions" class="hidden items-center gap-1">
             <button onclick="openFilterModal()" id="btn-target-score" class="text-[10px] text-amber-300 bg-amber-950/60 hover:bg-amber-900/60 border border-amber-500/50 px-2 py-1 rounded-lg font-bold flex items-center gap-1 shadow active:scale-95 transition-all" title="Zielpunkte einstellen">
@@ -275,14 +282,9 @@
       <div class="bg-slate-900/90 border border-purple-500/40 w-full rounded-3xl p-4 space-y-3 shadow-2xl glow-purple flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
         
         <div class="shrink-0">
-          <div class="flex justify-between items-start border-b border-slate-800 pb-2">
-            <div class="flex-1 pr-2">
-              <h3 id="kopfkino-modal-title" class="font-bold text-sm text-purple-100 leading-snug">Was soll SIE heute mit dir machen?</h3>
-              <p id="kopfkino-modal-subtitle" class="text-[11px] text-slate-400 mt-0.5">Tippe deine Highlights & Tabus für heute an:</p>
-            </div>
-            <div class="flex items-center gap-1.5 shrink-0 pt-0.5">
-              <button id="kopfkino-btn-edit-catalog" onclick="openCatalogEditModal()" class="text-[11px] text-purple-400 hover:text-purple-300 font-bold underline" title="Optionen verwalten">✏️ Katalog</button>
-            </div>
+          <div class="border-b border-slate-800 pb-2">
+            <h3 id="kopfkino-modal-title" class="font-bold text-sm text-purple-100 leading-snug">Was soll SIE heute mit dir machen?</h3>
+            <p id="kopfkino-modal-subtitle" class="text-[11px] text-slate-400 mt-0.5">Tippe deine Highlights & Tabus für heute an:</p>
           </div>
           <div id="kopfkino-wizard-progress" class="w-full bg-slate-950 h-1.5 rounded-full mt-2 overflow-hidden border border-slate-800">
             <div id="kopfkino-progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-rose-500 transition-all duration-300 w-1/3"></div>
@@ -927,6 +929,8 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
     function switchAppView(view) {
       state.activeView = view;
       const headerGameActions = document.getElementById('header-game-actions');
+      const headerMatchActions = document.getElementById('header-match-actions');
+
       if (headerGameActions) {
         if (view === 'game') {
           headerGameActions.classList.remove('hidden');
@@ -934,6 +938,16 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
         } else {
           headerGameActions.classList.add('hidden');
           headerGameActions.classList.remove('flex');
+        }
+      }
+
+      if (headerMatchActions) {
+        if (view === 'match') {
+          headerMatchActions.classList.remove('hidden');
+          headerMatchActions.classList.add('flex');
+        } else {
+          headerMatchActions.classList.add('hidden');
+          headerMatchActions.classList.remove('flex');
         }
       }
 
@@ -2504,10 +2518,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       const actions = document.getElementById('kopfkino-modal-actions');
       const progressBar = document.getElementById('kopfkino-progress-bar');
       const progressBox = document.getElementById('kopfkino-wizard-progress');
-      const catalogBtn = document.getElementById('kopfkino-btn-edit-catalog');
-
       progressBox.classList.remove('hidden');
-      catalogBtn.classList.remove('hidden');
       progressBar.style.width = (wizardCurrentStep * 33.33) + '%';
 
       const isEr = state.currentUser === 'Er';
@@ -2695,10 +2706,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       const content = document.getElementById('kopfkino-modal-content');
       const actions = document.getElementById('kopfkino-modal-actions');
       const progressBox = document.getElementById('kopfkino-wizard-progress');
-      const catalogBtn = document.getElementById('kopfkino-btn-edit-catalog');
-
       progressBox.classList.add('hidden');
-      catalogBtn.classList.remove('hidden');
 
       modalTitle.innerText = "✨ EUER ABEND-FAHRPLAN";
       modalSubtitle.innerText = "Gemeinsames Match & Flüsterbox";
