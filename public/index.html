@@ -92,7 +92,17 @@
           <span id="header-main-icon" onclick="handleLogoTripleTap()" class="text-xl animate-pulse cursor-pointer">✨</span>
           <span id="header-main-title" onclick="handleLogoTripleTap()" class="font-bold tracking-wider text-xs uppercase text-slate-300 cursor-pointer">CouplePulse</span>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5">
+          <!-- DUELL AKTIONEN (NUR IM DUELL-TAB AKTIV) -->
+          <div id="header-game-actions" class="hidden items-center gap-1">
+            <button onclick="openFilterModal()" id="btn-target-score" class="text-[10px] text-amber-300 bg-amber-950/60 hover:bg-amber-900/60 border border-amber-500/50 px-2 py-1 rounded-lg font-bold flex items-center gap-1 shadow active:scale-95 transition-all" title="Zielpunkte einstellen">
+              <span>🏁</span> <span id="display-target-score">20 ⚡</span>
+            </button>
+            <button onclick="openCardManagerModal()" id="btn-deck-count" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-2 py-1 rounded-lg font-bold active:scale-95 transition-all" title="Aufgaben-Deck bearbeiten">
+              ✏️ Deck
+            </button>
+          </div>
+
           <!-- DEV-UMSCHALTER & DEV-RESET (NUR IM DEV-MODUS AKTIV) -->
           <div id="header-dev-switcher" class="hidden items-center gap-1.5">
             <button onclick="resetGlobalDay()" class="text-[10px] text-slate-400 hover:text-rose-400 bg-slate-900 border border-slate-800 px-2 py-1 rounded-lg" title="Tag komplett zurücksetzen">🔄 Reset</button>
@@ -103,7 +113,7 @@
           </div>
 
           <!-- FESTES PROFIL-BADGE FÜR PRODUKTION -->
-          <div id="header-profile-badge" onclick="openProfileSetupModal()" class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-full px-3 py-1 text-xs text-rose-300 font-bold cursor-pointer hover:border-rose-500/50 transition-all shadow">
+          <div id="header-profile-badge" onclick="openProfileSetupModal()" class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-full px-2.5 py-1 text-xs text-rose-300 font-bold cursor-pointer hover:border-rose-500/50 transition-all shadow">
             <span id="header-profile-icon">👑</span>
             <span id="header-profile-name">Er</span>
           </div>
@@ -289,25 +299,7 @@
     <!-- ================================================================= -->
     <!-- VIEW 3: LUST-DUELL (GAME) -->
     <!-- ================================================================= -->
-    <main id="view-game" class="hidden w-full p-4 space-y-3.5 flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
-      
-      <!-- SUB-HEADER DUELL (MAXIMAL CLEAN) -->
-      <div class="space-y-2 shrink-0">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1.5">
-            <span id="session-rounds-badge" class="text-[10px] text-slate-400 bg-slate-900 border border-slate-800 px-2 py-1 rounded-lg font-mono">
-              Runde #1
-            </span>
-            <button onclick="openFilterModal()" id="btn-target-score" class="text-[10px] text-amber-300 bg-amber-950/60 hover:bg-amber-900/60 border border-amber-500/50 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 shadow active:scale-95 transition-all" title="Zielpunkte & Filter einstellen">
-              <span>🏁 Ziel:</span> <span id="display-target-score">20 ⚡</span> <span>⚙️</span>
-            </button>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <button onclick="toggleAudioMute()" id="btn-audio-mute" class="text-[11px] p-1.5 bg-slate-900 border border-slate-800 rounded-lg text-slate-300" title="Sound An/Aus">🔊</button>
-            <button onclick="openCardManagerModal()" id="btn-deck-count" class="text-[10px] text-purple-400 bg-purple-950/50 border border-purple-800/40 px-2 py-1 rounded-lg font-bold">✏️ Deck (32)</button>
-          </div>
-        </div>
-      </div>
+    <main id="view-game" class="hidden w-full p-4 space-y-3 flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
 
       <!-- STUFEN-WAHL (KOMPAKT & GRIFFIG) -->
       <div class="space-y-1 shrink-0">
@@ -934,14 +926,14 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
     // =========================================================================
     function switchAppView(view) {
       state.activeView = view;
-      const globalHeader = document.getElementById('global-app-header');
-      
-      // Globalen Header im Duell ausblenden, um volle Displayhöhe zu nutzen
-      if (globalHeader) {
+      const headerGameActions = document.getElementById('header-game-actions');
+      if (headerGameActions) {
         if (view === 'game') {
-          globalHeader.classList.add('hidden');
+          headerGameActions.classList.remove('hidden');
+          headerGameActions.classList.add('flex');
         } else {
-          globalHeader.classList.remove('hidden');
+          headerGameActions.classList.add('hidden');
+          headerGameActions.classList.remove('flex');
         }
       }
 
@@ -970,7 +962,7 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
         wishes: { icon: '🗝️', title: 'Fantasie-Tresor' }
       };
 
-      if (view !== 'game' && titles[view]) {
+      if (titles[view]) {
         document.getElementById('header-main-icon').innerText = titles[view].icon;
         document.getElementById('header-main-title').innerText = titles[view].title;
       }
@@ -998,7 +990,6 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
     // =========================================================================
     let audioCtx = null;
     function playSensualSound(type = 'heartbeat') {
-      if (state.game.audioMuted && (type === 'gong' || type === 'alarm')) return;
       try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -1035,11 +1026,7 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
       } catch (e) {}
     }
 
-    function toggleAudioMute() {
-      state.game.audioMuted = !state.game.audioMuted;
-      document.getElementById('btn-audio-mute').innerText = state.game.audioMuted ? '🔇' : '🔊';
-      saveState();
-    }
+    // (toggleAudioMute entfernt)
 
     function triggerHaptic(pattern = 100) { if (navigator.vibrate) navigator.vibrate(pattern); }
 
@@ -3224,9 +3211,6 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     }
 
     function updateGameScoreUI() {
-      const roundsEl = document.getElementById('session-rounds-badge');
-      if (roundsEl) roundsEl.innerText = `Runde #${state.game.roundsCount + 1}`;
-
       const isInfinite = state.game.targetScore === 0;
       const targetText = isInfinite ? '∞ Offen' : `${state.game.targetScore} ⚡`;
 
