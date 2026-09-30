@@ -597,6 +597,11 @@
         </div>
 
         <div class="space-y-3 text-xs">
+          <div class="flex items-center justify-between bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 text-[11px]">
+            <span class="text-slate-400 font-medium">Verfasser:</span>
+            <span id="modal-wish-author-badge" class="font-bold text-amber-400">Er</span>
+          </div>
+
           <div>
             <label class="text-[10px] text-amber-300 font-bold block pb-1">Titel / Fantasie-Stichwort:</label>
             <input id="modal-wish-title" type="text" placeholder="z. B. Titjob vor dem großen Spiegel 🪞" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-amber-500">
@@ -4249,12 +4254,10 @@ function requestAllSyncsFromPartner() {
               `}
             </div>
 
-            ${w.notes && w.notes.trim() ? `
-              <div onclick="openWishModal(${w.id})" class="text-slate-400 bg-slate-900/60 hover:bg-slate-900/90 p-2.5 rounded-xl border border-slate-855 hover:border-amber-500/40 text-[11px] cursor-pointer flex items-center justify-between transition-all active:scale-[0.99]">
-                <span class="flex items-center gap-1.5 text-slate-300">
-                  <span>💬</span> <span>Notiz hinterlegt</span>
-                </span>
-                <span class="text-[10px] text-amber-400/90 font-semibold">Tippen für Details →</span>
+            ${w.notes ? `
+              <div onclick="openWishModal(${w.id})" class="text-slate-300 bg-slate-900/80 p-2.5 rounded-xl border border-slate-855 text-[11px] leading-relaxed cursor-pointer hover:border-amber-500/30 transition-all">
+                <p class="line-clamp-2" style="-webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden;">${w.notes}</p>
+                <span class="text-[9px] text-amber-400/80 font-semibold block mt-1">Tippen für vollständigen Text →</span>
               </div>
             ` : ''}
 
@@ -4277,6 +4280,7 @@ function requestAllSyncsFromPartner() {
       const titleInput = document.getElementById('modal-wish-title');
       const notesInput = document.getElementById('modal-wish-notes');
       const headerTitle = document.getElementById('wish-modal-header-title');
+      const authorBadge = document.getElementById('modal-wish-author-badge');
       const saveBtn = document.getElementById('btn-modal-wish-save');
       const deleteBtn = document.getElementById('btn-modal-wish-delete');
 
@@ -4293,6 +4297,8 @@ function requestAllSyncsFromPartner() {
             notesInput.value = wish.notes || '';
             notesInput.readOnly = !isOwner;
           }
+
+          if (authorBadge) authorBadge.innerText = getRoleName(wish.from);
 
           if (isOwner) {
             if (headerTitle) headerTitle.innerText = "Wunsch bearbeiten";
@@ -4319,6 +4325,7 @@ function requestAllSyncsFromPartner() {
           notesInput.readOnly = false;
         }
 
+        if (authorBadge) authorBadge.innerText = getMyName();
         if (headerTitle) headerTitle.innerText = "Neuen Wunsch verfassen";
         if (saveBtn) {
           saveBtn.classList.remove('hidden');
