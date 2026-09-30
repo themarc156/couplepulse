@@ -1664,7 +1664,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         try {
           await this.startLocalCamera();
           this.isStreaming = true;
-          this.showingSource = 'local'; // Startet in der "Ausrichten / Ich selbst"-Ansicht
+          this.showingSource = 'local'; // Startet in der glasklaren "Ich selbst"-Ansicht zum Ausrichten
 
           const notifArea = document.getElementById('pulse-notification-area');
           if (notifArea) notifArea.classList.add('hidden');
@@ -1679,14 +1679,14 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             activeControls.classList.add('flex');
           }
 
+          // Overlay sofort verstecken, damit das eigene Kamerabild sofort frei sichtbar ist
+          document.getElementById('stream-status-overlay').classList.add('hidden');
+
           this.updateDisplayView();
 
           const targetUser = state.currentUser === 'Er' ? 'sie' : 'er';
           const safeRoom = (state.coupleKey || 'unser-paar-code').replace(/[^a-zA-Z0-9_-]/g, '');
           const partnerId = `cp_${safeRoom}_${targetUser}`;
-
-          document.getElementById('stream-status-text').innerText = 'Warte auf Partner...';
-          document.getElementById('stream-status-overlay').classList.remove('hidden');
 
           this.connectData();
           this.primaryCall = this.peer.call(partnerId, this.localStream);
@@ -1744,19 +1744,31 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         const viewText = document.getElementById('btn-stream-view-text');
         const viewIcon = document.getElementById('btn-stream-view-icon');
         const roleBadge = document.getElementById('stream-role-badge');
+        const statusOverlay = document.getElementById('stream-status-overlay');
+        const statusText = document.getElementById('stream-status-text');
 
         if (this.showingSource === 'local') {
+          // Eigene Kamera zum Ausrichten: Immer klar sichtbar, kein störendes Overlay
           if (localVid) localVid.classList.remove('hidden');
           if (remoteVid) remoteVid.classList.add('hidden');
           if (viewText) viewText.innerText = 'Partner';
           if (viewIcon) viewIcon.innerText = '👁️';
           if (roleBadge) roleBadge.innerText = 'ICH SELBST 🪞';
+          if (statusOverlay) statusOverlay.classList.add('hidden');
         } else {
+          // Partner-Ansicht: Falls noch kein Partner-Video empfangen wird, Overlay zeigen
           if (localVid) localVid.classList.add('hidden');
           if (remoteVid) remoteVid.classList.remove('hidden');
           if (viewText) viewText.innerText = 'Ich selbst';
           if (viewIcon) viewIcon.innerText = '🪞';
           if (roleBadge) roleBadge.innerText = 'PARTNER LIVE 🔴';
+
+          if (!this.remoteStream) {
+            if (statusText) statusText.innerText = 'Warte auf Partner-Signal...';
+            if (statusOverlay) statusOverlay.classList.remove('hidden');
+          } else {
+            if (statusOverlay) statusOverlay.classList.add('hidden');
+          }
         }
 
         this.applyZoom();
