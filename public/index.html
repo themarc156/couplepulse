@@ -218,10 +218,14 @@
               👁️ Ansehen
             </button>
             <div id="stream-active-controls" class="hidden items-center gap-1">
-              <button id="btn-stream-view-toggle" onclick="LiveStream.toggleDisplaySource()" class="px-2 py-0.5 bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-200 rounded-lg text-[10px] font-bold shadow flex items-center gap-1 transition-all active:scale-95" title="Ansicht zwischen Partner und eigener Kamera umschalten">
-                <span id="btn-stream-view-icon">👁️</span>
-                <span id="btn-stream-view-text">Partner</span>
-              </button>
+              <div class="flex items-center bg-slate-950 rounded-lg p-0.5 border border-purple-500/50 text-[10px] font-bold">
+                <button id="tab-stream-local" onclick="LiveStream.setDisplaySource('local')" class="px-2 py-0.5 rounded-md bg-purple-600 text-white shadow transition-all">
+                  🪞 Ich
+                </button>
+                <button id="tab-stream-remote" onclick="LiveStream.setDisplaySource('remote')" class="px-2 py-0.5 rounded-md text-slate-400 hover:text-slate-200 transition-all">
+                  👁️ Partner
+                </button>
+              </div>
               <button id="btn-stream-flip" onclick="LiveStream.flipCamera()" class="p-1 bg-slate-950 hover:bg-slate-900 border border-slate-700 text-slate-200 rounded-lg text-[11px] shadow transition-all active:scale-95" title="Eigene Kamera wechseln (Front/Back)">
                 🔄
               </button>
@@ -1737,8 +1741,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         }
       },
 
-      toggleDisplaySource() {
-        this.showingSource = (this.showingSource === 'local') ? 'remote' : 'local';
+      setDisplaySource(source) {
+        if (this.showingSource === source) return;
+        this.showingSource = source;
         this.updateDisplayView();
         playSensualSound('heartbeat');
       },
@@ -1746,8 +1751,8 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       updateDisplayView() {
         const localVid = document.getElementById('local-video');
         const remoteVid = document.getElementById('remote-video');
-        const viewText = document.getElementById('btn-stream-view-text');
-        const viewIcon = document.getElementById('btn-stream-view-icon');
+        const tabLocal = document.getElementById('tab-stream-local');
+        const tabRemote = document.getElementById('tab-stream-remote');
         const roleBadge = document.getElementById('stream-role-badge');
         const statusOverlay = document.getElementById('stream-status-overlay');
         const statusText = document.getElementById('stream-status-text');
@@ -1761,12 +1766,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           if (remoteVid) {
             remoteVid.className = 'absolute inset-0 w-full h-full object-cover transition-transform duration-150 origin-center opacity-0 z-0 pointer-events-none';
           }
-          // Button bietet Aktion an: Zum Partner wechseln
-          if (viewText) viewText.innerText = 'Partner';
-          if (viewIcon) viewIcon.innerText = '👁️';
+          if (tabLocal) tabLocal.className = 'px-2 py-0.5 rounded-md bg-purple-600 text-white shadow font-bold transition-all';
+          if (tabRemote) tabRemote.className = 'px-2 py-0.5 rounded-md text-slate-400 hover:text-slate-200 font-medium transition-all';
           if (roleBadge) roleBadge.innerText = 'ICH SELBST 🪞';
-          
-          // Eigene Kamera wird niemals durch das Warte-Overlay überdeckt
           if (statusOverlay) statusOverlay.classList.add('hidden');
         } else {
           // 2. ZUSTAND: PARTNER-STREAM SEHEN
@@ -1777,12 +1779,10 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             remoteVid.className = 'absolute inset-0 w-full h-full object-cover transition-transform duration-150 origin-center opacity-100 z-10 pointer-events-auto';
             if (remoteVid.paused) remoteVid.play().catch(e => {});
           }
-          // Button bietet Aktion an: Zurück zur eigenen Kamera
-          if (viewText) viewText.innerText = 'Ich selbst';
-          if (viewIcon) viewIcon.innerText = '🪞';
+          if (tabLocal) tabLocal.className = 'px-2 py-0.5 rounded-md text-slate-400 hover:text-slate-200 font-medium transition-all';
+          if (tabRemote) tabRemote.className = 'px-2 py-0.5 rounded-md bg-rose-600 text-white shadow font-bold transition-all';
           if (roleBadge) roleBadge.innerText = 'PARTNER LIVE 🔴';
 
-          // Nur im Partner-Modus das Warte-Overlay zeigen, falls noch kein Stream da ist
           if (!this.remoteStream) {
             if (statusText) statusText.innerText = 'Warte auf Partner-Signal...';
             if (statusOverlay) statusOverlay.classList.remove('hidden');
