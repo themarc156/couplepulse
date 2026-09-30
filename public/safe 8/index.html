@@ -666,15 +666,15 @@
       </div>
     </div>
 
-    <!-- MODAL: DUELL-EINSTELLUNGEN -->
+    <!-- MODAL: FILTER (LUST-DUELL) -->
     <div id="filter-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-amber-500/50 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-          <h3 class="font-bold text-sm text-amber-300">⚙️ Duell-Optionen</h3>
+          <h3 class="font-bold text-sm text-amber-300">⚙️ Filter & Optionen</h3>
           <button onclick="closeFilterModal()" class="text-slate-400 hover:text-slate-200 text-lg font-bold">✕</button>
         </div>
 
-        <div class="space-y-3 text-xs">
+        <div class="space-y-2.5 text-xs">
           <!-- ZIELPUNKTE EINSTELLUNG (IN 5ER-SCHRITTEN) -->
           <div class="space-y-2 p-3 bg-slate-950 rounded-2xl border border-slate-800">
             <div class="flex justify-between items-center">
@@ -694,6 +694,30 @@
             </div>
           </div>
 
+          <label class="flex items-center justify-between p-2.5 bg-slate-950 rounded-xl border border-slate-800 cursor-pointer">
+            <div class="space-y-0.5">
+              <span class="font-bold text-slate-200 block">🧸 Toys & Hilfsmittel</span>
+              <span class="text-[10px] text-slate-400">Vibratoren, Plugs, Dildo einbeziehen</span>
+            </div>
+            <input type="checkbox" id="filter-toys" onchange="applyFilters()" checked class="w-4 h-4 accent-amber-500">
+          </label>
+
+          <label class="flex items-center justify-between p-2.5 bg-slate-950 rounded-xl border border-slate-800 cursor-pointer">
+            <div class="space-y-0.5">
+              <span class="font-bold text-slate-200 block">🪶 Spanking & Befehle</span>
+              <span class="text-[10px] text-slate-400">Po-Klapse & dominante Führung</span>
+            </div>
+            <input type="checkbox" id="filter-spanking" onchange="applyFilters()" checked class="w-4 h-4 accent-amber-500">
+          </label>
+
+          <label class="flex items-center justify-between p-2.5 bg-purple-950/40 rounded-xl border border-purple-800/60 cursor-pointer">
+            <div class="space-y-0.5">
+              <span class="font-bold text-purple-300 block">🧠 Kopfkino-Match synchronisieren</span>
+              <span class="text-[10px] text-purple-400">Tabus aus der Abstimmung automatisch filtern</span>
+            </div>
+            <input type="checkbox" id="filter-kopfkino" onchange="applyFilters()" checked class="w-4 h-4 accent-purple-500">
+          </label>
+
           <!-- SPIELSTAND MANUELL NULLEN -->
           <div class="pt-1">
             <button type="button" onclick="resetGameFromModal()" class="w-full py-2.5 bg-slate-950 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-800/50 text-slate-400 hover:text-rose-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
@@ -703,7 +727,7 @@
         </div>
 
         <button onclick="closeFilterModal()" class="w-full py-2.5 bg-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow">
-          Fertig ✓
+          Filter anwenden ✓
         </button>
       </div>
     </div>
@@ -894,6 +918,7 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
   targetScore: 20,
   isCriticalHit: false,
   audioMuted: false,
+  filters: { allowToys: true, allowSpanking: true, syncKopfkino: true },
   cards: JSON.parse(JSON.stringify(defaultMasterDeck)),
   deckVersion: 2,
   deckUpdatedAt: 0,
@@ -1130,6 +1155,7 @@ if (typeof state.wishesUpdatedAt !== 'number') state.wishesUpdatedAt = 0;
   targetScore: 20, 
   isCriticalHit: false, 
   audioMuted: false, 
+  filters: { allowToys: true, allowSpanking: true, syncKopfkino: true }, 
   cards: JSON.parse(JSON.stringify(defaultMasterDeck)), 
   deckVersion: 2, 
   deckUpdatedAt: 0, 
@@ -3360,7 +3386,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         if (c.role === 'er_gives' && turn !== 'Er') return false;
         if (c.role === 'sie_gives' && turn !== 'Sie') return false;
 
-        // 2. Textbasierter Sicherheitsfilter (für benutzerdefinierte Karten)
+        // 2. Textbasierter Sicherheitsfilter (falls noch alte Custom-Karten vorliegen)
         const textLower = (c.text || '').toLowerCase();
         if (turn === 'Er' && (textLower.includes('seinen schwanz') || textLower.includes('seine eier') || textLower.includes('seine prostata'))) {
           return false;
@@ -3369,6 +3395,17 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           return false;
         }
 
+        if (!state.game.filters.allowToys && c.tags && c.tags.includes('toy')) return false;
+        if (!state.game.filters.allowSpanking && c.tags && (c.tags.includes('spanking') || c.tags.includes('restraint'))) return false;
+
+        if (state.game.filters.syncKopfkino && c.practiceId) {
+          const erP = state.kopfkino.erPreferences || {};
+          const sieP = state.kopfkino.siePreferences || {};
+          if ((erP[c.practiceId] && erP[c.practiceId].status === 'tabu') ||
+              (sieP[c.practiceId] && sieP[c.practiceId].status === 'tabu')) {
+            return false;
+          }
+        }
         return true;
       });
     }
@@ -3670,7 +3707,14 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     function openFilterModal() { document.getElementById('filter-modal').classList.remove('hidden'); }
     function closeFilterModal() { document.getElementById('filter-modal').classList.add('hidden'); }
 
-    // (applyFilters entfernt, Einstellungen werden direkt übernommen)
+    function applyFilters() {
+      state.game.filters.allowToys = document.getElementById('filter-toys').checked;
+      state.game.filters.allowSpanking = document.getElementById('filter-spanking').checked;
+      state.game.filters.syncKopfkino = document.getElementById('filter-kopfkino').checked;
+      state.game.drawPiles = { 1: [], 2: [], 3: [] };
+      playSensualSound('chime');
+      saveState();
+    }
 
     function openCardManagerModal() {
       renderCardManagerList();
