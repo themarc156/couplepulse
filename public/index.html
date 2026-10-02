@@ -934,6 +934,7 @@
   cumUpdatedAt: 0,
   positionsUpdatedAt: 0
 },
+      favoritePositionIds: JSON.parse(localStorage.getItem('cp_fav_positions') || '[]'),
       shoutboxMessages: [],
       activeCraving: null,
       matchUpdateNotice: false,
@@ -2626,39 +2627,79 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       `;
     }
 
-    function renderPositionCard(pos) {
-      const key = `pos_${pos.id}`;
-      const current = (currentDraftPreferences[key] && currentDraftPreferences[key].status) ? currentDraftPreferences[key].status : 'erlaubt';
-      const isFokus = current === 'fokus';
-      const isTabu = current === 'tabu';
+    // =========================================================================
+    // STELLUNGS-LOGIK: KATEGORIEN, FAVORITEN & SHUFFLE
+    // =========================================================================
+    const POSITION_CATEGORIES = [
+      { key: 'fav', label: '❤️' },
+      { key: 'vorne', label: 'Vorne', match: ['vorne', 'von_vorne', 'missionar', 'front'] },
+      { key: 'hinten', label: 'Hinten', match: ['hinten', 'von_hinten', 'doggy', 'back', 'rear'] },
+      { key: 'oral', label: 'Oral', match: ['oral', '69', 'blowjob', 'cunnilingus'] },
+      { key: 'sonstige', label: 'Sonstige', match: ['sonstige', 'spontan', 'intim', 'akrobatisch', 'allgemein'] }
+    ];
 
-      return `
-        <div class="bg-slate-950 border ${isFokus ? 'border-amber-500/90 glow-amber' : isTabu ? 'border-rose-600/70 opacity-60' : 'border-slate-800'} rounded-2xl overflow-hidden transition-all flex flex-col">
-          <div class="relative w-full h-36 bg-slate-900 flex items-center justify-center overflow-hidden">
-            <img src="${pos.image}" alt="${pos.title}" onerror="this.parentElement.innerHTML='<div class=\\'text-slate-500 text-xs italic p-4 text-center\\'>🖼️ ${pos.title}</div>'" class="w-full h-full object-contain p-1.5 transition-transform duration-300 hover:scale-105">
-            <div class="absolute top-2 right-2">
-              ${isFokus ? `<span class="text-[9px] font-bold text-amber-300 bg-amber-950/90 border border-amber-500 px-2 py-0.5 rounded-full shadow">🔥 Fokus</span>` : ''}
-              ${isTabu ? `<span class="text-[9px] font-bold text-rose-300 bg-rose-950/90 border border-rose-600 px-2 py-0.5 rounded-full shadow">🛑 Tabu</span>` : ''}
-            </div>
-          </div>
-          <div class="p-3 space-y-2 flex-1 flex flex-col justify-between">
-            <div>
-              <h4 class="font-bold text-xs text-slate-100">${pos.title}</h4>
-              <p class="text-[10px] text-slate-400 leading-snug mt-0.5">${pos.desc || ''}</p>
-            </div>
-            <div class="grid grid-cols-2 gap-1.5 pt-1">
-              <button type="button" onclick="toggleDraftItemStatus('${key}', 'fokus')" 
-                class="py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 ${isFokus ? 'bg-amber-500 border-amber-400 text-slate-950 font-black shadow' : 'bg-slate-900 border-slate-800 text-amber-300 hover:border-amber-500'}">
-                🔥 Fokus
-              </button>
-              <button type="button" onclick="toggleDraftItemStatus('${key}', 'tabu')" 
-                class="py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 ${isTabu ? 'bg-rose-600 border-rose-400 text-white font-black shadow' : 'bg-slate-900 border-slate-800 text-rose-400 hover:border-rose-500'}">
-                🛑 Tabu
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
+    let wizardActiveCategory = 'vorne';
+    let wizardCurrentPosition = null;
+
+    function getNormalizedCategory(pos) {
+      const raw = (pos.category || '').toLowerCase();
+      if (raw.includes('vorn') || raw.includes('miss')) return 'vorne';
+      if (raw.includes('hint') || raw.includes('dogg')) return 'hinten';
+      if (raw.includes('oral') || raw.includes('69')) return 'oral';
+      return 'sonstige';
+    }
+
+    function togglePositionFavorite(posId) {
+      if (!state.favoritePositionIds) state.favoritePositionIds = [];
+      const idx = state.favoritePositionIds.indexOf(posId);
+      if (idx > -1) {
+        state.favoritePositionIds.splice(idx, 1);
+        showToast("🤍 Favorit entfernt", "Aus den Favoriten gelöscht.", "🤍");
+      } else {
+        state.favoritePositionIds.push(posId);
+        showToast("❤️ Zu Favoriten hinzugefügt", "In deiner Favoriten-Sammlung gesichert.", "❤️");
+      }
+      localStorage.setItem('cp_fav_positions', JSON.stringify(state.favoritePositionIds));
+      saveState();
+      playSensualSound('chime');
+
+      if (state.activeView === 'match' && wizardCurrentStep === 3) {
+        renderKopfkinoWizard();
+      }
+      const galleryModal = document.getElementById('positions-gallery-modal');
+      if (galleryModal && !galleryModal.classList.contains('hidden')) {
+        renderPositionsGallery();
+      }
+    }
+
+    function getPositionsForCategory(catKey) {
+      const all = state.kopfkino.positionsCatalog || defaultPositionsCatalog;
+      if (catKey === 'fav') {
+        const favIds = state.favoritePositionIds || [];
+        return all.filter(p => favIds.includes(p.id));
+      }
+      return all.filter(p => getNormalizedCategory(p) === catKey);
+    }
+
+    function pickRandomPosition(catKey, currentId = null) {
+      const list = getPositionsForCategory(catKey);
+      if (list.length === 0) return null;
+      if (list.length === 1) return list[0];
+      const others = list.filter(p => p.id !== currentId);
+      return others[Math.floor(Math.random() * others.length)];
+    }
+
+    function selectPositionCategory(catKey) {
+      wizardActiveCategory = catKey;
+      wizardCurrentPosition = pickRandomPosition(catKey);
+      playSensualSound('chime');
+      renderKopfkinoWizard();
+    }
+
+    function shuffleWizardPosition() {
+      wizardCurrentPosition = pickRandomPosition(wizardActiveCategory, wizardCurrentPosition ? wizardCurrentPosition.id : null);
+      playSensualSound('heartbeat');
+      renderKopfkinoWizard();
     }
 
     function renderModel1FinaleCard(key, label, isEr) {
@@ -2767,28 +2808,80 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           </button>
         `;
       } else if (wizardCurrentStep === 3) {
-        modalTitle.innerText = "Welche Stellungen reizen dich heute?";
-        modalSubtitle.innerText = "Tippe deine Favoriten & No-Gos für heute an:";
-        const posList = state.kopfkino.positionsCatalog || defaultPositionsCatalog;
-        
-        // Kategorien extrahieren
-        const categories = ['all', ...new Set(posList.map(p => p.category || 'all'))];
-        const filteredPos = (wizardPositionCategoryFilter === 'all') 
-          ? posList 
-          : posList.filter(p => p.category === wizardPositionCategoryFilter);
+        modalTitle.innerText = "Welche Stellung reizt dich heute?";
+        modalSubtitle.innerText = "Tippe einen Bereich an oder würfle neue Ideen:";
+
+        const pool = getPositionsForCategory(wizardActiveCategory);
+        if (!wizardCurrentPosition && pool.length > 0) {
+          wizardCurrentPosition = pickRandomPosition(wizardActiveCategory);
+        } else if (wizardCurrentPosition && !pool.some(p => p.id === wizardCurrentPosition.id) && pool.length > 0) {
+          wizardCurrentPosition = pickRandomPosition(wizardActiveCategory);
+        }
+
+        const pos = wizardCurrentPosition;
+        const posKey = pos ? `pos_${pos.id}` : null;
+        const currentStatus = posKey ? ((currentDraftPreferences[posKey] || {}).status || 'erlaubt') : 'erlaubt';
+        const isFokus = currentStatus === 'fokus';
+        const isTabu = currentStatus === 'tabu';
+        const isFav = pos ? (state.favoritePositionIds || []).includes(pos.id) : false;
 
         content.innerHTML = `
-          <div class="space-y-2.5">
-            <div class="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar text-[10px] font-bold">
-              ${categories.map(c => `
-                <button type="button" onclick="setWizardPositionCategory('${c}')" class="px-2.5 py-1 rounded-lg border whitespace-nowrap transition-all ${wizardPositionCategoryFilter === c ? 'bg-purple-600 text-white border-purple-400 shadow' : 'bg-slate-900 border-slate-800 text-slate-400'}">
-                  ${c === 'all' ? '✨ Alle' : c.replace('_', ' ').toUpperCase()}
+          <div class="space-y-2.5 flex-1 flex flex-col justify-between">
+            <!-- 5 TABS: OHNE SCROLLEN -->
+            <div class="grid grid-cols-5 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold text-center shrink-0">
+              ${POSITION_CATEGORIES.map(c => `
+                <button type="button" onclick="selectPositionCategory('${c.key}')" 
+                  class="py-1.5 rounded-lg transition-all flex items-center justify-center truncate ${wizardActiveCategory === c.key ? (c.key === 'fav' ? 'bg-rose-600 text-white shadow' : 'bg-purple-600 text-white shadow') : 'text-slate-400 hover:text-slate-200'}">
+                  ${c.label}
                 </button>
               `).join('')}
             </div>
-            <div id="wizard-scroll-container" class="space-y-2.5 pr-1 max-h-[50vh] overflow-y-auto no-scrollbar">
-              ${filteredPos.map(p => renderPositionCard(p)).join('')}
-            </div>
+
+            <!-- GROSSE SINGLE-CARD -->
+            ${pos ? `
+              <div class="bg-slate-950 border ${isFokus ? 'border-amber-500/90 glow-amber' : isTabu ? 'border-rose-600/80' : 'border-slate-800'} rounded-2xl p-2.5 space-y-2 flex-1 flex flex-col justify-between transition-all">
+                <div class="relative w-full flex-1 min-h-[160px] bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden">
+                  <img src="${pos.image}" alt="${pos.title}" onerror="this.parentElement.innerHTML='<div class=\\'text-slate-500 text-xs italic p-4 text-center\\'>🖼️ ${pos.title}</div>'" class="w-full h-full object-contain p-2">
+                  
+                  <!-- Favoriten-Herz oben rechts -->
+                  <button type="button" onclick="togglePositionFavorite('${pos.id}')" class="absolute top-2 right-2 p-1.5 bg-slate-950/80 hover:bg-slate-900 border border-slate-700/80 rounded-full text-sm shadow backdrop-blur-xs active:scale-90 transition-all" title="Zu Favoriten hinzufügen">
+                    ${isFav ? '❤️' : '🤍'}
+                  </button>
+
+                  <!-- Status-Badges oben links -->
+                  <div class="absolute top-2 left-2">
+                    ${isFokus ? `<span class="text-[9px] font-bold text-amber-300 bg-amber-950/90 border border-amber-500 px-2 py-0.5 rounded-full shadow">🔥 Fokus</span>` : ''}
+                    ${isTabu ? `<span class="text-[9px] font-bold text-rose-300 bg-rose-950/90 border border-rose-600 px-2 py-0.5 rounded-full shadow">🛑 Tabu</span>` : ''}
+                  </div>
+                </div>
+
+                <div class="space-y-1">
+                  <div class="flex justify-between items-center">
+                    <h4 class="font-bold text-xs text-amber-200 truncate flex-1">${pos.title}</h4>
+                    <button type="button" onclick="shuffleWizardPosition()" class="text-[10px] bg-slate-900 hover:bg-slate-850 border border-slate-700 px-2 py-1 rounded-lg text-slate-300 font-bold active:scale-95 transition-all flex items-center gap-1 shrink-0 ml-1">
+                      <span>🎲</span> <span>Nächste</span>
+                    </button>
+                  </div>
+                  ${pos.desc ? `<p class="text-[10px] text-slate-400 leading-tight">${pos.desc}</p>` : ''}
+                </div>
+
+                <div class="grid grid-cols-2 gap-1.5 pt-0.5">
+                  <button type="button" onclick="toggleDraftItemStatus('${posKey}', 'fokus')" 
+                    class="py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 ${isFokus ? 'bg-amber-500 border-amber-400 text-slate-950 font-black shadow' : 'bg-slate-900 border-slate-800 text-amber-300 hover:border-amber-500'}">
+                    🔥 Fokus heute
+                  </button>
+                  <button type="button" onclick="toggleDraftItemStatus('${posKey}', 'tabu')" 
+                    class="py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 ${isTabu ? 'bg-rose-600 border-rose-400 text-white font-black shadow' : 'bg-slate-900 border-slate-800 text-rose-400 hover:border-rose-500'}">
+                    🛑 Tabu heute
+                  </button>
+                </div>
+              </div>
+            ` : `
+              <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 text-center text-slate-500 text-xs flex-1 flex flex-col items-center justify-center gap-2">
+                <span class="text-3xl">${wizardActiveCategory === 'fav' ? '🤍' : '🖼️'}</span>
+                <span>${wizardActiveCategory === 'fav' ? 'Noch keine Favoriten markiert.<br>Tippe bei einer Stellung auf das Herz!' : 'Keine Bilder in dieser Kategorie gefunden.'}</span>
+              </div>
+            `}
           </div>
         `;
         actions.innerHTML = `
@@ -3963,10 +4056,12 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     function openFilterModal() { document.getElementById('filter-modal').classList.remove('hidden'); }
     function closeFilterModal() { document.getElementById('filter-modal').classList.add('hidden'); }
 
-    let galleryActiveCategory = 'all';
+    let galleryActiveCategory = 'vorne';
+    let galleryCurrentPosition = null;
 
     function openPositionsGalleryModal() {
-      galleryActiveCategory = 'all';
+      galleryActiveCategory = 'vorne';
+      galleryCurrentPosition = pickRandomPosition('vorne');
       renderPositionsGallery();
       document.getElementById('positions-gallery-modal').classList.remove('hidden');
       playSensualSound('chime');
@@ -3976,42 +4071,65 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       document.getElementById('positions-gallery-modal').classList.add('hidden');
     }
 
-    function setGalleryCategory(cat) {
-      galleryActiveCategory = cat;
+    function setGalleryCategory(catKey) {
+      galleryActiveCategory = catKey;
+      galleryCurrentPosition = pickRandomPosition(catKey);
       renderPositionsGallery();
+      playSensualSound('chime');
+    }
+
+    function shuffleGalleryPosition() {
+      galleryCurrentPosition = pickRandomPosition(galleryActiveCategory, galleryCurrentPosition ? galleryCurrentPosition.id : null);
+      renderPositionsGallery();
+      playSensualSound('heartbeat');
     }
 
     function renderPositionsGallery() {
       const chips = document.getElementById('gallery-category-chips');
       const grid = document.getElementById('positions-gallery-grid');
-      const posList = state.kopfkino.positionsCatalog || defaultPositionsCatalog;
-
-      const categories = ['all', ...new Set(posList.map(p => p.category || 'all'))];
 
       if (chips) {
-        chips.innerHTML = categories.map(c => `
-          <button onclick="setGalleryCategory('${c}')" class="px-2.5 py-1 rounded-lg border whitespace-nowrap transition-all ${galleryActiveCategory === c ? 'bg-amber-500 text-slate-950 font-black border-amber-400 shadow' : 'bg-slate-950 border-slate-800 text-slate-400'}">
-            ${c === 'all' ? '✨ Alle' : c.replace('_', ' ').toUpperCase()}
+        chips.className = 'grid grid-cols-5 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold text-center shrink-0 w-full';
+        chips.innerHTML = POSITION_CATEGORIES.map(c => `
+          <button type="button" onclick="setGalleryCategory('${c.key}')" 
+            class="py-1.5 rounded-lg transition-all flex items-center justify-center truncate ${galleryActiveCategory === c.key ? (c.key === 'fav' ? 'bg-rose-600 text-white shadow' : 'bg-amber-500 text-slate-950 font-black shadow') : 'text-slate-400 hover:text-slate-200'}">
+            ${c.label}
           </button>
         `).join('');
       }
 
-      const filtered = (galleryActiveCategory === 'all') 
-        ? posList 
-        : posList.filter(p => p.category === galleryActiveCategory);
+      const pos = galleryCurrentPosition;
+      const isFav = pos ? (state.favoritePositionIds || []).includes(pos.id) : false;
 
       if (grid) {
-        grid.innerHTML = filtered.map(p => `
-          <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-md">
-            <div class="w-full h-40 bg-slate-900 flex items-center justify-center overflow-hidden">
-              <img src="${p.image}" alt="${p.title}" onerror="this.parentElement.innerHTML='<div class=\\'text-slate-500 text-xs italic p-4 text-center\\'>🖼️ ${p.title}</div>'" class="w-full h-full object-contain p-2">
+        if (pos) {
+          grid.innerHTML = `
+            <div class="bg-slate-950 border border-amber-500/50 rounded-2xl p-3 space-y-2.5 h-full flex flex-col justify-between glow-amber">
+              <div class="relative w-full flex-1 min-h-[220px] bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden">
+                <img src="${pos.image}" alt="${pos.title}" onerror="this.parentElement.innerHTML='<div class=\\'text-slate-500 text-xs italic p-4 text-center\\'>🖼️ ${pos.title}</div>'" class="w-full h-full object-contain p-2">
+                <button type="button" onclick="togglePositionFavorite('${pos.id}')" class="absolute top-2 right-2 p-2 bg-slate-950/80 hover:bg-slate-900 border border-slate-700 rounded-full text-base shadow backdrop-blur-xs active:scale-90 transition-all">
+                  ${isFav ? '❤️' : '🤍'}
+                </button>
+              </div>
+              <div class="flex justify-between items-center pt-1">
+                <div class="flex-1 min-w-0 pr-2">
+                  <h4 class="font-bold text-sm text-amber-200 truncate">${pos.title}</h4>
+                  ${pos.desc ? `<p class="text-[11px] text-slate-400 mt-0.5 leading-snug">${pos.desc}</p>` : ''}
+                </div>
+                <button type="button" onclick="shuffleGalleryPosition()" class="px-3 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow glow-amber active:scale-95 transition-all flex items-center gap-1.5 shrink-0">
+                  <span>🎲</span> <span>Nächste</span>
+                </button>
+              </div>
             </div>
-            <div class="p-3">
-              <h4 class="font-bold text-xs text-amber-200">${p.title}</h4>
-              <p class="text-[10px] text-slate-400 mt-0.5 leading-snug">${p.desc || ''}</p>
+          `;
+        } else {
+          grid.innerHTML = `
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-8 text-center text-slate-500 text-xs h-full flex flex-col items-center justify-center gap-2">
+              <span class="text-3xl">${galleryActiveCategory === 'fav' ? '🤍' : '🖼️'}</span>
+              <span>${galleryActiveCategory === 'fav' ? 'Noch keine Favoriten markiert.<br>Tippe bei einer Stellung auf das Herz!' : 'Keine Bilder in dieser Kategorie.'}</span>
             </div>
-          </div>
-        `).join('');
+          `;
+        }
       }
     }
 
