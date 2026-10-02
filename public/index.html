@@ -2543,13 +2543,14 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       });
 
       content.innerHTML = `
-        <div class="space-y-3 text-xs py-1">
-          <div class="bg-gradient-to-br from-purple-950/80 to-slate-900 border border-purple-500/50 rounded-2xl p-3.5 space-y-2 text-center glow-purple">
-            <span class="text-3xl block animate-bounce">⏳</span>
-            <div class="font-bold text-sm text-purple-200">Deine Auswahl ist sicher gespeichert!</div>
-            <p class="text-[11px] text-slate-300 leading-relaxed">
-              Wir warten noch auf <strong class="text-rose-300">${partner}</strong>. Sobald beide gewählt haben, wird euer gemeinsamer Abend-Fahrplan automatisch freigeschaltet.
-            </p>
+        <div class="space-y-2.5 text-xs py-0.5">
+          <!-- KOMPAKTE STATUS-PILLE (MINIMALISTISCH & PLATZSPAREND) -->
+          <div class="bg-purple-950/40 border border-purple-500/40 rounded-xl px-3 py-1.5 flex items-center justify-between text-purple-200">
+            <div class="flex items-center gap-2 font-semibold text-xs">
+              <span class="animate-pulse">⏳</span>
+              <span>Warten auf <strong class="text-rose-300">${partner}</strong>...</span>
+            </div>
+            <span class="text-[10px] bg-purple-900/60 border border-purple-500/30 px-2 py-0.5 rounded-full text-purple-300 font-mono">Gespeichert ✓</span>
           </div>
 
           <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 space-y-2.5">
