@@ -2282,19 +2282,36 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     sender: state.currentUser
   });
 } else if (data.type === 'kopfkino_v8_sync') {
-  const wasUnlockedBefore = Boolean(state.kopfkino.erPreferences && state.kopfkino.siePreferences);
+          const wasUnlockedBefore = Boolean(state.kopfkino.erPreferences && state.kopfkino.siePreferences);
 
-  if (data.sender === 'Er') state.kopfkino.erPreferences = data.preferences;
-  if (data.sender === 'Sie') state.kopfkino.siePreferences = data.preferences;
-  // Katalog wird NICHT mehr hier überschrieben – das übernimmt jetzt der
-  // dedizierte catalog_full_sync mit Timestamp-Check!
-  // (Der Katalog wird nur beim regulären Sync übertragen)
+          if (data.sender === 'Er') state.kopfkino.erPreferences = data.preferences;
+          if (data.sender === 'Sie') state.kopfkino.siePreferences = data.preferences;
           
           checkKopfkinoUnlock();
           playSensualSound('chime');
 
           if (wasUnlockedBefore) {
             state.matchUpdateNotice = true;
+            state.matchNoticeType = 'update';
+            const sName = getRoleName(data.sender);
+
+            if (data.changeContext === 'position') {
+              state.lastReactionTitle = '🔥 Neue Wunsch-Stellung!';
+              state.lastReactionBadge = 'STELLUNG 🖼️';
+              state.lastReactionNotice = `${sName} hat eine neue Wunsch-Stellung für heute gewählt.`;
+            } else if (data.changeContext === 'cum') {
+              state.lastReactionTitle = '💦 Wunsch-Finale angepasst!';
+              state.lastReactionBadge = 'FINALE 🎯';
+              state.lastReactionNotice = `${sName} hat das Wunsch-Finale für heute angepasst.`;
+            } else if (data.changeContext === 'practice') {
+              state.lastReactionTitle = '✨ Praktiken aktualisiert!';
+              state.lastReactionBadge = 'HIGHLIGHTS 💋';
+              state.lastReactionNotice = `${sName} hat die Praktik-Highlights für heute angepasst.`;
+            } else {
+              state.lastReactionTitle = '✨ Vorlieben aktualisiert';
+              state.lastReactionBadge = 'UPDATE 🔄';
+              state.lastReactionNotice = `${sName} hat die Auswahl für heute angepasst.`;
+            }
           }
           saveState();
 
@@ -2327,12 +2344,22 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             };
             state.matchUpdateNotice = true;
             state.matchNoticeType = data.isOffer ? 'offer' : 'wish';
-            state.lastReactionTitle = data.isOffer ? '🎁 Angebot angenommen!' : '💖 Wunsch bestätigt!';
-            state.lastReactionBadge = data.isOffer ? 'DAFÜR 🔥' : 'ZUSAGE ✨';
-            const cleanTitle = data.practiceTitle ? `„${data.practiceTitle}“` : 'einen Moment';
-            state.lastReactionNotice = data.isOffer 
-              ? `${data.sender} freut sich auf: ${cleanTitle} ✨`
-              : `${data.sender} hat zugesagt: ${cleanTitle} ✨`;
+            
+            const isPosition = data.itemKey && data.itemKey.startsWith('pos_');
+            const cleanTitle = data.practiceTitle ? `„${data.practiceTitle}“` : 'einen Wunsch';
+            const sName = getRoleName(data.sender);
+
+            if (isPosition) {
+              state.lastReactionTitle = '🔥 Stellung zugesagt!';
+              state.lastReactionBadge = 'STELLUNG ⭐';
+              state.lastReactionNotice = `${sName} hat zugesagt bei: ${cleanTitle} ✨`;
+            } else {
+              state.lastReactionTitle = data.isOffer ? '🎁 Angebot angenommen!' : '💖 Wunsch bestätigt!';
+              state.lastReactionBadge = data.isOffer ? 'DAFÜR 🔥' : 'ZUSAGE ✨';
+              state.lastReactionNotice = data.isOffer 
+                ? `${sName} freut sich auf: ${cleanTitle} ✨`
+                : `${sName} hat zugesagt: ${cleanTitle} ✨`;
+            }
           } else {
             delete state.kopfkino.itemReactions[data.itemKey];
           }
@@ -3100,10 +3127,19 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
     function submitPreferences() {
       const savedDraft = JSON.parse(JSON.stringify(currentDraftPreferences));
+      const editStep = wizardCurrentStep;
+
       if (state.currentUser === 'Er') {
         state.kopfkino.erPreferences = savedDraft;
       } else {
         state.kopfkino.siePreferences = savedDraft;
+      }
+
+      let changeContext = 'all';
+      if (wizardDirectEditMode) {
+        if (editStep === 3) changeContext = 'position';
+        else if (editStep === 4) changeContext = 'cum';
+        else changeContext = 'practice';
       }
 
       wizardEditing = false;
@@ -3115,7 +3151,8 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       LiveStream.sendData({
         type: 'kopfkino_v8_sync',
         sender: state.currentUser,
-        preferences: savedDraft
+        preferences: savedDraft,
+        changeContext: changeContext
       });
 
       triggerPushNotification(state.currentUser);
@@ -3126,7 +3163,6 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         showToast("🔒 Gespeichert!", "Deine Vorlieben für heute sind eingeloggt.", "✨");
       }
 
-      // Bleibt im Match-Tab: Zeigt direkt den Warte-Screen oder den freigeschalteten Fahrplan
       renderKopfkinoTab();
     }
 
@@ -3363,13 +3399,20 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         }
       });
 
+      let doubleCumFav = null;
+      let erCumFav = null;
+      let sieCumFav = null;
+      cumAllowedZonen = [];
+
       cumList.forEach(c => {
         const erC = (erP[`cum_${c.id}`] || {}).status || 'erlaubt';
         const sieC = (sieP[`cum_${c.id}`] || {}).status || 'erlaubt';
-        const label = isEr ? c.labelEr : c.labelSie;
+        const labelEr = c.labelEr || c.title;
+        const labelSie = c.labelSie || c.title;
+        const myLabel = isEr ? labelEr : labelSie;
 
         if (erC === 'tabu' || sieC === 'tabu') {
-          blockedTaboos.push(`Abspritzen: ${label}`);
+          blockedTaboos.push(`Abspritzen: ${myLabel}`);
           return;
         }
 
@@ -3377,15 +3420,19 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         const isSieFokus = sieC === 'fokus';
 
         if (isErFokus && isSieFokus) {
-          cumFinaleFavorit = `${label} (⭐ BEIDER WUNSCH!)`;
-          cumAllowedZonen.unshift({ key: `cum_${c.id}`, title: label, isFav: true, isDouble: true });
-          currentMatchHighlightTitles.push(label);
-        } else if (isErFokus || isSieFokus) {
-          if (!cumFinaleFavorit) cumFinaleFavorit = label;
-          cumAllowedZonen.unshift({ key: `cum_${c.id}`, title: label, isFav: true, isDouble: false });
-          currentMatchHighlightTitles.push(label);
+          doubleCumFav = myLabel;
+          cumAllowedZonen.unshift({ key: `cum_${c.id}`, title: myLabel, isFav: true, isDouble: true });
+          currentMatchHighlightTitles.push(myLabel);
+        } else if (isErFokus) {
+          erCumFav = labelEr;
+          cumAllowedZonen.push({ key: `cum_${c.id}`, title: myLabel, isFav: true, isErFav: true });
+          currentMatchHighlightTitles.push(labelEr);
+        } else if (isSieFokus) {
+          sieCumFav = labelSie;
+          cumAllowedZonen.push({ key: `cum_${c.id}`, title: myLabel, isFav: true, isSieFav: true });
+          currentMatchHighlightTitles.push(labelSie);
         } else {
-          cumAllowedZonen.push({ key: `cum_${c.id}`, title: label, isFav: false, isDouble: false });
+          cumAllowedZonen.push({ key: `cum_${c.id}`, title: myLabel, isFav: false });
         }
       });
 
@@ -3441,27 +3488,55 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             </div>
           `}
 
-          <div class="bg-slate-950 border border-amber-500/40 rounded-2xl p-3.5 space-y-2">
+          <div class="bg-slate-950 border border-amber-500/40 rounded-2xl p-3.5 space-y-2.5">
             <div class="flex justify-between items-center">
               <span class="text-[9px] font-bold text-amber-300 uppercase tracking-wider block">💦 DAS FINALE & ABSPRITZ-ZONEN:</span>
-              ${isEr ? `<span class="text-[9px] text-amber-400/80 italic">Tippe zum Wechseln</span>` : ''}
+              ${isEr ? `<span class="text-[9px] text-amber-400/80 italic">Tippen zum Wechseln</span>` : ''}
             </div>
-            
-            ${cumFinaleFavorit ? `
-              <div class="bg-amber-950/60 border border-amber-500/70 p-2 rounded-xl text-amber-100 font-bold text-[11px] flex items-center justify-between">
-                <span>🎯 Hauptfavorit: ${cumFinaleFavorit}</span>
-                <span class="text-[9px] bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded font-bold">⭐ Sein Wunsch</span>
+
+            <!-- 1. DOPPELTER VOLLTREFFER (BEIDE WOLLEN DIESELBE ZONE) -->
+            ${doubleCumFav ? `
+              <div class="bg-gradient-to-r from-amber-950/90 to-yellow-950/90 border border-amber-400 p-2.5 rounded-xl text-amber-100 font-bold text-xs flex items-center justify-between shadow-lg glow-amber">
+                <span class="flex items-center gap-1.5"><span>⭐</span> <span>Volltreffer: ${doubleCumFav}</span></span>
+                <span class="text-[9px] bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full font-black uppercase">Beider Wunsch</span>
               </div>
             ` : ''}
 
+            <!-- 2. EINSEITIGE WÜNSCHE (GETRENNT VON IHM & IHR) -->
+            ${!doubleCumFav && (erCumFav || sieCumFav) ? `
+              <div class="space-y-1.5">
+                ${erCumFav ? `
+                  <div class="bg-slate-900/90 border border-amber-500/50 p-2 rounded-xl text-amber-200 text-xs flex items-center justify-between font-semibold">
+                    <span>🎯 Wunsch von ${getRoleName('Er')}: ${erCumFav}</span>
+                    <span class="text-[9px] bg-amber-950 text-amber-300 border border-amber-600/40 px-1.5 py-0.5 rounded font-bold">Sein Favorit</span>
+                  </div>
+                ` : ''}
+                ${sieCumFav ? `
+                  <div class="bg-slate-900/90 border border-pink-500/50 p-2 rounded-xl text-pink-200 text-xs flex items-center justify-between font-semibold">
+                    <span>💖 Wunsch von ${getRoleName('Sie')}: ${sieCumFav}</span>
+                    <span class="text-[9px] bg-pink-950 text-pink-300 border border-pink-600/40 px-1.5 py-0.5 rounded font-bold">Ihr Favorit</span>
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+
+            <!-- 3. ALLE WEITEREN FREIGEGEBENEN ZONEN -->
             ${cumAllowedZonen.length > 0 ? `
               <div class="pt-0.5 space-y-1">
-                <span class="text-[10px] text-slate-400 block font-semibold">Alle von ihr freigegebenen Zonen:</span>
+                <span class="text-[10px] text-slate-400 block font-semibold">Alle freigegebenen Zonen:</span>
                 <div class="flex flex-wrap gap-1">
                   ${cumAllowedZonen.map(z => `
                     <button type="button" ${isEr ? `onclick="changeErCumFocusDirectly('${z.key}', '${z.title}')"` : ''} 
-                      class="px-2.5 py-1 rounded-xl text-[10px] border transition-all ${z.isFav ? 'bg-amber-500 border-amber-400 text-slate-950 font-bold shadow' : isEr ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-amber-500 cursor-pointer' : 'bg-slate-900 border-slate-800 text-slate-300 cursor-default'}">
-                      ${z.title} ${z.isFav ? '⭐' : ''}
+                      class="px-2.5 py-1 rounded-xl text-[10px] border transition-all ${
+                        z.isDouble 
+                          ? 'bg-amber-400 border-amber-300 text-slate-950 font-black shadow' 
+                          : z.isFav 
+                            ? 'bg-amber-950/80 border-amber-500/80 text-amber-200 font-bold shadow' 
+                            : isEr 
+                              ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-amber-500 cursor-pointer' 
+                              : 'bg-slate-900 border-slate-800 text-slate-300 cursor-default'
+                      }">
+                      ${z.title} ${z.isDouble ? '⭐' : z.isFav ? '🔥' : ''}
                     </button>
                   `).join('')}
                 </div>
