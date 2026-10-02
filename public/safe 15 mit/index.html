@@ -4549,29 +4549,9 @@ function requestAllSyncsFromPartner() {
 }
 
     // =========================================================================
-    // DYNAMISCHES LADEN DER BILDER VOM SERVER
-    // =========================================================================
-    async function loadDynamicPositionsFromServer() {
-      try {
-        const res = await fetch('/api/positions');
-        if (res.ok) {
-          const serverPositions = await res.json();
-          if (Array.isArray(serverPositions) && serverPositions.length > 0) {
-            state.kopfkino.positionsCatalog = serverPositions;
-            saveState();
-            if (state.activeView === 'match' && wizardCurrentStep === 3) {
-              renderKopfkinoWizard();
-            }
-          }
-        }
-      } catch (e) {}
-    }
-
-    // =========================================================================
     // INIT
     // =========================================================================
     loadState();
-    loadDynamicPositionsFromServer();
     LiveStream.initPeer();
     setupVisualViewportSync();
     if (!state.game.currentCard) {

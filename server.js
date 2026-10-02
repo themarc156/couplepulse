@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -18,6 +19,62 @@ app.get('/api/status', (req, res) => {
         message: 'Server läuft erfolgreich!',
         timestamp: new Date().toISOString() 
     });
+});
+
+// NEU: Automatischer Scanner für alle Stellungs-Bilder und Unterordner
+app.get('/api/positions', (req, res) => {
+    // Unterstützt sowohl 'public/image/positions' als auch 'public/images/positions'
+    let baseDir = path.join(__dirname, 'public', 'image', 'positions');
+    let webPrefix = '/image/positions';
+
+    if (!fs.existsSync(baseDir)) {
+        baseDir = path.join(__dirname, 'public', 'images', 'positions');
+        webPrefix = '/images/positions';
+    }
+
+    if (!fs.existsSync(baseDir)) {
+        return res.json([]);
+    }
+
+    const positions = [];
+    const validExts = ['.png', '.jpg', '.jpeg', '.webp', '.svg'];
+
+    function scanDirectory(currentPath, currentCategory) {
+        const entries = fs.readdirSync(currentPath, { withFileTypes: true });
+        for (const entry of entries) {
+            const fullPath = path.join(currentPath, entry.name);
+            if (entry.isDirectory()) {
+                scanDirectory(fullPath, entry.name);
+            } else if (entry.isFile()) {
+                const ext = path.extname(entry.name).toLowerCase();
+                if (validExts.includes(ext)) {
+                    const rawName = path.parse(entry.name).name;
+                    // Automatisch lesbaren Titel aus Dateinamen generieren (z. B. "doggy_deep_01" -> "Doggy Deep 01")
+                    const cleanTitle = rawName
+                        .replace(/[_-]/g, ' ')
+                        .replace(/\b\w/g, char => char.toUpperCase());
+
+                    const relativeWebPath = `${webPrefix}/${currentCategory ? currentCategory + '/' : ''}${entry.name}`;
+                    const safeId = `pos_${(currentCategory ? currentCategory + '_' : '') + rawName}`.replace(/[^a-zA-Z0-9_]/g, '_');
+
+                    positions.push({
+                        id: safeId,
+                        category: currentCategory || 'allgemein',
+                        title: cleanTitle,
+                        desc: '',
+                        image: relativeWebPath
+                    });
+                }
+            }
+        }
+    }
+
+    try {
+        scanDirectory(baseDir, '');
+        res.json(positions);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // NEU: Telegram-Push-Benachrichtigung (Diskret im Hintergrund)
