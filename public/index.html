@@ -2514,7 +2514,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       const posList = state.kopfkino.positionsCatalog || defaultPositionsCatalog;
 
       modalTitle.innerText = "🔒 VORLIEBEN EINGELOGGT";
-      modalSubtitle.innerText = `Warten auf ${partner}...`;
+      modalSubtitle.innerText = "Deine Auswahl für heute Abend:";
 
       let myFocusItems = [];
       let myTabooItems = [];
@@ -2545,12 +2545,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       content.innerHTML = `
         <div class="space-y-2.5 text-xs py-0.5">
           <!-- KOMPAKTE STATUS-PILLE (MINIMALISTISCH & PLATZSPAREND) -->
-          <div class="bg-purple-950/40 border border-purple-500/40 rounded-xl px-3 py-1.5 flex items-center justify-between text-purple-200">
-            <div class="flex items-center gap-2 font-semibold text-xs">
-              <span class="animate-pulse">⏳</span>
-              <span>Warten auf <strong class="text-rose-300">${partner}</strong>...</span>
-            </div>
-            <span class="text-[10px] bg-purple-900/60 border border-purple-500/30 px-2 py-0.5 rounded-full text-purple-300 font-mono">Gespeichert ✓</span>
+          <div class="bg-purple-950/40 border border-purple-500/40 rounded-xl px-3 py-2 flex items-center gap-2 text-purple-200">
+            <span class="animate-pulse text-base">⏳</span>
+            <span class="font-medium text-xs">Warten auf <strong class="text-rose-300 font-bold">${partner}</strong>...</span>
           </div>
 
           <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 space-y-2.5">
@@ -3322,6 +3319,47 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         }
       });
 
+      const posList = state.kopfkino.positionsCatalog || defaultPositionsCatalog;
+      let matchedPositions = [];
+      let openPositionWishesForMe = [];
+
+      posList.forEach(pos => {
+        const posKey = `pos_${pos.id}`;
+        const erStatus = (erP[posKey] || {}).status || 'erlaubt';
+        const sieStatus = (sieP[posKey] || {}).status || 'erlaubt';
+
+        if (erStatus === 'tabu' || sieStatus === 'tabu') {
+          blockedTaboos.push(`Stellung: ${pos.title}`);
+        } else if (erStatus === 'fokus' && sieStatus === 'fokus') {
+          matchedPositions.push(pos);
+          currentMatchHighlightTitles.push(pos.title);
+        } else if (erStatus === 'fokus' && sieStatus !== 'tabu') {
+          const reqKey = `pos_wish_er_${pos.id}`;
+          currentMatchHighlightTitles.push(pos.title);
+          if (reactions[reqKey]) {
+            matchedPositions.push(pos);
+          } else if (!isEr) {
+            openPositionWishesForMe.push({
+              pos: pos,
+              from: getRoleName('Er'),
+              reqKey: reqKey
+            });
+          }
+        } else if (sieStatus === 'fokus' && erStatus !== 'tabu') {
+          const reqKey = `pos_wish_sie_${pos.id}`;
+          currentMatchHighlightTitles.push(pos.title);
+          if (reactions[reqKey]) {
+            matchedPositions.push(pos);
+          } else if (isEr) {
+            openPositionWishesForMe.push({
+              pos: pos,
+              from: getRoleName('Sie'),
+              reqKey: reqKey
+            });
+          }
+        }
+      });
+
       cumList.forEach(c => {
         const erC = (erP[`cum_${c.id}`] || {}).status || 'erlaubt';
         const sieC = (sieP[`cum_${c.id}`] || {}).status || 'erlaubt';
@@ -3348,12 +3386,31 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
       const allErVerwoehntSie = [...erVerwoehntSieMatches, ...erVerwoehntSieAgreed];
       const allSieVerwoehntIhn = [...sieVerwoehntIhnMatches, ...sieVerwoehntIhnAgreed];
-      const hasFixedProgram = (allErVerwoehntSie.length > 0 || allSieVerwoehntIhn.length > 0);
+      const hasFixedProgram = (allErVerwoehntSie.length > 0 || allSieVerwoehntIhn.length > 0 || matchedPositions.length > 0);
 
       content.innerHTML = `
         <div class="space-y-3.5 text-xs">
           ${hasFixedProgram ? `
             <div class="space-y-2.5">
+              ${matchedPositions.length > 0 ? `
+                <div class="bg-gradient-to-br from-amber-950/90 via-slate-900 to-purple-950/90 border border-amber-500/60 rounded-2xl p-3.5 glow-amber space-y-2">
+                  <span class="text-[10px] font-bold text-amber-300 uppercase tracking-wider block">🔥 EURE MATCH-STELLUNGEN (ABEND-HIGHLIGHT):</span>
+                  <div class="space-y-2">
+                    ${matchedPositions.map(pos => `
+                      <div class="bg-slate-950/90 border border-amber-500/40 p-2.5 rounded-xl flex items-center gap-3">
+                        <img src="${pos.image}" alt="${pos.title}" class="w-14 h-14 object-contain bg-slate-900 rounded-lg p-1 shrink-0 border border-slate-800">
+                        <div class="min-w-0 flex-1">
+                          <span class="text-xs text-amber-200 font-bold block truncate">${pos.title}</span>
+                          <span class="text-[10px] text-emerald-400 font-bold flex items-center gap-1 mt-0.5">
+                            <span>⭐</span> <span>Perfekter Volltreffer!</span>
+                          </span>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
               ${allErVerwoehntSie.length > 0 ? `
                 <div class="bg-gradient-to-br from-rose-950/80 to-slate-900 border border-rose-500/60 rounded-2xl p-3.5 glow-rose space-y-2">
                   <span class="text-[10px] font-bold text-rose-300 uppercase tracking-wider block">👑 ER VERWÖHNT SIE (SEINE AUFGABEN):</span>
@@ -3406,17 +3463,38 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             ` : ''}
           </div>
 
-          ${(openWishesForMe.length > 0 || partnerOffersForMe.length > 0) ? `
+          ${(openWishesForMe.length > 0 || partnerOffersForMe.length > 0 || openPositionWishesForMe.length > 0) ? `
             <div class="bg-slate-950/90 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
               <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">💭 NOCH OFFENE IMPULSE DEINES PARTNERS:</span>
-              ${openWishesForMe.length > 0 ? `
+              
+              ${openPositionWishesForMe.length > 0 ? `
                 <div class="space-y-1.5">
-                  <span class="text-[10px] font-bold text-purple-400 block">Wünsche deines Partners (an dich):</span>
+                  <span class="text-[10px] font-bold text-amber-300 block">Stellungs-Wünsche deines Partners:</span>
+                  <div class="space-y-1.5">
+                    ${openPositionWishesForMe.map(item => `
+                      <div class="bg-slate-900/90 p-2 rounded-xl border border-amber-500/30 flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <img src="${item.pos.image}" alt="${item.pos.title}" class="w-10 h-10 object-contain bg-slate-950 rounded-lg p-0.5 shrink-0 border border-slate-800">
+                          <div class="min-w-0">
+                            <span class="text-xs text-amber-200 font-bold truncate block">${item.pos.title}</span>
+                            <span class="text-[9px] text-slate-400">Wunsch von ${item.from}</span>
+                          </div>
+                        </div>
+                        ${renderTargetedReactionButton(item.reqKey, '🔥 Ooh ja!', true, item.pos.title, true)}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              ${openWishesForMe.length > 0 ? `
+                <div class="space-y-1.5 pt-0.5">
+                  <span class="text-[10px] font-bold text-purple-400 block">Praktik-Wünsche deines Partners (an dich):</span>
                   <div class="space-y-1.5">${openWishesForMe.map(w => `<div class="bg-slate-900/90 p-2 rounded-xl border border-slate-855">${w}</div>`).join('')}</div>
                 </div>
               ` : ''}
               ${partnerOffersForMe.length > 0 ? `
-                <div class="space-y-1.5 pt-1">
+                <div class="space-y-1.5 pt-0.5">
                   <span class="text-[10px] font-bold text-rose-400 block">Verwöhn-Angebote deines Partners (für dich):</span>
                   <div class="space-y-1.5">${partnerOffersForMe.map(o => `<div class="bg-slate-900/90 p-2 rounded-xl border border-slate-855">${o}</div>`).join('')}</div>
                 </div>
