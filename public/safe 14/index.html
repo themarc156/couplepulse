@@ -661,52 +661,24 @@
 
     <!-- MODAL: SIEGER-ENTSCHEIDUNG (LUST-DUELL FINALE) -->
     <div id="winner-modal" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div class="bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 border-amber-500/80 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl glow-amber text-center">
-        <div class="space-y-1.5">
-          <span class="text-3xl animate-bounce block">🏆</span>
-          <h2 id="winner-title" class="text-lg font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 to-rose-500 bg-clip-text text-transparent">
+      <div class="bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 border-amber-500/80 w-full max-w-sm rounded-3xl p-6 space-y-5 shadow-2xl glow-amber text-center">
+        <div class="space-y-2">
+          <span class="text-4xl animate-bounce block">🏆</span>
+          <h2 id="winner-title" class="text-xl font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 to-rose-500 bg-clip-text text-transparent">
             SIE HAT GEWONNEN!
           </h2>
-          <div id="winner-score-badge" class="inline-block px-3 py-0.5 bg-amber-950/80 border border-amber-500/50 rounded-full text-[11px] font-mono font-bold text-amber-300">
+          <div id="winner-score-badge" class="inline-block px-3 py-1 bg-amber-950/80 border border-amber-500/50 rounded-full text-xs font-mono font-bold text-amber-300">
             Endstand: 4 : 3 Punkte
           </div>
         </div>
 
-        <div id="winner-desc" class="bg-slate-900/90 border border-slate-800 p-3.5 rounded-2xl text-xs text-slate-200 leading-relaxed font-semibold">
-          Du hast dir die absolute Herrschaft über das Finale verdient!
+        <div id="winner-desc" class="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl text-xs text-slate-200 leading-relaxed font-semibold">
+          Du hast dir die absolute Herrschaft über das Finale verdient! Bestimme jetzt die Stellung, das Tempo und wo das Finale stattfindet – legt das Handy weg und gebt euch völlig hin! 💦
         </div>
 
-        <div class="space-y-2 pt-1">
-          <button onclick="openPositionsGalleryModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-850 border border-amber-500/50 text-amber-300 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow transition-all active:scale-95">
-            <span>📖</span> <span>Stellungs-Inspiration ansehen</span>
-          </button>
-          <button onclick="closeWinnerModal()" class="w-full py-3 bg-gradient-to-r from-amber-500 via-rose-600 to-pink-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg glow-rose active:scale-95 transition-all">
-            🔥 Handy weglegen & Finale starten!
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL: STELLUNGS-GALERIE / INSPIRATION FÜRS FINALE -->
-    <div id="positions-gallery-modal" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-amber-500/50 w-full max-w-sm rounded-3xl p-4 space-y-3 shadow-2xl glow-amber max-h-[88vh] flex flex-col justify-between">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-2 shrink-0">
-          <div class="flex items-center gap-1.5">
-            <span class="text-base">📖</span>
-            <h3 class="font-bold text-xs text-amber-300 uppercase tracking-wider">Stellungs-Inspiration</h3>
-          </div>
-          <button onclick="closePositionsGalleryModal()" class="text-slate-400 hover:text-slate-200 text-base font-bold px-1">✕</button>
-        </div>
-
-        <div id="gallery-category-chips" class="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar text-[10px] font-bold shrink-0"></div>
-
-        <div id="positions-gallery-grid" class="flex-1 min-h-0 overflow-y-auto pr-1 py-1 no-scrollbar space-y-3"></div>
-
-        <div class="pt-2 border-t border-slate-800 shrink-0">
-          <button onclick="closePositionsGalleryModal()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all">
-            Fertig ✓
-          </button>
-        </div>
+        <button onclick="closeWinnerModal()" class="w-full py-4 bg-gradient-to-r from-amber-500 via-rose-600 to-pink-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg glow-rose active:scale-95 transition-all">
+          🔥 Handy weglegen & Finale starten!
+        </button>
       </div>
     </div>
 
@@ -834,25 +806,13 @@
     ];
 
     const defaultCumLocations = [
-      { id: 'cum_vag', title: 'In die Fotze (tief rein) 📥', labelSie: 'In meine Fotze (drinnen) 📥', labelEr: 'In ihre Fotze (tief rein) 📥' },
+      { id: 'cum_vag', title: 'In die Fotze (tief rein) 📥', labelSie: 'In meine Fotze 📥', labelEr: 'In ihre Fotze (tief rein) 📥' },
       { id: 'cum_mouth', title: 'In den Mund / schlucken 👄', labelSie: 'In meinen Mund / schlucken 👄', labelEr: 'In ihren Mund / schlucken 👄' },
       { id: 'cum_tits', title: 'Auf die Brüste / Dekolleté 🍒', labelSie: 'Auf meine Brüste / Dekolleté 🍒', labelEr: 'Auf ihre Brüste / Dekolleté 🍒' },
       { id: 'cum_ass_in', title: 'Tief ins Arschloch 🍑', labelSie: 'Tief in mein Arschloch 🍑', labelEr: 'Tief in ihren Arsch 🍑' },
       { id: 'cum_body', title: 'Auf Bauch / Po / Rücken ✨', labelSie: 'Auf meinen Bauch / Po / Rücken ✨', labelEr: 'Auf ihren Bauch / Po / Rücken ✨' },
       { id: 'cum_hand_self', title: 'In ihrer Hand / auf ihn selbst 🤲', labelSie: 'In meine Hand / auf ihn selbst 🤲', labelEr: 'In ihre Hand / auf mich selbst 🤲' },
       { id: 'cum_face', title: 'Ins Gesicht 💦', labelSie: 'In mein Gesicht 💦', labelEr: 'In ihr Gesicht 💦' }
-    ];
-
-    // ZENTRALER STELLUNGS-KATALOG (Pfade an deine Unterordner und Dateinamen anpassen)
-    const defaultPositionsCatalog = [
-      { id: 'pos_doggy_classic', category: 'von_hinten', title: 'Klassischer Doggy 🐾', desc: 'Tiefes Eindringen, Hände frei für Berührungen.', image: '/image/positions/von_hinten/doggy_classic.png' },
-      { id: 'pos_reiter_classic', category: 'reiter', title: 'Reiterstellung 👑', desc: 'Sie bestimmt Rhythmus, Tempo und Tiefe.', image: '/image/positions/reiter/reiter_classic.png' },
-      { id: 'pos_reiter_reverse', category: 'reiter', title: 'Reiterin umgekehrt (Reverse) 🍑', desc: 'Bester Blick auf Rücken, Po und Bewegung.', image: '/image/positions/reiter/reiter_reverse.png' },
-      { id: 'pos_lotus', category: 'intim', title: 'Der Lotus 🌸', desc: 'Maximale Nähe, intensiver Blickkontakt & Umarmung.', image: '/image/positions/intim/lotus.png' },
-      { id: 'pos_missionar_deep', category: 'missionar', title: 'Tiefe Missionar-Stellung 💋', desc: 'Ihre Beine auf seinen Schultern, tiefer Einstieg.', image: '/image/positions/missionar/missionar_deep.png' },
-      { id: 'pos_loeffel', category: 'intim', title: 'Löffelchen 🥄', desc: 'Sinnlich, eng aneinander gekuschelt von hinten.', image: '/image/positions/intim/loeffel.png' },
-      { id: 'pos_stehend', category: 'spontan', title: 'Stehend an der Wand 🚪', desc: 'Leidenschaftlich, fordernd und intensiv.', image: '/image/positions/spontan/stehend.png' },
-      { id: 'pos_tisch', category: 'spontan', title: 'Auf dem Tisch / der Kante 🪑', desc: 'Sie liegt erhöht, er steht oder kniet davor.', image: '/image/positions/spontan/kante.png' }
     ];
 
     const defaultMasterDeck = [
@@ -925,14 +885,12 @@
       kopfkino: {
   practicesCatalog: defaultPracticesCatalog,
   cumCatalog: defaultCumLocations,
-  positionsCatalog: defaultPositionsCatalog,
   erPreferences: null,
   siePreferences: null,
   itemReactions: {},
   isUnlocked: false,
-  catalogUpdatedAt: 0,
-  cumUpdatedAt: 0,
-  positionsUpdatedAt: 0
+  catalogUpdatedAt: 0,   // NEU: Zeitstempel für Praktiken
+  cumUpdatedAt: 0        // NEU: Zeitstempel für Cum-Locations
 },
       shoutboxMessages: [],
       activeCraving: null,
@@ -1179,6 +1137,7 @@ if (!state.kopfkino.practicesCatalog || state.kopfkino.practicesCatalog.length =
 if (!state.kopfkino.cumCatalog || state.kopfkino.cumCatalog.length === 0) {
   state.kopfkino.cumCatalog = defaultCumLocations;
 } else {
+  // Bestehende Kataloge um 'cum_hand_self' ergänzen, falls noch nicht vorhanden
   const hasHandSelf = state.kopfkino.cumCatalog.some(c => c.id === 'cum_hand_self');
   if (!hasHandSelf) {
     state.kopfkino.cumCatalog.push({
@@ -1188,9 +1147,6 @@ if (!state.kopfkino.cumCatalog || state.kopfkino.cumCatalog.length === 0) {
       labelEr: 'In ihre Hand / auf mich selbst 🤲'
     });
   }
-}
-if (!state.kopfkino.positionsCatalog || state.kopfkino.positionsCatalog.length === 0) {
-  state.kopfkino.positionsCatalog = defaultPositionsCatalog;
 }
 if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
 
@@ -2626,41 +2582,6 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       `;
     }
 
-    function renderPositionCard(pos) {
-      const key = `pos_${pos.id}`;
-      const current = (currentDraftPreferences[key] && currentDraftPreferences[key].status) ? currentDraftPreferences[key].status : 'erlaubt';
-      const isFokus = current === 'fokus';
-      const isTabu = current === 'tabu';
-
-      return `
-        <div class="bg-slate-950 border ${isFokus ? 'border-amber-500/90 glow-amber' : isTabu ? 'border-rose-600/70 opacity-60' : 'border-slate-800'} rounded-2xl overflow-hidden transition-all flex flex-col">
-          <div class="relative w-full h-36 bg-slate-900 flex items-center justify-center overflow-hidden">
-            <img src="${pos.image}" alt="${pos.title}" onerror="this.parentElement.innerHTML='<div class=\\'text-slate-500 text-xs italic p-4 text-center\\'>🖼️ ${pos.title}</div>'" class="w-full h-full object-contain p-1.5 transition-transform duration-300 hover:scale-105">
-            <div class="absolute top-2 right-2">
-              ${isFokus ? `<span class="text-[9px] font-bold text-amber-300 bg-amber-950/90 border border-amber-500 px-2 py-0.5 rounded-full shadow">🔥 Fokus</span>` : ''}
-              ${isTabu ? `<span class="text-[9px] font-bold text-rose-300 bg-rose-950/90 border border-rose-600 px-2 py-0.5 rounded-full shadow">🛑 Tabu</span>` : ''}
-            </div>
-          </div>
-          <div class="p-3 space-y-2 flex-1 flex flex-col justify-between">
-            <div>
-              <h4 class="font-bold text-xs text-slate-100">${pos.title}</h4>
-              <p class="text-[10px] text-slate-400 leading-snug mt-0.5">${pos.desc || ''}</p>
-            </div>
-            <div class="grid grid-cols-2 gap-1.5 pt-1">
-              <button type="button" onclick="toggleDraftItemStatus('${key}', 'fokus')" 
-                class="py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 ${isFokus ? 'bg-amber-500 border-amber-400 text-slate-950 font-black shadow' : 'bg-slate-900 border-slate-800 text-amber-300 hover:border-amber-500'}">
-                🔥 Fokus
-              </button>
-              <button type="button" onclick="toggleDraftItemStatus('${key}', 'tabu')" 
-                class="py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 ${isTabu ? 'bg-rose-600 border-rose-400 text-white font-black shadow' : 'bg-slate-900 border-slate-800 text-rose-400 hover:border-rose-500'}">
-                🛑 Tabu
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
     function renderModel1FinaleCard(key, label, isEr) {
       const current = (currentDraftPreferences[key] && currentDraftPreferences[key].status) ? currentDraftPreferences[key].status : 'erlaubt';
       const isFokus = current === 'fokus';
@@ -2708,15 +2629,6 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       }
     }
 
-    let wizardPositionCategoryFilter = 'all';
-
-    function setWizardPositionCategory(cat) {
-      wizardPositionCategoryFilter = cat;
-      const sc = document.getElementById('wizard-scroll-container');
-      const savedScroll = sc ? sc.scrollTop : 0;
-      renderKopfkinoWizard(savedScroll);
-    }
-
     function renderKopfkinoWizard(restoreScrollTop = 0) {
       const modalTitle = document.getElementById('kopfkino-modal-title');
       const modalSubtitle = document.getElementById('kopfkino-modal-subtitle');
@@ -2724,9 +2636,8 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       const actions = document.getElementById('kopfkino-modal-actions');
       const progressBar = document.getElementById('kopfkino-progress-bar');
       const progressBox = document.getElementById('kopfkino-wizard-progress');
-
       progressBox.classList.remove('hidden');
-      progressBar.style.width = (wizardCurrentStep * 25) + '%';
+      progressBar.style.width = (wizardCurrentStep * 33.33) + '%';
 
       const isEr = state.currentUser === 'Er';
       const practices = state.kopfkino.practicesCatalog || defaultPracticesCatalog;
@@ -2763,41 +2674,10 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         actions.innerHTML = `
           <button onclick="wizardPrevStep()" class="py-3 px-3.5 bg-slate-800 text-xs font-semibold rounded-xl text-slate-300">← Zurück</button>
           <button onclick="wizardNextStep()" class="flex-1 py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-[0.98] transition-all">
-            Weiter zu Stellungen →
-          </button>
-        `;
-      } else if (wizardCurrentStep === 3) {
-        modalTitle.innerText = "Welche Stellungen reizen dich heute?";
-        modalSubtitle.innerText = "Tippe deine Favoriten & No-Gos für heute an:";
-        const posList = state.kopfkino.positionsCatalog || defaultPositionsCatalog;
-        
-        // Kategorien extrahieren
-        const categories = ['all', ...new Set(posList.map(p => p.category || 'all'))];
-        const filteredPos = (wizardPositionCategoryFilter === 'all') 
-          ? posList 
-          : posList.filter(p => p.category === wizardPositionCategoryFilter);
-
-        content.innerHTML = `
-          <div class="space-y-2.5">
-            <div class="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar text-[10px] font-bold">
-              ${categories.map(c => `
-                <button type="button" onclick="setWizardPositionCategory('${c}')" class="px-2.5 py-1 rounded-lg border whitespace-nowrap transition-all ${wizardPositionCategoryFilter === c ? 'bg-purple-600 text-white border-purple-400 shadow' : 'bg-slate-900 border-slate-800 text-slate-400'}">
-                  ${c === 'all' ? '✨ Alle' : c.replace('_', ' ').toUpperCase()}
-                </button>
-              `).join('')}
-            </div>
-            <div id="wizard-scroll-container" class="space-y-2.5 pr-1 max-h-[50vh] overflow-y-auto no-scrollbar">
-              ${filteredPos.map(p => renderPositionCard(p)).join('')}
-            </div>
-          </div>
-        `;
-        actions.innerHTML = `
-          <button onclick="wizardPrevStep()" class="py-3 px-3.5 bg-slate-800 text-xs font-semibold rounded-xl text-slate-300">← Zurück</button>
-          <button onclick="wizardNextStep()" class="flex-1 py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-[0.98] transition-all">
             Weiter zum Finale →
           </button>
         `;
-      } else if (wizardCurrentStep === 4) {
+      } else if (wizardCurrentStep === 3) {
         modalTitle.innerText = "Wo soll heute das Finale stattfinden?";
         modalSubtitle.innerText = isEr ? "Wähle deinen Wunsch für den Höhepunkt:" : "Wähle alle freigegebenen Zonen:";
         const cumList = state.kopfkino.cumCatalog || defaultCumLocations;
@@ -2824,7 +2704,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       }
     }
 
-    function wizardNextStep() { if (wizardCurrentStep < 4) { wizardCurrentStep++; renderKopfkinoWizard(); } }
+    function wizardNextStep() { if (wizardCurrentStep < 3) { wizardCurrentStep++; renderKopfkinoWizard(); } }
     function wizardPrevStep() { if (wizardCurrentStep > 1) { wizardCurrentStep--; renderKopfkinoWizard(); } }
 
     function submitPreferences() {
@@ -3962,58 +3842,6 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     function closeWinnerModal() { document.getElementById('winner-modal').classList.add('hidden'); }
     function openFilterModal() { document.getElementById('filter-modal').classList.remove('hidden'); }
     function closeFilterModal() { document.getElementById('filter-modal').classList.add('hidden'); }
-
-    let galleryActiveCategory = 'all';
-
-    function openPositionsGalleryModal() {
-      galleryActiveCategory = 'all';
-      renderPositionsGallery();
-      document.getElementById('positions-gallery-modal').classList.remove('hidden');
-      playSensualSound('chime');
-    }
-
-    function closePositionsGalleryModal() {
-      document.getElementById('positions-gallery-modal').classList.add('hidden');
-    }
-
-    function setGalleryCategory(cat) {
-      galleryActiveCategory = cat;
-      renderPositionsGallery();
-    }
-
-    function renderPositionsGallery() {
-      const chips = document.getElementById('gallery-category-chips');
-      const grid = document.getElementById('positions-gallery-grid');
-      const posList = state.kopfkino.positionsCatalog || defaultPositionsCatalog;
-
-      const categories = ['all', ...new Set(posList.map(p => p.category || 'all'))];
-
-      if (chips) {
-        chips.innerHTML = categories.map(c => `
-          <button onclick="setGalleryCategory('${c}')" class="px-2.5 py-1 rounded-lg border whitespace-nowrap transition-all ${galleryActiveCategory === c ? 'bg-amber-500 text-slate-950 font-black border-amber-400 shadow' : 'bg-slate-950 border-slate-800 text-slate-400'}">
-            ${c === 'all' ? '✨ Alle' : c.replace('_', ' ').toUpperCase()}
-          </button>
-        `).join('');
-      }
-
-      const filtered = (galleryActiveCategory === 'all') 
-        ? posList 
-        : posList.filter(p => p.category === galleryActiveCategory);
-
-      if (grid) {
-        grid.innerHTML = filtered.map(p => `
-          <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-md">
-            <div class="w-full h-40 bg-slate-900 flex items-center justify-center overflow-hidden">
-              <img src="${p.image}" alt="${p.title}" onerror="this.parentElement.innerHTML='<div class=\\'text-slate-500 text-xs italic p-4 text-center\\'>🖼️ ${p.title}</div>'" class="w-full h-full object-contain p-2">
-            </div>
-            <div class="p-3">
-              <h4 class="font-bold text-xs text-amber-200">${p.title}</h4>
-              <p class="text-[10px] text-slate-400 mt-0.5 leading-snug">${p.desc || ''}</p>
-            </div>
-          </div>
-        `).join('');
-      }
-    }
 
     // (applyFilters entfernt, Einstellungen werden direkt übernommen)
 
