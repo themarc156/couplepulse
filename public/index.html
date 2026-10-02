@@ -3264,6 +3264,8 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     function openKopfkinoRestart() {
       wizardEditing = true;
       wizardCurrentStep = 1;
+      wizardActiveCategory = 'vorne';
+      wizardCurrentPosition = pickRandomPosition('vorne');
       const mySavedPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
       currentDraftPreferences = JSON.parse(JSON.stringify(mySavedPrefs || {}));
       renderKopfkinoWizard();
@@ -4676,9 +4678,12 @@ function requestAllSyncsFromPartner() {
           const serverPositions = await res.json();
           if (Array.isArray(serverPositions) && serverPositions.length > 0) {
             state.kopfkino.positionsCatalog = serverPositions;
+            if (!wizardCurrentPosition) {
+              wizardCurrentPosition = pickRandomPosition(wizardActiveCategory);
+            }
             saveState();
-            if (state.activeView === 'match' && wizardCurrentStep === 3) {
-              renderKopfkinoWizard();
+            if (state.activeView === 'match') {
+              renderKopfkinoTab();
             }
           }
         }
