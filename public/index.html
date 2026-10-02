@@ -3034,23 +3034,24 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       }
 
       wizardEditing = false;
+      wizardCurrentStep = 1;
+      currentDraftPreferences = {};
       checkKopfkinoUnlock();
       saveState();
 
       LiveStream.sendData({
-  type: 'kopfkino_v8_sync',
-  sender: state.currentUser,
-  preferences: currentDraftPreferences
-  // practicesCatalog wird nicht mehr mitgeschickt - nutzt jetzt dedizierten Sync
-});
+        type: 'kopfkino_v8_sync',
+        sender: state.currentUser,
+        preferences: state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences
+      });
 
       triggerPushNotification(state.currentUser);
 
       if (state.kopfkino.isUnlocked) {
-        showToast("✨ Volltreffer!", "Beide haben gewählt – euer Abend-Fahrplan ist freigeschaltet!", "🔥");
+        showToast("✨ Volltreffer!", "Beide haben gewählt – euer Abend-Fahrplan steht!", "🔥");
         switchAppView('match');
       } else {
-        const partner = state.currentUser === 'Er' ? 'Sie' : 'Er';
+        const partner = getPartnerName();
         showToast("🔒 Vorlieben eingeloggt!", `Gespeichert! Sobald ${partner} fertig ist, wird euer Match enthüllt.`, "✨");
         switchAppView('pulse');
       }
