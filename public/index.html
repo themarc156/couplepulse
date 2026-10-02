@@ -2551,12 +2551,20 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             </p>
           </div>
 
-          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 space-y-2">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Deine gesetzten Highlights:</span>
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 space-y-2.5">
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Deine gesetzten Highlights:</span>
+              <span class="text-[9px] text-purple-400 italic">Tippen zum Anpassen</span>
+            </div>
             
             ${myFocusItems.length > 0 ? `
               <div class="space-y-1">
-                ${myFocusItems.map(f => `<div class="bg-slate-900/90 border border-amber-500/40 text-amber-200 p-2 rounded-xl text-xs flex items-center gap-1.5 font-semibold"><span>🔥</span> <span>${f}</span></div>`).join('')}
+                ${myFocusItems.map(f => `
+                  <div onclick="jumpToWizardStepWithItem(1)" class="bg-slate-900/90 hover:bg-slate-850 border border-amber-500/40 text-amber-200 p-2 rounded-xl text-xs flex items-center justify-between font-semibold cursor-pointer active:scale-[0.99] transition-all">
+                    <span class="flex items-center gap-1.5 truncate"><span>🔥</span> <span class="truncate">${f}</span></span>
+                    <span class="text-[10px] text-slate-400 font-normal shrink-0">✏️</span>
+                  </div>
+                `).join('')}
               </div>
             ` : '<div class="text-[11px] text-slate-500 italic">Keine speziellen Praktik-Wünsche (alles freigegeben)</div>'}
 
@@ -2565,9 +2573,15 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                 <span class="text-[10px] font-bold text-purple-300 block">Deine Wunsch-Stellungen:</span>
                 <div class="space-y-1.5">
                   ${myFocusPositions.map(pos => `
-                    <div class="bg-slate-900/90 border border-purple-500/40 p-2 rounded-xl flex items-center gap-2">
-                      <img src="${pos.image}" alt="${pos.title}" class="w-10 h-10 object-contain bg-slate-950 rounded-lg p-0.5 shrink-0">
-                      <span class="text-xs text-purple-200 font-bold truncate">${pos.title}</span>
+                    <div onclick="jumpToWizardStepWithItem(3, '${pos.id}')" class="bg-slate-900/90 hover:bg-slate-850 border border-purple-500/50 p-2 rounded-xl flex items-center justify-between gap-2 cursor-pointer active:scale-[0.99] transition-all">
+                      <div class="flex items-center gap-2 min-w-0">
+                        <img src="${pos.image}" alt="${pos.title}" class="w-11 h-11 object-contain bg-slate-950 rounded-lg p-0.5 shrink-0 border border-slate-800">
+                        <div class="min-w-0">
+                          <span class="text-xs text-purple-200 font-bold truncate block">${pos.title}</span>
+                          <span class="text-[10px] text-amber-400 font-semibold">🔥 Fokus gesetzt</span>
+                        </div>
+                      </div>
+                      <span class="text-[10px] text-slate-400 font-normal shrink-0 px-1">✏️</span>
                     </div>
                   `).join('')}
                 </div>
@@ -2575,8 +2589,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             ` : ''}
 
             ${myCumFav ? `
-              <div class="bg-slate-900/90 border border-amber-500/40 text-amber-200 p-2 rounded-xl text-xs flex items-center gap-1.5 font-semibold mt-1">
-                <span>🎯</span> <span>Wunsch-Finale: ${myCumFav}</span>
+              <div onclick="jumpToWizardStepWithItem(4)" class="bg-slate-900/90 hover:bg-slate-850 border border-amber-500/40 text-amber-200 p-2 rounded-xl text-xs flex items-center justify-between font-semibold cursor-pointer active:scale-[0.99] transition-all mt-1">
+                <span class="flex items-center gap-1.5 truncate"><span>🎯</span> <span class="truncate">Wunsch-Finale: ${myCumFav}</span></span>
+                <span class="text-[10px] text-slate-400 font-normal shrink-0">✏️</span>
               </div>
             ` : ''}
 
@@ -3397,19 +3412,38 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       const mySavedPrefs = (state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences) || {};
       currentDraftPreferences = JSON.parse(JSON.stringify(mySavedPrefs));
 
-      // Falls bereits eine Stellung als Fokus gewählt war, springen wir direkt darauf an
       const posList = state.kopfkino.positionsCatalog || defaultPositionsCatalog;
       const savedPos = posList.find(p => (currentDraftPreferences[`pos_${p.id}`] || {}).status === 'fokus');
       if (savedPos) {
         wizardActiveCategory = getNormalizedCategory(savedPos);
-        wizardCurrentPosition = savedPos;
         wizardCategoryHistory[wizardActiveCategory] = [savedPos];
         wizardCategoryHistoryIndex[wizardActiveCategory] = 0;
       } else {
         wizardActiveCategory = 'vorne';
-        wizardCurrentPosition = getCurrentWizardPosition();
       }
 
+      renderKopfkinoWizard();
+    }
+
+    // Direktsprung aus dem Warte-Screen auf ein konkretes Element
+    function jumpToWizardStepWithItem(step, targetPosId = null) {
+      wizardEditing = true;
+      wizardCurrentStep = step;
+      const mySavedPrefs = (state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences) || {};
+      currentDraftPreferences = JSON.parse(JSON.stringify(mySavedPrefs));
+
+      if (step === 3 && targetPosId) {
+        const posList = state.kopfkino.positionsCatalog || defaultPositionsCatalog;
+        const targetPos = posList.find(p => p.id === targetPosId);
+        if (targetPos) {
+          const cat = getNormalizedCategory(targetPos);
+          wizardActiveCategory = cat;
+          wizardCategoryHistory[cat] = [targetPos];
+          wizardCategoryHistoryIndex[cat] = 0;
+        }
+      }
+
+      playSensualSound('chime');
       renderKopfkinoWizard();
     }
 
