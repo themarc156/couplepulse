@@ -2836,6 +2836,11 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       const isEr = state.currentUser === 'Er';
       const practices = state.kopfkino.practicesCatalog || defaultPracticesCatalog;
 
+      // Für scrollbare Schritte (1, 2, 4) Standard-Scrolling sicherstellen
+      if (wizardCurrentStep !== 3 && content) {
+        content.className = 'flex-1 min-h-0 overflow-y-auto pr-1 py-1 no-scrollbar space-y-2';
+      }
+
       if (wizardCurrentStep === 1) {
         modalTitle.innerText = isEr ? "Was soll SIE heute mit dir machen?" : "Was soll ER heute mit dir machen?";
         modalSubtitle.innerText = "Tippe deine Highlights & Tabus an:";
@@ -2872,6 +2877,11 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           </button>
         `;
       } else if (wizardCurrentStep === 3) {
+        // Für Schritt 3 Scrollen sperren, damit die Card 100% bombenfest sitzt
+        if (content) {
+          content.className = 'flex-1 min-h-0 overflow-hidden pr-0 py-0 flex flex-col justify-between';
+        }
+
         modalTitle.innerText = "Welche Stellung reizt dich heute?";
         modalSubtitle.innerText = "Tippe einen Bereich an oder stöbere durch die Bilder:";
 
@@ -2885,36 +2895,36 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         const hasPrev = (wizardCategoryHistoryIndex[wizardActiveCategory] > 0);
 
         content.innerHTML = `
-          <div class="space-y-2 flex-1 flex flex-col justify-between">
-            <!-- 5 TABS: OHNE SCROLLEN -->
+          <div class="w-full h-full min-h-0 flex-1 flex flex-col justify-between space-y-1.5 select-none touch-none">
+            <!-- 5 TABS: KOMPAKT & FEST -->
             <div class="grid grid-cols-5 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold text-center shrink-0">
               ${POSITION_CATEGORIES.map(c => `
                 <button type="button" onclick="selectPositionCategory('${c.key}')" 
-                  class="py-1.5 rounded-lg transition-all flex items-center justify-center truncate ${wizardActiveCategory === c.key ? (c.key === 'fav' ? 'bg-rose-600 text-white shadow' : 'bg-purple-600 text-white shadow') : 'text-slate-400 hover:text-slate-200'}">
+                  class="py-1 rounded-lg transition-all flex items-center justify-center truncate ${wizardActiveCategory === c.key ? (c.key === 'fav' ? 'bg-rose-600 text-white shadow' : 'bg-purple-600 text-white shadow') : 'text-slate-400 hover:text-slate-200'}">
                   ${c.label}
                 </button>
               `).join('')}
             </div>
 
-            <!-- GROSSE SINGLE-CARD -->
+            <!-- GROSSE SINGLE-CARD (ELASTISCH & FEST) -->
             ${pos ? `
-              <div class="bg-slate-950 border ${isFokus ? 'border-amber-500/90 glow-amber' : isTabu ? 'border-rose-600/80' : 'border-slate-800'} rounded-2xl p-2 space-y-1.5 flex-1 flex flex-col justify-between transition-all">
-                <div class="relative w-full flex-1 min-h-[170px] bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden">
-                  <img src="${pos.image}" alt="${pos.title}" onerror="this.parentElement.innerHTML='<div class=\\'text-slate-500 text-xs italic p-4 text-center\\'>🖼️ ${pos.title}</div>'" class="w-full h-full object-contain p-2">
+              <div class="bg-slate-950 border ${isFokus ? 'border-amber-500/90 glow-amber' : isTabu ? 'border-rose-600/80' : 'border-slate-800'} rounded-2xl p-2 flex-1 min-h-0 flex flex-col justify-between transition-all">
+                <div class="relative w-full flex-1 min-h-0 bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden">
+                  <img src="${pos.image}" alt="${pos.title}" onerror="this.parentElement.innerHTML='<div class=\\'text-slate-500 text-xs italic p-4 text-center\\'>🖼️ ${pos.title}</div>'" class="w-full h-full object-contain p-1.5">
                   
                   <!-- Favoriten-Herz oben rechts -->
-                  <button type="button" onclick="togglePositionFavorite('${pos.id}')" class="absolute top-2 right-2 p-1.5 bg-slate-950/80 hover:bg-slate-900 border border-slate-700/80 rounded-full text-sm shadow backdrop-blur-xs active:scale-90 transition-all" title="Zu Favoriten hinzufügen">
+                  <button type="button" onclick="togglePositionFavorite('${pos.id}')" class="absolute top-1.5 right-1.5 p-1.5 bg-slate-950/85 hover:bg-slate-900 border border-slate-700/80 rounded-full text-xs shadow backdrop-blur-xs active:scale-90 transition-all" title="Zu Favoriten hinzufügen">
                     ${isFav ? '❤️' : '🤍'}
                   </button>
 
                   <!-- Status-Badges oben links -->
-                  <div class="absolute top-2 left-2">
+                  <div class="absolute top-1.5 left-1.5">
                     ${isFokus ? `<span class="text-[9px] font-bold text-amber-300 bg-amber-950/90 border border-amber-500 px-2 py-0.5 rounded-full shadow">🔥 Fokus</span>` : ''}
                     ${isTabu ? `<span class="text-[9px] font-bold text-rose-300 bg-rose-950/90 border border-rose-600 px-2 py-0.5 rounded-full shadow">🛑 Tabu</span>` : ''}
                   </div>
                 </div>
 
-                <div class="flex items-center justify-between gap-1 pt-0.5">
+                <div class="flex items-center justify-between gap-1 py-1 shrink-0">
                   <h4 class="font-bold text-xs text-amber-200 truncate flex-1 min-w-0">${pos.title}</h4>
                   <!-- Navigation: Zurück & Nächste -->
                   <div class="flex items-center gap-1 shrink-0">
@@ -2927,7 +2937,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-1.5 pt-0.5">
+                <div class="grid grid-cols-2 gap-1.5 pt-0.5 shrink-0">
                   <button type="button" onclick="toggleDraftItemStatus('${posKey}', 'fokus')" 
                     class="py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 ${isFokus ? 'bg-amber-500 border-amber-400 text-slate-950 font-black shadow' : 'bg-slate-900 border-slate-800 text-amber-300 hover:border-amber-500'}">
                     🔥 Fokus heute
@@ -2939,7 +2949,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                 </div>
               </div>
             ` : `
-              <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 text-center text-slate-500 text-xs flex-1 flex flex-col items-center justify-center gap-2">
+              <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 text-center text-slate-500 text-xs flex-1 min-h-0 flex flex-col items-center justify-center gap-2">
                 <span class="text-3xl">${wizardActiveCategory === 'fav' ? '🤍' : '🖼️'}</span>
                 <span>${wizardActiveCategory === 'fav' ? 'Noch keine Favoriten markiert.<br>Tippe bei einer Stellung auf das Herz!' : 'Keine Bilder in dieser Kategorie gefunden.'}</span>
               </div>
