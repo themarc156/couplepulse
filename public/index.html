@@ -2500,16 +2500,18 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       const content = document.getElementById('kopfkino-modal-content');
       const actions = document.getElementById('kopfkino-modal-actions');
       const progressBox = document.getElementById('kopfkino-wizard-progress');
-      const catalogBtn = document.getElementById('kopfkino-btn-edit-catalog');
 
       progressBox.classList.add('hidden');
-      catalogBtn.classList.remove('hidden');
+      if (content) {
+        content.className = 'flex-1 min-h-0 overflow-y-auto pr-1 py-1 no-scrollbar space-y-2';
+      }
 
       const isEr = state.currentUser === 'Er';
-      const partner = isEr ? 'Sie' : 'Er';
-      const myPrefs = isEr ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
+      const partner = getPartnerName();
+      const myPrefs = (isEr ? state.kopfkino.erPreferences : state.kopfkino.siePreferences) || {};
       const practices = state.kopfkino.practicesCatalog || defaultPracticesCatalog;
       const cumList = state.kopfkino.cumCatalog || defaultCumLocations;
+      const posList = state.kopfkino.positionsCatalog || defaultPositionsCatalog;
 
       modalTitle.innerText = "🔒 VORLIEBEN EINGELOGGT";
       modalSubtitle.innerText = `Warten auf ${partner}...`;
@@ -2517,12 +2519,19 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       let myFocusItems = [];
       let myTabooItems = [];
       let myCumFav = null;
+      let myFocusPositions = [];
 
       practices.forEach(p => {
         const status = (myPrefs[p.id] || {}).status;
         const label = getPracticeLabel(p, state.currentUser);
         if (status === 'fokus') myFocusItems.push(label);
         else if (status === 'tabu') myTabooItems.push(label);
+      });
+
+      posList.forEach(pos => {
+        const status = (myPrefs[`pos_${pos.id}`] || {}).status;
+        if (status === 'fokus') myFocusPositions.push(pos);
+        else if (status === 'tabu') myTabooItems.push(`Stellung: ${pos.title}`);
       });
 
       cumList.forEach(c => {
@@ -2549,7 +2558,21 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               <div class="space-y-1">
                 ${myFocusItems.map(f => `<div class="bg-slate-900/90 border border-amber-500/40 text-amber-200 p-2 rounded-xl text-xs flex items-center gap-1.5 font-semibold"><span>🔥</span> <span>${f}</span></div>`).join('')}
               </div>
-            ` : '<div class="text-[11px] text-slate-500 italic">Keine speziellen Fokus-Wünsche (alles freigegeben)</div>'}
+            ` : '<div class="text-[11px] text-slate-500 italic">Keine speziellen Praktik-Wünsche (alles freigegeben)</div>'}
+
+            ${myFocusPositions.length > 0 ? `
+              <div class="pt-1 space-y-1">
+                <span class="text-[10px] font-bold text-purple-300 block">Deine Wunsch-Stellungen:</span>
+                <div class="space-y-1.5">
+                  ${myFocusPositions.map(pos => `
+                    <div class="bg-slate-900/90 border border-purple-500/40 p-2 rounded-xl flex items-center gap-2">
+                      <img src="${pos.image}" alt="${pos.title}" class="w-10 h-10 object-contain bg-slate-950 rounded-lg p-0.5 shrink-0">
+                      <span class="text-xs text-purple-200 font-bold truncate">${pos.title}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
 
             ${myCumFav ? `
               <div class="bg-slate-900/90 border border-amber-500/40 text-amber-200 p-2 rounded-xl text-xs flex items-center gap-1.5 font-semibold mt-1">
@@ -3027,22 +3050,22 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     function wizardPrevStep() { if (wizardCurrentStep > 1) { wizardCurrentStep--; renderKopfkinoWizard(); } }
 
     function submitPreferences() {
+      const savedDraft = JSON.parse(JSON.stringify(currentDraftPreferences));
       if (state.currentUser === 'Er') {
-        state.kopfkino.erPreferences = JSON.parse(JSON.stringify(currentDraftPreferences));
+        state.kopfkino.erPreferences = savedDraft;
       } else {
-        state.kopfkino.siePreferences = JSON.parse(JSON.stringify(currentDraftPreferences));
+        state.kopfkino.siePreferences = savedDraft;
       }
 
       wizardEditing = false;
       wizardCurrentStep = 1;
-      currentDraftPreferences = {};
       checkKopfkinoUnlock();
       saveState();
 
       LiveStream.sendData({
         type: 'kopfkino_v8_sync',
         sender: state.currentUser,
-        preferences: state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences
+        preferences: savedDraft
       });
 
       triggerPushNotification(state.currentUser);
@@ -3371,10 +3394,22 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     function openKopfkinoRestart() {
       wizardEditing = true;
       wizardCurrentStep = 1;
-      wizardActiveCategory = 'vorne';
-      wizardCurrentPosition = pickRandomPosition('vorne');
-      const mySavedPrefs = state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences;
-      currentDraftPreferences = JSON.parse(JSON.stringify(mySavedPrefs || {}));
+      const mySavedPrefs = (state.currentUser === 'Er' ? state.kopfkino.erPreferences : state.kopfkino.siePreferences) || {};
+      currentDraftPreferences = JSON.parse(JSON.stringify(mySavedPrefs));
+
+      // Falls bereits eine Stellung als Fokus gewählt war, springen wir direkt darauf an
+      const posList = state.kopfkino.positionsCatalog || defaultPositionsCatalog;
+      const savedPos = posList.find(p => (currentDraftPreferences[`pos_${p.id}`] || {}).status === 'fokus');
+      if (savedPos) {
+        wizardActiveCategory = getNormalizedCategory(savedPos);
+        wizardCurrentPosition = savedPos;
+        wizardCategoryHistory[wizardActiveCategory] = [savedPos];
+        wizardCategoryHistoryIndex[wizardActiveCategory] = 0;
+      } else {
+        wizardActiveCategory = 'vorne';
+        wizardCurrentPosition = getCurrentWizardPosition();
+      }
+
       renderKopfkinoWizard();
     }
 
