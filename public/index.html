@@ -665,16 +665,14 @@
         <div class="flex justify-between items-center border-b border-slate-800 pb-2 shrink-0">
           <div class="flex items-center gap-1.5 min-w-0">
             <span class="text-base">🖼️</span>
-            <h3 id="position-preview-title" class="font-bold text-xs text-amber-300 uppercase tracking-wider truncate">Stellung</h3>
+            <h3 class="font-bold text-xs text-amber-300 uppercase tracking-wider truncate">Stellungs-Vorschau</h3>
           </div>
           <button onclick="closePositionPreviewModal()" class="text-slate-400 hover:text-slate-200 text-base font-bold px-1.5">✕</button>
         </div>
 
-        <div class="relative w-full flex-1 min-h-[240px] bg-slate-950 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-800 p-2">
-          <img id="position-preview-image" src="" alt="" class="w-full h-full object-contain">
+        <div class="relative w-full flex-1 min-h-[260px] bg-slate-950 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-800 p-2">
+          <img id="position-preview-image" src="" alt="Stellung" class="w-full h-full object-contain">
         </div>
-
-        <div id="position-preview-desc" class="text-xs text-slate-300 text-center leading-snug px-1 shrink-0"></div>
 
         <button onclick="closePositionPreviewModal()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all shrink-0">
           Schließen ✓
@@ -2551,7 +2549,8 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       if (state.kopfkino.isUnlocked) {
         wizardEditing = false;
         renderKopfkinoMatchReveal();
-      } else if (myPrefs && Object.keys(myPrefs).length > 0 && !wizardEditing) {
+      } else if (myPrefs !== null && !wizardEditing) {
+        // Sobald eingeloggt wurde (auch wenn nichts abgewählt wurde), IMMER Warte-Screen zeigen
         renderKopfkinoWaitingState();
       } else {
         if (!currentDraftPreferences || Object.keys(currentDraftPreferences).length === 0) {
@@ -2601,9 +2600,8 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       });
 
       posList.forEach(pos => {
-        const status = (myPrefs[`pos_${pos.id}`] || {}).status;
+        const status = (myPrefs[pos.id] || myPrefs[`pos_${pos.id}`] || {}).status;
         if (status === 'fokus') myFocusPositions.push(pos);
-        else if (status === 'tabu') myTabooItems.push(`Stellung: ${pos.title}`);
       });
 
       orgList.forEach(o => {
@@ -2651,14 +2649,14 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                 <div class="space-y-1.5">
                   ${myFocusPositions.map(pos => `
                     <div onclick="jumpToWizardStepWithItem(3, '${pos.id}')" class="bg-slate-900/90 hover:bg-slate-850 border border-purple-500/50 p-2 rounded-xl flex items-center justify-between gap-2 cursor-pointer active:scale-[0.99] transition-all">
-                      <div class="flex items-center gap-2 min-w-0">
-                        <img src="${pos.image}" alt="Wunsch-Stellung" class="w-12 h-12 object-contain bg-slate-950 rounded-lg p-0.5 shrink-0 border border-slate-800">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <img src="${pos.image}" alt="Wunsch-Stellung" class="w-14 h-14 object-contain bg-slate-950 rounded-lg p-1 shrink-0 border border-slate-800">
                         <div class="min-w-0">
                           <span class="text-xs text-purple-200 font-bold block">Wunsch-Stellung</span>
-                          <span class="text-[10px] text-amber-400 font-semibold">🔥 Fokus gesetzt</span>
+                          <span class="text-[10px] text-amber-400 font-semibold">🔥 Für heute gewählt</span>
                         </div>
                       </div>
-                      <span class="text-[10px] text-slate-400 font-normal shrink-0 px-1">✏️</span>
+                      <span class="text-xs text-slate-400 px-1.5">✏️</span>
                     </div>
                   `).join('')}
                 </div>
@@ -3072,7 +3070,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               `).join('')}
             </div>
 
-            <!-- GROSSE SINGLE-CARD (VISUAL-FIRST) -->
+            <!-- GROSSE SINGLE-CARD (100% VISUELL - KEINE DATEINAMEN) -->
             ${pos ? `
               <div ontouchstart="handlePositionTouchStart(event)" ontouchend="handlePositionTouchEnd(event, false)" 
                 class="bg-slate-950 border ${isFokus ? 'border-amber-500/90 glow-amber' : 'border-slate-800'} rounded-2xl p-2 flex-1 min-h-0 flex flex-col justify-between transition-all select-none">
@@ -3089,11 +3087,6 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                   <div class="absolute top-2 left-2 flex items-center gap-1">
                     <span class="text-[9px] font-bold text-purple-300 bg-purple-950/90 border border-purple-500/50 px-2 py-0.5 rounded-full shadow capitalize">${wizardActiveCategory}</span>
                     ${isFokus ? `<span class="text-[9px] font-bold text-amber-300 bg-amber-950/90 border border-amber-500 px-2 py-0.5 rounded-full shadow">🔥 Fokus gesetzt</span>` : ''}
-                  </div>
-
-                  <!-- Wisch-Hinweis unten zentriert -->
-                  <div class="absolute bottom-1.5 inset-x-0 flex justify-center pointer-events-none opacity-60">
-                    <span class="text-[8px] text-slate-400 bg-black/60 px-2 py-0.5 rounded-full font-mono">↔️ Wischen zum Wechseln</span>
                   </div>
                 </div>
 
