@@ -23,12 +23,13 @@ app.get('/api/status', (req, res) => {
 
 // NEU: Automatischer Scanner für alle Stellungs-Bilder und Unterordner
 app.get('/api/positions', (req, res) => {
-    let baseDir = path.join(__dirname, 'public', 'images', 'positions');
-    let webPrefix = '/images/positions';
+    // Unterstützt sowohl 'public/image/positions' als auch 'public/images/positions'
+    let baseDir = path.join(__dirname, 'public', 'image', 'positions');
+    let webPrefix = '/image/positions';
 
     if (!fs.existsSync(baseDir)) {
-        baseDir = path.join(__dirname, 'public', 'image', 'positions');
-        webPrefix = '/image/positions';
+        baseDir = path.join(__dirname, 'public', 'images', 'positions');
+        webPrefix = '/images/positions';
     }
 
     if (!fs.existsSync(baseDir)) {
@@ -47,29 +48,18 @@ app.get('/api/positions', (req, res) => {
             } else if (entry.isFile()) {
                 const ext = path.extname(entry.name).toLowerCase();
                 if (validExts.includes(ext)) {
-                    let rawName = path.parse(entry.name).name;
-                    
-                    // Bereinige Dateinamen für ansprechende Vorab-Titel
-                    let cleanTitle = rawName
-                        .replace(/\.sync-conflict-[^.]+/g, '')
-                        .replace(/[()]/g, '')
+                    const rawName = path.parse(entry.name).name;
+                    // Automatisch lesbaren Titel aus Dateinamen generieren (z. B. "doggy_deep_01" -> "Doggy Deep 01")
+                    const cleanTitle = rawName
                         .replace(/[_-]/g, ' ')
-                        .replace(/\s+/g, ' ')
-                        .trim();
-                    
-                    cleanTitle = cleanTitle.replace(/\b\w/g, char => char.toUpperCase());
+                        .replace(/\b\w/g, char => char.toUpperCase());
 
-                    // Einheitliche Web-Pfade mit Schrägstrichen
-                    const categoryUrl = currentCategory ? encodeURIComponent(currentCategory) + '/' : '';
-                    const filenameUrl = encodeURIComponent(entry.name);
-                    const relativeWebPath = `${webPrefix}/${categoryUrl}${filenameUrl}`;
-                    
-                    const safeId = `pos_${(currentCategory ? currentCategory + '_' : '') + entry.name}`.replace(/[^a-zA-Z0-9_]/g, '_');
+                    const relativeWebPath = `${webPrefix}/${currentCategory ? currentCategory + '/' : ''}${entry.name}`;
+                    const safeId = `pos_${(currentCategory ? currentCategory + '_' : '') + rawName}`.replace(/[^a-zA-Z0-9_]/g, '_');
 
                     positions.push({
                         id: safeId,
                         category: currentCategory || 'allgemein',
-                        rawFile: entry.name,
                         title: cleanTitle,
                         desc: '',
                         image: relativeWebPath

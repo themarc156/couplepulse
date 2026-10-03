@@ -2781,9 +2781,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
     function getNormalizedCategory(pos) {
       const raw = (pos.category || '').toLowerCase();
-      if (raw.includes('vorn') || raw.includes('miss') || raw.includes('front')) return 'vorne';
-      if (raw.includes('hint') || raw.includes('dogg') || raw.includes('back') || raw.includes('rear')) return 'hinten';
-      if (raw.includes('oral') || raw.includes('69') || raw.includes('blow') || raw.includes('cunn')) return 'oral';
+      if (raw.includes('vorn') || raw.includes('miss')) return 'vorne';
+      if (raw.includes('hint') || raw.includes('dogg')) return 'hinten';
+      if (raw.includes('oral') || raw.includes('69')) return 'oral';
       return 'sonstige';
     }
 
