@@ -659,26 +659,7 @@
       </div>
     </div>
 
-    <!-- MODAL: GROSSBILD-VORSCHAU FÜR EINE STELLUNG (LIGHTBOX - TIPPEN SCHLIESST) -->
-    <div id="position-preview-modal" onclick="closePositionPreviewModal()" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4 cursor-pointer">
-      <div onclick="event.stopPropagation()" class="bg-slate-900 border border-amber-500/50 w-full max-w-sm rounded-3xl p-4 space-y-3 shadow-2xl glow-amber flex flex-col justify-between max-h-[85vh]">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-2 shrink-0">
-          <div class="flex items-center gap-1.5 min-w-0">
-            <span class="text-base">🖼️</span>
-            <h3 class="font-bold text-xs text-amber-300 uppercase tracking-wider truncate">Großansicht</h3>
-          </div>
-          <button onclick="closePositionPreviewModal()" class="text-slate-400 hover:text-slate-200 text-base font-bold px-1.5">✕</button>
-        </div>
-
-        <div class="relative w-full flex-1 min-h-[260px] bg-slate-950 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-800 p-2">
-          <img id="position-preview-image" src="" alt="Stellung" class="w-full h-full object-contain">
-        </div>
-
-        <button onclick="closePositionPreviewModal()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all shrink-0">
-          Schließen ✓
-        </button>
-      </div>
-    </div>
+    <!-- (Großbild-Modal entfernt) -->
 
     <!-- MODAL: SIEGER-ENTSCHEIDUNG (LUST-DUELL FINALE) -->
     <div id="winner-modal" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
@@ -2891,31 +2872,31 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       }
     }
 
-    // Gesten- & Story-Tap-Steuerung (Tippen links/rechts & Doppel-Tipp Zoom)
+    // Story-Tap & Swipe Steuerung (Präzise & ohne Ghost-Clicks)
     let touchStartX = 0;
     let touchStartY = 0;
-    let lastPositionTapTime = 0;
-    let singleTapTimeout = null;
+    let isTouchActive = false;
 
     function handlePositionTouchStart(e) {
       if (!e.touches || e.touches.length === 0) return;
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
+      isTouchActive = true;
     }
 
-    function handlePositionInteraction(e, isGallery = false, posId = null) {
-      const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-      const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+    function handlePositionTouchEnd(e, isGallery = false) {
+      if (!e.changedTouches || e.changedTouches.length === 0) return;
+      const clientX = e.changedTouches[0].clientX;
+      const clientY = e.changedTouches[0].clientY;
       const deltaX = clientX - touchStartX;
       const deltaY = clientY - touchStartY;
-      const minSwipeDistance = 35;
+      const minSwipeDistance = 30;
 
       const absX = Math.abs(deltaX);
       const absY = Math.abs(deltaY);
 
       // 1. Wisch-Geste (Swipe)
       if (absX >= minSwipeDistance || absY >= minSwipeDistance) {
-        clearTimeout(singleTapTimeout);
         if (absX > absY) {
           if (deltaX < 0) {
             if (isGallery) nextGalleryPosition(); else nextWizardPosition();
@@ -2929,36 +2910,36 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             if (isGallery) prevGalleryPosition(); else prevWizardPosition();
           }
         }
+        setTimeout(() => { isTouchActive = false; }, 300);
         return;
       }
 
-      // 2. Tippen (Tap & Doppel-Tipp)
-      const now = Date.now();
+      // 2. Tippen (Links = Zurück, Rechts = Nächste)
       const rect = e.currentTarget.getBoundingClientRect();
       const tapX = clientX - rect.left;
-      const isRightSide = tapX > rect.width / 2;
+      const isRightSide = tapX > (rect.width / 2);
 
-      if (now - lastPositionTapTime < 280) {
-        // Doppel-Tipp -> Vollbild-Vorschau (Lightbox)
-        clearTimeout(singleTapTimeout);
-        lastPositionTapTime = 0;
-        if (posId) {
-          openPositionPreviewModal(posId);
-        }
-        return;
+      if (isRightSide) {
+        if (isGallery) nextGalleryPosition(); else nextWizardPosition();
+      } else {
+        if (isGallery) prevGalleryPosition(); else prevWizardPosition();
       }
 
-      lastPositionTapTime = now;
-      clearTimeout(singleTapTimeout);
+      setTimeout(() => { isTouchActive = false; }, 300);
+    }
 
-      // Single-Tap Navigation: Rechts = Vorwärts, Links = Zurück
-      singleTapTimeout = setTimeout(() => {
-        if (isRightSide) {
-          if (isGallery) nextGalleryPosition(); else nextWizardPosition();
-        } else {
-          if (isGallery) prevGalleryPosition(); else prevWizardPosition();
-        }
-      }, 200);
+    // Fallback für Desktop-Mausklicks
+    function handlePositionDesktopClick(e, isGallery = false) {
+      if (isTouchActive) return; // Verhindert doppeltes Auslösen auf Smartphones
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const isRightSide = clickX > (rect.width / 2);
+
+      if (isRightSide) {
+        if (isGallery) nextGalleryPosition(); else nextWizardPosition();
+      } else {
+        if (isGallery) prevGalleryPosition(); else prevWizardPosition();
+      }
     }
 
     function renderModel1FinaleCard(key, label) {
@@ -3096,13 +3077,13 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               `).join('')}
             </div>
 
-            <!-- GROSSE SINGLE-CARD (STORY-TAP: RECHTS/LINKS & DOPPEL-TIPP ZOOM) -->
+            <!-- GROSSE SINGLE-CARD (STORY-TAP: RECHTS/LINKS & SWIPE) -->
             ${pos ? `
               <div class="bg-slate-950 border ${isFokus ? 'border-amber-500/90 glow-amber' : 'border-slate-800'} rounded-2xl p-2 flex-1 min-h-0 flex flex-col justify-between transition-all select-none">
                 
                 <div ontouchstart="handlePositionTouchStart(event)" 
-                     ontouchend="handlePositionInteraction(event, false, '${pos.id}')"
-                     onclick="handlePositionInteraction(event, false, '${pos.id}')"
+                     ontouchend="handlePositionTouchEnd(event, false)"
+                     onclick="handlePositionDesktopClick(event, false)"
                      class="relative w-full flex-1 min-h-0 bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden cursor-pointer">
                   
                   <img src="${pos.image}" alt="Stellung" class="w-full h-full object-contain p-1.5 pointer-events-none">
@@ -3572,7 +3553,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                   <span class="text-[10px] font-bold text-amber-300 uppercase tracking-wider block">🔥 EURE MATCH-STELLUNGEN (ABEND-HIGHLIGHT):</span>
                   <div class="space-y-2">
                     ${matchedPositions.map(pos => `
-                      <div onclick="openPositionPreviewModal('${pos.id}')" class="bg-slate-950/90 hover:bg-slate-850 border border-amber-500/40 p-2.5 rounded-xl flex items-center gap-3 cursor-pointer active:scale-[0.99] transition-all">
+                      <div class="bg-slate-950/90 border border-amber-500/40 p-2.5 rounded-xl flex items-center gap-3">
                         <img src="${pos.image}" alt="Match-Stellung" class="w-16 h-16 object-contain bg-slate-900 rounded-lg p-1 shrink-0 border border-slate-800">
                         <div class="min-w-0 flex-1">
                           <span class="text-xs text-amber-200 font-bold block">Match-Stellung ⭐</span>
@@ -3580,7 +3561,6 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                             <span>⭐</span> <span>Beide haben diese Position gewählt!</span>
                           </span>
                         </div>
-                        <span class="text-xs text-slate-400 px-1">🔍</span>
                       </div>
                     `).join('')}
                   </div>
@@ -3715,11 +3695,11 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                   <div class="space-y-1.5">
                     ${openPositionWishesForMe.map(item => `
                       <div class="bg-slate-900/90 p-2 rounded-xl border border-amber-500/30 flex items-center justify-between gap-2">
-                        <div onclick="openPositionPreviewModal('${item.pos.id}')" class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer active:scale-[0.99] transition-all">
+                        <div class="flex items-center gap-2 min-w-0 flex-1">
                           <img src="${item.pos.image}" alt="Wunsch-Stellung" class="w-12 h-12 object-contain bg-slate-950 rounded-lg p-0.5 shrink-0 border border-slate-800">
                           <div class="min-w-0">
                             <span class="text-xs text-amber-200 font-bold block">Wunsch-Stellung</span>
-                            <span class="text-[9px] text-slate-400">Von ${item.from} vorgeschlagen 🔍</span>
+                            <span class="text-[9px] text-slate-400">Von ${item.from} vorgeschlagen</span>
                           </div>
                         </div>
                         ${renderTargetedReactionButton(item.reqKey, '🔥 Ooh ja!', true, 'Wunsch-Stellung', true)}
@@ -4642,28 +4622,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       }
     }
 
-    function openPositionPreviewModal(posId) {
-      const posList = state.kopfkino.positionsCatalog || defaultPositionsCatalog;
-      const pos = posList.find(p => p.id === posId);
-      if (!pos) return;
-
-      const modal = document.getElementById('position-preview-modal');
-      const titleEl = document.getElementById('position-preview-title');
-      const imgEl = document.getElementById('position-preview-image');
-      const descEl = document.getElementById('position-preview-desc');
-
-      if (titleEl) titleEl.innerText = pos.title;
-      if (imgEl) imgEl.src = pos.image;
-      if (descEl) descEl.innerText = pos.desc || '';
-
-      if (modal) modal.classList.remove('hidden');
-      playSensualSound('chime');
-    }
-
-    function closePositionPreviewModal() {
-      const modal = document.getElementById('position-preview-modal');
-      if (modal) modal.classList.add('hidden');
-    }
+    // (openPositionPreviewModal / closePositionPreviewModal entfernt)
 
     function setGalleryCategory(catKey) {
       galleryActiveCategory = catKey;
@@ -4727,8 +4686,8 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           grid.innerHTML = `
             <div class="bg-slate-950 border border-amber-500/50 rounded-2xl p-2.5 h-full flex flex-col justify-between glow-amber select-none">
               <div ontouchstart="handlePositionTouchStart(event)" 
-                   ontouchend="handlePositionInteraction(event, true, '${pos.id}')"
-                   onclick="handlePositionInteraction(event, true, '${pos.id}')"
+                   ontouchend="handlePositionTouchEnd(event, true)"
+                   onclick="handlePositionDesktopClick(event, true)"
                    class="relative w-full flex-1 min-h-[220px] bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden cursor-pointer">
                 
                 <img src="${pos.image}" alt="Stellung" class="w-full h-full object-contain p-2 pointer-events-none">
