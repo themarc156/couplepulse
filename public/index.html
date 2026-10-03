@@ -2652,9 +2652,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                   ${myFocusPositions.map(pos => `
                     <div onclick="jumpToWizardStepWithItem(3, '${pos.id}')" class="bg-slate-900/90 hover:bg-slate-850 border border-purple-500/50 p-2 rounded-xl flex items-center justify-between gap-2 cursor-pointer active:scale-[0.99] transition-all">
                       <div class="flex items-center gap-2 min-w-0">
-                        <img src="${pos.image}" alt="${pos.title}" class="w-11 h-11 object-contain bg-slate-950 rounded-lg p-0.5 shrink-0 border border-slate-800">
+                        <img src="${pos.image}" alt="Wunsch-Stellung" class="w-12 h-12 object-contain bg-slate-950 rounded-lg p-0.5 shrink-0 border border-slate-800">
                         <div class="min-w-0">
-                          <span class="text-xs text-purple-200 font-bold truncate block">${pos.title}</span>
+                          <span class="text-xs text-purple-200 font-bold block">Wunsch-Stellung</span>
                           <span class="text-[10px] text-amber-400 font-semibold">🔥 Fokus gesetzt</span>
                         </div>
                       </div>
@@ -3072,43 +3072,32 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               `).join('')}
             </div>
 
-            <!-- GROSSE SINGLE-CARD (GESTENGESTEUERT VIA SWIPE & LÖSUNG A) -->
+            <!-- GROSSE SINGLE-CARD (VISUAL-FIRST) -->
             ${pos ? `
               <div ontouchstart="handlePositionTouchStart(event)" ontouchend="handlePositionTouchEnd(event, false)" 
                 class="bg-slate-950 border ${isFokus ? 'border-amber-500/90 glow-amber' : 'border-slate-800'} rounded-2xl p-2 flex-1 min-h-0 flex flex-col justify-between transition-all select-none">
                 
                 <div class="relative w-full flex-1 min-h-0 bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden">
-                  <img src="${pos.image}" alt="${pos.title}" onerror="this.parentElement.innerHTML='<div class=\\'text-slate-500 text-xs italic p-4 text-center\\'>🖼️ ${pos.title}</div>'" class="w-full h-full object-contain p-1.5 pointer-events-none">
+                  <img src="${pos.image}" alt="Stellung" class="w-full h-full object-contain p-1.5 pointer-events-none">
                   
                   <!-- Favoriten-Herz oben rechts -->
-                  <button type="button" onclick="togglePositionFavorite('${pos.id}')" class="absolute top-1.5 right-1.5 p-1.5 bg-slate-950/85 hover:bg-slate-900 border border-slate-700/80 rounded-full text-xs shadow backdrop-blur-xs active:scale-90 transition-all pointer-events-auto" title="Zu Favoriten hinzufügen">
+                  <button type="button" onclick="togglePositionFavorite('${pos.id}')" class="absolute top-2 right-2 p-2 bg-slate-950/85 hover:bg-slate-900 border border-slate-700/80 rounded-full text-sm shadow backdrop-blur-xs active:scale-90 transition-all pointer-events-auto" title="Zu Favoriten hinzufügen">
                     ${isFav ? '❤️' : '🤍'}
                   </button>
 
                   <!-- Status-Badge oben links -->
-                  <div class="absolute top-1.5 left-1.5">
+                  <div class="absolute top-2 left-2 flex items-center gap-1">
+                    <span class="text-[9px] font-bold text-purple-300 bg-purple-950/90 border border-purple-500/50 px-2 py-0.5 rounded-full shadow capitalize">${wizardActiveCategory}</span>
                     ${isFokus ? `<span class="text-[9px] font-bold text-amber-300 bg-amber-950/90 border border-amber-500 px-2 py-0.5 rounded-full shadow">🔥 Fokus gesetzt</span>` : ''}
                   </div>
-                </div>
 
-                <!-- TITELZEILE MIT LÖSUNG A (INFO-TOGGLE) -->
-                <div class="py-1 shrink-0 space-y-1">
-                  <div class="flex items-center justify-between gap-1.5">
-                    <h4 class="font-bold text-xs text-amber-200 truncate flex-1 min-w-0">${pos.title}</h4>
-                    ${pos.desc ? `
-                      <button type="button" onclick="togglePositionInlineDesc('${pos.id}')" class="p-1 text-slate-400 hover:text-amber-300 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold active:scale-95 transition-all pointer-events-auto" title="Beschreibung anzeigen">
-                        ℹ️
-                      </button>
-                    ` : ''}
-                    <span class="text-[9px] text-slate-500 font-mono tracking-tight shrink-0">↔️ Wischen</span>
-                  </div>
-                  <!-- Dezent aufklappbare Beschreibung (Lösung A) -->
-                  <div id="desc-box-${pos.id}" class="hidden text-[10px] text-slate-300 bg-slate-900/90 p-2 rounded-xl border border-slate-800 leading-snug animate-fadeIn">
-                    ${pos.desc || ''}
+                  <!-- Wisch-Hinweis unten zentriert -->
+                  <div class="absolute bottom-1.5 inset-x-0 flex justify-center pointer-events-none opacity-60">
+                    <span class="text-[8px] text-slate-400 bg-black/60 px-2 py-0.5 rounded-full font-mono">↔️ Wischen zum Wechseln</span>
                   </div>
                 </div>
 
-                <div class="pt-0.5 shrink-0 pointer-events-auto">
+                <div class="pt-1.5 shrink-0 pointer-events-auto">
                   <button type="button" onclick="toggleDraftItemStatus('${posKey}', 'fokus')" 
                     class="w-full py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 ${isFokus ? 'bg-amber-500 border-amber-400 text-slate-950 font-black shadow glow-amber' : 'bg-slate-900 border-slate-800 text-amber-300 hover:border-amber-500'}">
                     ${isFokus ? '✓ Fokus aktiv (Tippen zum Entfernen)' : '🔥 Diese Stellung heute als Fokus setzen'}
@@ -3561,14 +3550,14 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                   <div class="space-y-2">
                     ${matchedPositions.map(pos => `
                       <div onclick="openPositionPreviewModal('${pos.id}')" class="bg-slate-950/90 hover:bg-slate-850 border border-amber-500/40 p-2.5 rounded-xl flex items-center gap-3 cursor-pointer active:scale-[0.99] transition-all">
-                        <img src="${pos.image}" alt="${pos.title}" class="w-14 h-14 object-contain bg-slate-900 rounded-lg p-1 shrink-0 border border-slate-800">
+                        <img src="${pos.image}" alt="Match-Stellung" class="w-16 h-16 object-contain bg-slate-900 rounded-lg p-1 shrink-0 border border-slate-800">
                         <div class="min-w-0 flex-1">
-                          <span class="text-xs text-amber-200 font-bold block truncate">${pos.title}</span>
-                          <span class="text-[10px] text-emerald-400 font-bold flex items-center gap-1 mt-0.5">
-                            <span>⭐</span> <span>Perfekter Volltreffer!</span>
+                          <span class="text-xs text-amber-200 font-bold block">Match-Stellung ⭐</span>
+                          <span class="text-[10px] text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
+                            <span>⭐</span> <span>Beide haben diese Position gewählt!</span>
                           </span>
                         </div>
-                        <span class="text-[10px] text-slate-400 px-1">🔍</span>
+                        <span class="text-xs text-slate-400 px-1">🔍</span>
                       </div>
                     `).join('')}
                   </div>
@@ -3704,13 +3693,13 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                     ${openPositionWishesForMe.map(item => `
                       <div class="bg-slate-900/90 p-2 rounded-xl border border-amber-500/30 flex items-center justify-between gap-2">
                         <div onclick="openPositionPreviewModal('${item.pos.id}')" class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer active:scale-[0.99] transition-all">
-                          <img src="${item.pos.image}" alt="${item.pos.title}" class="w-11 h-11 object-contain bg-slate-950 rounded-lg p-0.5 shrink-0 border border-slate-800">
+                          <img src="${item.pos.image}" alt="Wunsch-Stellung" class="w-12 h-12 object-contain bg-slate-950 rounded-lg p-0.5 shrink-0 border border-slate-800">
                           <div class="min-w-0">
-                            <span class="text-xs text-amber-200 font-bold truncate block">${item.pos.title}</span>
-                            <span class="text-[9px] text-slate-400">Wunsch von ${item.from} 🔍</span>
+                            <span class="text-xs text-amber-200 font-bold block">Wunsch-Stellung</span>
+                            <span class="text-[9px] text-slate-400">Von ${item.from} vorgeschlagen 🔍</span>
                           </div>
                         </div>
-                        ${renderTargetedReactionButton(item.reqKey, '🔥 Ooh ja!', true, item.pos.title, true)}
+                        ${renderTargetedReactionButton(item.reqKey, '🔥 Ooh ja!', true, 'Wunsch-Stellung', true)}
                       </div>
                     `).join('')}
                   </div>
@@ -4715,16 +4704,21 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         if (pos) {
           grid.innerHTML = `
             <div ontouchstart="handlePositionTouchStart(event)" ontouchend="handlePositionTouchEnd(event, true)" 
-              class="bg-slate-950 border border-amber-500/50 rounded-2xl p-3 space-y-2 h-full flex flex-col justify-between glow-amber select-none">
+              class="bg-slate-950 border border-amber-500/50 rounded-2xl p-2.5 h-full flex flex-col justify-between glow-amber select-none">
               <div class="relative w-full flex-1 min-h-[220px] bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden">
-                <img src="${pos.image}" alt="${pos.title}" onerror="this.parentElement.innerHTML='<div class=\\'text-slate-500 text-xs italic p-4 text-center\\'>🖼️ ${pos.title}</div>'" class="w-full h-full object-contain p-2 pointer-events-none">
+                <img src="${pos.image}" alt="Stellung" class="w-full h-full object-contain p-2 pointer-events-none">
+                
                 <button type="button" onclick="togglePositionFavorite('${pos.id}')" class="absolute top-2 right-2 p-2 bg-slate-950/80 hover:bg-slate-900 border border-slate-700 rounded-full text-base shadow backdrop-blur-xs active:scale-90 transition-all pointer-events-auto">
                   ${isFav ? '❤️' : '🤍'}
                 </button>
-              </div>
-              <div class="flex justify-between items-center pt-0.5 gap-2">
-                <h4 class="font-bold text-sm text-amber-200 truncate flex-1 min-w-0">${pos.title}</h4>
-                <span class="text-[9px] text-slate-500 font-mono tracking-tight shrink-0">↔️ Wischen zum Wechseln</span>
+
+                <div class="absolute top-2 left-2">
+                  <span class="text-[9px] font-bold text-amber-300 bg-amber-950/90 border border-amber-500/50 px-2 py-0.5 rounded-full shadow capitalize">${galleryActiveCategory}</span>
+                </div>
+
+                <div class="absolute bottom-1.5 inset-x-0 flex justify-center pointer-events-none opacity-60">
+                  <span class="text-[8px] text-slate-400 bg-black/60 px-2 py-0.5 rounded-full font-mono">↔️ Wischen zum Wechseln</span>
+                </div>
               </div>
             </div>
           `;
