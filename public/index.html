@@ -3072,7 +3072,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               `).join('')}
             </div>
 
-            <!-- GROSSE SINGLE-CARD (GESTENGESTEUERT VIA SWIPE) -->
+            <!-- GROSSE SINGLE-CARD (GESTENGESTEUERT VIA SWIPE & LÖSUNG A) -->
             ${pos ? `
               <div ontouchstart="handlePositionTouchStart(event)" ontouchend="handlePositionTouchEnd(event, false)" 
                 class="bg-slate-950 border ${isFokus ? 'border-amber-500/90 glow-amber' : 'border-slate-800'} rounded-2xl p-2 flex-1 min-h-0 flex flex-col justify-between transition-all select-none">
@@ -3091,9 +3091,21 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                   </div>
                 </div>
 
-                <div class="flex items-center justify-between gap-1 py-1 shrink-0">
-                  <h4 class="font-bold text-xs text-amber-200 truncate flex-1 min-w-0">${pos.title}</h4>
-                  <span class="text-[9px] text-slate-500 font-mono tracking-tight shrink-0">↔️ Wischen zum Wechseln</span>
+                <!-- TITELZEILE MIT LÖSUNG A (INFO-TOGGLE) -->
+                <div class="py-1 shrink-0 space-y-1">
+                  <div class="flex items-center justify-between gap-1.5">
+                    <h4 class="font-bold text-xs text-amber-200 truncate flex-1 min-w-0">${pos.title}</h4>
+                    ${pos.desc ? `
+                      <button type="button" onclick="togglePositionInlineDesc('${pos.id}')" class="p-1 text-slate-400 hover:text-amber-300 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold active:scale-95 transition-all pointer-events-auto" title="Beschreibung anzeigen">
+                        ℹ️
+                      </button>
+                    ` : ''}
+                    <span class="text-[9px] text-slate-500 font-mono tracking-tight shrink-0">↔️ Wischen</span>
+                  </div>
+                  <!-- Dezent aufklappbare Beschreibung (Lösung A) -->
+                  <div id="desc-box-${pos.id}" class="hidden text-[10px] text-slate-300 bg-slate-900/90 p-2 rounded-xl border border-slate-800 leading-snug animate-fadeIn">
+                    ${pos.desc || ''}
+                  </div>
                 </div>
 
                 <div class="pt-0.5 shrink-0 pointer-events-auto">
@@ -4608,6 +4620,14 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
     function closePositionsGalleryModal() {
       document.getElementById('positions-gallery-modal').classList.add('hidden');
+    }
+
+    function togglePositionInlineDesc(posId) {
+      const el = document.getElementById(`desc-box-${posId}`);
+      if (el) {
+        el.classList.toggle('hidden');
+        playSensualSound('heartbeat');
+      }
     }
 
     function openPositionPreviewModal(posId) {
