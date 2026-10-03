@@ -659,13 +659,13 @@
       </div>
     </div>
 
-    <!-- MODAL: GROSSBILD-VORSCHAU FÜR EINE STELLUNG (LIGHTBOX) -->
-    <div id="position-preview-modal" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-amber-500/50 w-full max-w-sm rounded-3xl p-4 space-y-3 shadow-2xl glow-amber flex flex-col justify-between max-h-[85vh]">
+    <!-- MODAL: GROSSBILD-VORSCHAU FÜR EINE STELLUNG (LIGHTBOX - TIPPEN SCHLIESST) -->
+    <div id="position-preview-modal" onclick="closePositionPreviewModal()" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4 cursor-pointer">
+      <div onclick="event.stopPropagation()" class="bg-slate-900 border border-amber-500/50 w-full max-w-sm rounded-3xl p-4 space-y-3 shadow-2xl glow-amber flex flex-col justify-between max-h-[85vh]">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2 shrink-0">
           <div class="flex items-center gap-1.5 min-w-0">
             <span class="text-base">🖼️</span>
-            <h3 class="font-bold text-xs text-amber-300 uppercase tracking-wider truncate">Stellungs-Vorschau</h3>
+            <h3 class="font-bold text-xs text-amber-300 uppercase tracking-wider truncate">Großansicht</h3>
           </div>
           <button onclick="closePositionPreviewModal()" class="text-slate-400 hover:text-slate-200 text-base font-bold px-1.5">✕</button>
         </div>
@@ -2891,9 +2891,11 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       }
     }
 
-    // Touch-Swipe-Handler für Gestensteuerung
+    // Gesten- & Story-Tap-Steuerung (Tippen links/rechts & Doppel-Tipp Zoom)
     let touchStartX = 0;
     let touchStartY = 0;
+    let lastPositionTapTime = 0;
+    let singleTapTimeout = null;
 
     function handlePositionTouchStart(e) {
       if (!e.touches || e.touches.length === 0) return;
@@ -2901,36 +2903,62 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       touchStartY = e.touches[0].clientY;
     }
 
-    function handlePositionTouchEnd(e, isGallery = false) {
-      if (!e.changedTouches || e.changedTouches.length === 0) return;
-      const deltaX = e.changedTouches[0].clientX - touchStartX;
-      const deltaY = e.changedTouches[0].clientY - touchStartY;
+    function handlePositionInteraction(e, isGallery = false, posId = null) {
+      const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+      const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+      const deltaX = clientX - touchStartX;
+      const deltaY = clientY - touchStartY;
       const minSwipeDistance = 35;
 
       const absX = Math.abs(deltaX);
       const absY = Math.abs(deltaY);
 
-      if (absX < minSwipeDistance && absY < minSwipeDistance) return;
-
-      if (absX > absY) {
-        // Horizontaler Swipe
-        if (deltaX < 0) {
-          // Rechts nach Links -> Weiter
-          if (isGallery) nextGalleryPosition(); else nextWizardPosition();
+      // 1. Wisch-Geste (Swipe)
+      if (absX >= minSwipeDistance || absY >= minSwipeDistance) {
+        clearTimeout(singleTapTimeout);
+        if (absX > absY) {
+          if (deltaX < 0) {
+            if (isGallery) nextGalleryPosition(); else nextWizardPosition();
+          } else {
+            if (isGallery) prevGalleryPosition(); else prevWizardPosition();
+          }
         } else {
-          // Links nach Rechts -> Zurück
-          if (isGallery) prevGalleryPosition(); else prevWizardPosition();
+          if (deltaY < 0) {
+            if (isGallery) nextGalleryPosition(); else nextWizardPosition();
+          } else {
+            if (isGallery) prevGalleryPosition(); else prevWizardPosition();
+          }
         }
-      } else {
-        // Vertikaler Swipe
-        if (deltaY < 0) {
-          // Unten nach Oben -> Weiter
-          if (isGallery) nextGalleryPosition(); else nextWizardPosition();
-        } else {
-          // Oben nach Unten -> Zurück
-          if (isGallery) prevGalleryPosition(); else prevWizardPosition();
-        }
+        return;
       }
+
+      // 2. Tippen (Tap & Doppel-Tipp)
+      const now = Date.now();
+      const rect = e.currentTarget.getBoundingClientRect();
+      const tapX = clientX - rect.left;
+      const isRightSide = tapX > rect.width / 2;
+
+      if (now - lastPositionTapTime < 280) {
+        // Doppel-Tipp -> Vollbild-Vorschau (Lightbox)
+        clearTimeout(singleTapTimeout);
+        lastPositionTapTime = 0;
+        if (posId) {
+          openPositionPreviewModal(posId);
+        }
+        return;
+      }
+
+      lastPositionTapTime = now;
+      clearTimeout(singleTapTimeout);
+
+      // Single-Tap Navigation: Rechts = Vorwärts, Links = Zurück
+      singleTapTimeout = setTimeout(() => {
+        if (isRightSide) {
+          if (isGallery) nextGalleryPosition(); else nextWizardPosition();
+        } else {
+          if (isGallery) prevGalleryPosition(); else prevWizardPosition();
+        }
+      }, 200);
     }
 
     function renderModel1FinaleCard(key, label) {
@@ -3068,30 +3096,28 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               `).join('')}
             </div>
 
-            <!-- GROSSE SINGLE-CARD (100% VISUELL) -->
+            <!-- GROSSE SINGLE-CARD (STORY-TAP: RECHTS/LINKS & DOPPEL-TIPP ZOOM) -->
             ${pos ? `
-              <div ontouchstart="handlePositionTouchStart(event)" ontouchend="handlePositionTouchEnd(event, false)" 
-                class="bg-slate-950 border ${isFokus ? 'border-amber-500/90 glow-amber' : 'border-slate-800'} rounded-2xl p-2 flex-1 min-h-0 flex flex-col justify-between transition-all select-none">
+              <div class="bg-slate-950 border ${isFokus ? 'border-amber-500/90 glow-amber' : 'border-slate-800'} rounded-2xl p-2 flex-1 min-h-0 flex flex-col justify-between transition-all select-none">
                 
-                <div class="relative w-full flex-1 min-h-0 bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden">
+                <div ontouchstart="handlePositionTouchStart(event)" 
+                     ontouchend="handlePositionInteraction(event, false, '${pos.id}')"
+                     onclick="handlePositionInteraction(event, false, '${pos.id}')"
+                     class="relative w-full flex-1 min-h-0 bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden cursor-pointer">
+                  
                   <img src="${pos.image}" alt="Stellung" class="w-full h-full object-contain p-1.5 pointer-events-none">
                   
                   <!-- Favoriten-Herz oben rechts -->
-                  <button type="button" onclick="togglePositionFavorite('${pos.id}')" class="absolute top-2 right-2 p-2 bg-slate-950/85 hover:bg-slate-900 border border-slate-700/80 rounded-full text-sm shadow backdrop-blur-xs active:scale-90 transition-all pointer-events-auto" title="Zu Favoriten hinzufügen">
+                  <button type="button" onclick="event.stopPropagation(); togglePositionFavorite('${pos.id}')" class="absolute top-2 right-2 p-2 bg-slate-950/85 hover:bg-slate-900 border border-slate-700/80 rounded-full text-sm shadow backdrop-blur-xs active:scale-90 transition-all pointer-events-auto z-10" title="Zu Favoriten hinzufügen">
                     ${isFav ? '❤️' : '🤍'}
                   </button>
 
                   <!-- Status-Badge oben links (nur bei Fokus) -->
                   ${isFokus ? `
-                    <div class="absolute top-2 left-2">
+                    <div class="absolute top-2 left-2 z-10 pointer-events-none">
                       <span class="text-[9px] font-bold text-amber-300 bg-amber-950/90 border border-amber-500 px-2 py-0.5 rounded-full shadow">🔥 Fokus gesetzt</span>
                     </div>
                   ` : ''}
-
-                  <!-- Wisch-Hinweis unten zentriert -->
-                  <div class="absolute bottom-1.5 inset-x-0 flex justify-center pointer-events-none opacity-60">
-                    <span class="text-[8px] text-slate-400 bg-black/60 px-2 py-0.5 rounded-full font-mono">↔️ Wischen zum Wechseln</span>
-                  </div>
                 </div>
 
                 <div class="pt-1.5 shrink-0 pointer-events-auto">
@@ -4699,18 +4725,17 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       if (grid) {
         if (pos) {
           grid.innerHTML = `
-            <div ontouchstart="handlePositionTouchStart(event)" ontouchend="handlePositionTouchEnd(event, true)" 
-              class="bg-slate-950 border border-amber-500/50 rounded-2xl p-2.5 h-full flex flex-col justify-between glow-amber select-none">
-              <div class="relative w-full flex-1 min-h-[220px] bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden">
+            <div class="bg-slate-950 border border-amber-500/50 rounded-2xl p-2.5 h-full flex flex-col justify-between glow-amber select-none">
+              <div ontouchstart="handlePositionTouchStart(event)" 
+                   ontouchend="handlePositionInteraction(event, true, '${pos.id}')"
+                   onclick="handlePositionInteraction(event, true, '${pos.id}')"
+                   class="relative w-full flex-1 min-h-[220px] bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden cursor-pointer">
+                
                 <img src="${pos.image}" alt="Stellung" class="w-full h-full object-contain p-2 pointer-events-none">
                 
-                <button type="button" onclick="togglePositionFavorite('${pos.id}')" class="absolute top-2 right-2 p-2 bg-slate-950/85 hover:bg-slate-900 border border-slate-700 rounded-full text-base shadow backdrop-blur-xs active:scale-90 transition-all pointer-events-auto">
+                <button type="button" onclick="event.stopPropagation(); togglePositionFavorite('${pos.id}')" class="absolute top-2 right-2 p-2 bg-slate-950/85 hover:bg-slate-900 border border-slate-700 rounded-full text-base shadow backdrop-blur-xs active:scale-90 transition-all pointer-events-auto z-10" title="Zu Favoriten hinzufügen">
                   ${isFav ? '❤️' : '🤍'}
                 </button>
-
-                <div class="absolute bottom-1.5 inset-x-0 flex justify-center pointer-events-none opacity-60">
-                  <span class="text-[8px] text-slate-400 bg-black/60 px-2 py-0.5 rounded-full font-mono">↔️ Wischen zum Wechseln</span>
-                </div>
               </div>
             </div>
           `;
