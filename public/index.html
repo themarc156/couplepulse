@@ -2763,26 +2763,24 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       { key: 'fav', label: '❤️' },
       { key: 'vorne', label: 'Vorne', match: ['vorne', 'von_vorne', 'missionar', 'front'] },
       { key: 'hinten', label: 'Hinten', match: ['hinten', 'von_hinten', 'doggy', 'back', 'rear'] },
-      { key: 'oral', label: 'Oral', match: ['oral', '69', 'blowjob', 'cunnilingus'] },
-      { key: 'sonstige', label: 'Sonstige', match: ['sonstige', 'spontan', 'intim', 'akrobatisch', 'allgemein'] }
+      { key: 'oral', label: 'Oral', match: ['oral', '69', 'blowjob', 'cunnilingus'] }
     ];
 
     let wizardActiveCategory = 'vorne';
-    let wizardCategoryHistory = { fav: [], vorne: [], hinten: [], oral: [], sonstige: [] };
-    let wizardCategoryHistoryIndex = { fav: -1, vorne: -1, hinten: -1, oral: -1, sonstige: -1 };
-    let wizardDrawPiles = { fav: [], vorne: [], hinten: [], oral: [], sonstige: [] };
+    let wizardCategoryHistory = { fav: [], vorne: [], hinten: [], oral: [] };
+    let wizardCategoryHistoryIndex = { fav: -1, vorne: -1, hinten: -1, oral: -1 };
+    let wizardDrawPiles = { fav: [], vorne: [], hinten: [], oral: [] };
 
     let galleryActiveCategory = 'vorne';
-    let galleryCategoryHistory = { fav: [], vorne: [], hinten: [], oral: [], sonstige: [] };
-    let galleryCategoryHistoryIndex = { fav: -1, vorne: -1, hinten: -1, oral: -1, sonstige: -1 };
-    let galleryDrawPiles = { fav: [], vorne: [], hinten: [], oral: [], sonstige: [] };
+    let galleryCategoryHistory = { fav: [], vorne: [], hinten: [], oral: [] };
+    let galleryCategoryHistoryIndex = { fav: -1, vorne: -1, hinten: -1, oral: -1 };
+    let galleryDrawPiles = { fav: [], vorne: [], hinten: [], oral: [] };
 
     function getNormalizedCategory(pos) {
       const raw = (pos.category || '').toLowerCase();
-      if (raw.includes('vorn') || raw.includes('miss') || raw.includes('front')) return 'vorne';
-      if (raw.includes('hint') || raw.includes('dogg') || raw.includes('back') || raw.includes('rear')) return 'hinten';
       if (raw.includes('oral') || raw.includes('69') || raw.includes('blow') || raw.includes('cunn')) return 'oral';
-      return 'sonstige';
+      if (raw.includes('hint') || raw.includes('dogg') || raw.includes('back') || raw.includes('rear')) return 'hinten';
+      return 'vorne';
     }
 
     function togglePositionFavorite(posId) {
@@ -3060,17 +3058,17 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
         content.innerHTML = `
           <div class="w-full h-full min-h-0 flex-1 flex flex-col justify-between space-y-1.5 select-none touch-none">
-            <!-- 5 TABS: KOMPAKT & FEST -->
-            <div class="grid grid-cols-5 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold text-center shrink-0">
+            <!-- 4 TABS: AUFGERÄUMT & BREIT -->
+            <div class="grid grid-cols-4 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-bold text-center shrink-0">
               ${POSITION_CATEGORIES.map(c => `
                 <button type="button" onclick="selectPositionCategory('${c.key}')" 
-                  class="py-1 rounded-lg transition-all flex items-center justify-center truncate ${wizardActiveCategory === c.key ? (c.key === 'fav' ? 'bg-rose-600 text-white shadow' : 'bg-purple-600 text-white shadow') : 'text-slate-400 hover:text-slate-200'}">
+                  class="py-2 rounded-lg transition-all flex items-center justify-center truncate ${wizardActiveCategory === c.key ? (c.key === 'fav' ? 'bg-rose-600 text-white shadow' : 'bg-purple-600 text-white shadow font-black') : 'text-slate-400 hover:text-slate-200'}">
                   ${c.label}
                 </button>
               `).join('')}
             </div>
 
-            <!-- GROSSE SINGLE-CARD (100% VISUELL - KEINE DATEINAMEN) -->
+            <!-- GROSSE SINGLE-CARD (100% VISUELL) -->
             ${pos ? `
               <div ontouchstart="handlePositionTouchStart(event)" ontouchend="handlePositionTouchEnd(event, false)" 
                 class="bg-slate-950 border ${isFokus ? 'border-amber-500/90 glow-amber' : 'border-slate-800'} rounded-2xl p-2 flex-1 min-h-0 flex flex-col justify-between transition-all select-none">
@@ -3083,10 +3081,16 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                     ${isFav ? '❤️' : '🤍'}
                   </button>
 
-                  <!-- Status-Badge oben links -->
-                  <div class="absolute top-2 left-2 flex items-center gap-1">
-                    <span class="text-[9px] font-bold text-purple-300 bg-purple-950/90 border border-purple-500/50 px-2 py-0.5 rounded-full shadow capitalize">${wizardActiveCategory}</span>
-                    ${isFokus ? `<span class="text-[9px] font-bold text-amber-300 bg-amber-950/90 border border-amber-500 px-2 py-0.5 rounded-full shadow">🔥 Fokus gesetzt</span>` : ''}
+                  <!-- Status-Badge oben links (nur bei Fokus) -->
+                  ${isFokus ? `
+                    <div class="absolute top-2 left-2">
+                      <span class="text-[9px] font-bold text-amber-300 bg-amber-950/90 border border-amber-500 px-2 py-0.5 rounded-full shadow">🔥 Fokus gesetzt</span>
+                    </div>
+                  ` : ''}
+
+                  <!-- Wisch-Hinweis unten zentriert -->
+                  <div class="absolute bottom-1.5 inset-x-0 flex justify-center pointer-events-none opacity-60">
+                    <span class="text-[8px] text-slate-400 bg-black/60 px-2 py-0.5 rounded-full font-mono">↔️ Wischen zum Wechseln</span>
                   </div>
                 </div>
 
@@ -4680,10 +4684,10 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       const grid = document.getElementById('positions-gallery-grid');
 
       if (chips) {
-        chips.className = 'grid grid-cols-5 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold text-center shrink-0 w-full';
+        chips.className = 'grid grid-cols-4 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-bold text-center shrink-0 w-full';
         chips.innerHTML = POSITION_CATEGORIES.map(c => `
           <button type="button" onclick="setGalleryCategory('${c.key}')" 
-            class="py-1.5 rounded-lg transition-all flex items-center justify-center truncate ${galleryActiveCategory === c.key ? (c.key === 'fav' ? 'bg-rose-600 text-white shadow' : 'bg-amber-500 text-slate-950 font-black shadow') : 'text-slate-400 hover:text-slate-200'}">
+            class="py-2 rounded-lg transition-all flex items-center justify-center truncate ${galleryActiveCategory === c.key ? (c.key === 'fav' ? 'bg-rose-600 text-white shadow' : 'bg-amber-500 text-slate-950 font-black shadow') : 'text-slate-400 hover:text-slate-200'}">
             ${c.label}
           </button>
         `).join('');
@@ -4691,7 +4695,6 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
       const pos = getCurrentGalleryPosition();
       const isFav = pos ? (state.favoritePositionIds || []).includes(pos.id) : false;
-      const hasPrev = (galleryCategoryHistoryIndex[galleryActiveCategory] > 0);
 
       if (grid) {
         if (pos) {
@@ -4701,13 +4704,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               <div class="relative w-full flex-1 min-h-[220px] bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden">
                 <img src="${pos.image}" alt="Stellung" class="w-full h-full object-contain p-2 pointer-events-none">
                 
-                <button type="button" onclick="togglePositionFavorite('${pos.id}')" class="absolute top-2 right-2 p-2 bg-slate-950/80 hover:bg-slate-900 border border-slate-700 rounded-full text-base shadow backdrop-blur-xs active:scale-90 transition-all pointer-events-auto">
+                <button type="button" onclick="togglePositionFavorite('${pos.id}')" class="absolute top-2 right-2 p-2 bg-slate-950/85 hover:bg-slate-900 border border-slate-700 rounded-full text-base shadow backdrop-blur-xs active:scale-90 transition-all pointer-events-auto">
                   ${isFav ? '❤️' : '🤍'}
                 </button>
-
-                <div class="absolute top-2 left-2">
-                  <span class="text-[9px] font-bold text-amber-300 bg-amber-950/90 border border-amber-500/50 px-2 py-0.5 rounded-full shadow capitalize">${galleryActiveCategory}</span>
-                </div>
 
                 <div class="absolute bottom-1.5 inset-x-0 flex justify-center pointer-events-none opacity-60">
                   <span class="text-[8px] text-slate-400 bg-black/60 px-2 py-0.5 rounded-full font-mono">↔️ Wischen zum Wechseln</span>
