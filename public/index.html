@@ -1204,12 +1204,20 @@ if (!state.kopfkino.cumCatalog || state.kopfkino.cumCatalog.length === 0) {
   }
 }
 if (!state.kopfkino.positionsCatalog || state.kopfkino.positionsCatalog.length === 0) {
-  state.kopfkino.positionsCatalog = defaultPositionsCatalog;
-}
-if (!state.kopfkino.sieOrgasmCatalog || state.kopfkino.sieOrgasmCatalog.length === 0) {
-  state.kopfkino.sieOrgasmCatalog = defaultSieOrgasmCatalog;
-}
-if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
+        state.kopfkino.positionsCatalog = defaultPositionsCatalog;
+      }
+      if (!state.kopfkino.sieOrgasmCatalog || state.kopfkino.sieOrgasmCatalog.length === 0) {
+        state.kopfkino.sieOrgasmCatalog = defaultSieOrgasmCatalog;
+      }
+      if (!state.kopfkino.itemReactions) state.kopfkino.itemReactions = {};
+
+      // Favoriten-IDs immer sauber und dedupliziert aus dem Speicher laden
+      try {
+        const savedFavs = JSON.parse(localStorage.getItem('cp_fav_positions') || '[]');
+        state.favoritePositionIds = Array.isArray(savedFavs) ? savedFavs : [];
+      } catch(e) {
+        state.favoritePositionIds = state.favoritePositionIds || [];
+      }
 
 // NEU: Timestamps sicherstellen
 if (typeof state.kopfkino.catalogUpdatedAt !== 'number') state.kopfkino.catalogUpdatedAt = 0;
@@ -2767,21 +2775,31 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     function togglePositionFavorite(posId) {
       if (!state.favoritePositionIds) state.favoritePositionIds = [];
       const idx = state.favoritePositionIds.indexOf(posId);
-      if (idx > -1) {
+      const isRemoving = idx > -1;
+
+      if (isRemoving) {
         state.favoritePositionIds.splice(idx, 1);
-        showToast("🤍 Favorit entfernt", "Aus den Favoriten gelöscht.", "🤍");
+        showToast("🤍 Aus Favoriten entfernt", "Aus deiner Sammlung gelöscht.", "🤍");
       } else {
         state.favoritePositionIds.push(posId);
         showToast("❤️ Zu Favoriten hinzugefügt", "In deiner Favoriten-Sammlung gesichert.", "❤️");
       }
+
+      // Direkt speichern OHNE die globale updateUI()-Navigation auszulösen
       localStorage.setItem('cp_fav_positions', JSON.stringify(state.favoritePositionIds));
-      saveState();
+      localStorage.setItem('couple_pulse_all_in_one_v1', JSON.stringify(state));
       playSensualSound('chime');
 
-      // Nachziehstapel für 'fav' resetten, da sich der Pool geändert hat
+      // Verläufe und Stapel für den ❤️-Tab sofort säubern
       wizardDrawPiles['fav'] = [];
-      galleryDrawPiles['fav'] = [];
+      wizardCategoryHistory['fav'] = [];
+      wizardCategoryHistoryIndex['fav'] = -1;
 
+      galleryDrawPiles['fav'] = [];
+      galleryCategoryHistory['fav'] = [];
+      galleryCategoryHistoryIndex['fav'] = -1;
+
+      // Bleibt exakt im aktuellen Schritt 3 und aktualisiert die Ansicht nahtlos
       if (state.activeView === 'match' && wizardCurrentStep === 3) {
         renderKopfkinoWizard();
       }
