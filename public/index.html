@@ -2750,20 +2750,21 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     // =========================================================================
     const POSITION_CATEGORIES = [
       { key: 'fav', label: '❤️' },
+      { key: 'all', label: 'Alle' },
       { key: 'vorne', label: 'Vorne', match: ['vorne', 'von_vorne', 'missionar', 'front'] },
       { key: 'hinten', label: 'Hinten', match: ['hinten', 'von_hinten', 'doggy', 'back', 'rear'] },
       { key: 'oral', label: 'Oral', match: ['oral', '69', 'blowjob', 'cunnilingus'] }
     ];
 
-    let wizardActiveCategory = 'vorne';
-    let wizardCategoryHistory = { fav: [], vorne: [], hinten: [], oral: [] };
-    let wizardCategoryHistoryIndex = { fav: -1, vorne: -1, hinten: -1, oral: -1 };
-    let wizardDrawPiles = { fav: [], vorne: [], hinten: [], oral: [] };
+    let wizardActiveCategory = 'all';
+    let wizardCategoryHistory = { fav: [], all: [], vorne: [], hinten: [], oral: [] };
+    let wizardCategoryHistoryIndex = { fav: -1, all: -1, vorne: -1, hinten: -1, oral: -1 };
+    let wizardDrawPiles = { fav: [], all: [], vorne: [], hinten: [], oral: [] };
 
-    let galleryActiveCategory = 'vorne';
-    let galleryCategoryHistory = { fav: [], vorne: [], hinten: [], oral: [] };
-    let galleryCategoryHistoryIndex = { fav: -1, vorne: -1, hinten: -1, oral: -1 };
-    let galleryDrawPiles = { fav: [], vorne: [], hinten: [], oral: [] };
+    let galleryActiveCategory = 'all';
+    let galleryCategoryHistory = { fav: [], all: [], vorne: [], hinten: [], oral: [] };
+    let galleryCategoryHistoryIndex = { fav: -1, all: -1, vorne: -1, hinten: -1, oral: -1 };
+    let galleryDrawPiles = { fav: [], all: [], vorne: [], hinten: [], oral: [] };
 
     function getNormalizedCategory(pos) {
       const raw = (pos.category || '').toLowerCase();
@@ -2814,6 +2815,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       if (catKey === 'fav') {
         const favIds = state.favoritePositionIds || [];
         return all.filter(p => favIds.includes(p.id));
+      }
+      if (catKey === 'all') {
+        return all;
       }
       return all.filter(p => getNormalizedCategory(p) === catKey);
     }
@@ -3085,11 +3089,11 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
         content.innerHTML = `
           <div class="w-full h-full min-h-0 flex-1 flex flex-col justify-between space-y-1.5 select-none touch-none">
-            <!-- 4 TABS: AUFGERÄUMT & BREIT -->
-            <div class="grid grid-cols-4 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-bold text-center shrink-0">
+            <!-- 5 TABS: MIT ALLE ALS STANDARD -->
+            <div class="grid grid-cols-5 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold text-center shrink-0">
               ${POSITION_CATEGORIES.map(c => `
                 <button type="button" onclick="selectPositionCategory('${c.key}')" 
-                  class="py-2 rounded-lg transition-all flex items-center justify-center truncate ${wizardActiveCategory === c.key ? (c.key === 'fav' ? 'bg-rose-600 text-white shadow' : 'bg-purple-600 text-white shadow font-black') : 'text-slate-400 hover:text-slate-200'}">
+                  class="py-1.5 rounded-lg transition-all flex items-center justify-center truncate ${wizardActiveCategory === c.key ? (c.key === 'fav' ? 'bg-rose-600 text-white shadow' : 'bg-purple-600 text-white shadow font-black') : 'text-slate-400 hover:text-slate-200'}">
                   ${c.label}
                 </button>
               `).join('')}
@@ -3770,11 +3774,11 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       const posList = state.kopfkino.positionsCatalog || defaultPositionsCatalog;
       const savedPos = posList.find(p => (currentDraftPreferences[`pos_${p.id}`] || {}).status === 'fokus');
       if (savedPos) {
-        wizardActiveCategory = getNormalizedCategory(savedPos);
-        wizardCategoryHistory[wizardActiveCategory] = [savedPos];
-        wizardCategoryHistoryIndex[wizardActiveCategory] = 0;
+        wizardActiveCategory = 'all';
+        wizardCategoryHistory['all'] = [savedPos];
+        wizardCategoryHistoryIndex['all'] = 0;
       } else {
-        wizardActiveCategory = 'vorne';
+        wizardActiveCategory = 'all';
       }
 
       renderKopfkinoWizard();
@@ -4616,12 +4620,12 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     }
 
     function openPositionsGalleryModal() {
-      galleryActiveCategory = 'vorne';
-      if (!galleryCategoryHistory['vorne'] || galleryCategoryHistory['vorne'].length === 0) {
-        const nextPos = getNextUnseenPosition('vorne', true);
+      galleryActiveCategory = 'all';
+      if (!galleryCategoryHistory['all'] || galleryCategoryHistory['all'].length === 0) {
+        const nextPos = getNextUnseenPosition('all', true);
         if (nextPos) {
-          galleryCategoryHistory['vorne'] = [nextPos];
-          galleryCategoryHistoryIndex['vorne'] = 0;
+          galleryCategoryHistory['all'] = [nextPos];
+          galleryCategoryHistoryIndex['all'] = 0;
         }
       }
       renderPositionsGallery();
@@ -4688,10 +4692,10 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       const grid = document.getElementById('positions-gallery-grid');
 
       if (chips) {
-        chips.className = 'grid grid-cols-4 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-bold text-center shrink-0 w-full';
+        chips.className = 'grid grid-cols-5 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold text-center shrink-0 w-full';
         chips.innerHTML = POSITION_CATEGORIES.map(c => `
           <button type="button" onclick="setGalleryCategory('${c.key}')" 
-            class="py-2 rounded-lg transition-all flex items-center justify-center truncate ${galleryActiveCategory === c.key ? (c.key === 'fav' ? 'bg-rose-600 text-white shadow' : 'bg-amber-500 text-slate-950 font-black shadow') : 'text-slate-400 hover:text-slate-200'}">
+            class="py-1.5 rounded-lg transition-all flex items-center justify-center truncate ${galleryActiveCategory === c.key ? (c.key === 'fav' ? 'bg-rose-600 text-white shadow' : 'bg-amber-500 text-slate-950 font-black shadow') : 'text-slate-400 hover:text-slate-200'}">
             ${c.label}
           </button>
         `).join('');
