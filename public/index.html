@@ -3556,14 +3556,14 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         } else if (erStatus === 'fokus') {
           const reqKey = `sieorg_wish_er_${o.id}`;
           if (reactions[reqKey]) {
-            sieOrgAgreed.push(myLabel);
+            sieOrgAgreed.push(`🎁 Angebot von ${getRoleName('Er')}: ${myLabel}`);
           } else {
             sieOrgErWishes.push({ label: labelEr, title: o.title, reqKey });
           }
         } else if (sieStatus === 'fokus') {
           const reqKey = `sieorg_wish_sie_${o.id}`;
           if (reactions[reqKey]) {
-            sieOrgAgreed.push(myLabel);
+            sieOrgAgreed.push(`💖 Wunsch von ${getRoleName('Sie')}: ${myLabel}`);
           } else {
             sieOrgSieWishes.push({ label: labelSie, title: o.title, reqKey });
           }
@@ -3659,39 +3659,61 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             </div>
           `}
 
-          <!-- KASTEN 1: IHR HÖHEPUNKT (WIE SIE KOMMT) -->
+          <!-- KASTEN 1: IHR HÖHEPUNKT (WIE SIE KOMMT - MODULAR & VOLLSTÄNDIG) -->
           <div class="bg-slate-950 border border-pink-500/50 rounded-2xl p-3.5 space-y-2.5 glow-rose">
             <div class="flex justify-between items-center">
               <span class="text-[9px] font-bold text-pink-300 uppercase tracking-wider block">👑 IHR HÖHEPUNKT (WIE SIE KOMMT):</span>
             </div>
 
-            ${sieOrgMatches.length > 0 ? `
-              <div class="bg-gradient-to-r from-pink-950/90 to-rose-950/90 border border-pink-400 p-2.5 rounded-xl text-pink-100 font-bold text-xs flex items-center justify-between shadow-lg">
-                <span class="flex items-center gap-1.5"><span>⭐</span> <span>${sieOrgMatches.length > 1 ? 'Mehrfach-Stimulation: ' : ''}${sieOrgMatches.join(' + ')}</span></span>
-                <span class="text-[9px] bg-pink-400 text-slate-950 px-2 py-0.5 rounded-full font-black uppercase">Volltreffer</span>
-              </div>
-            ` : sieOrgAgreed.length > 0 ? `
-              <div class="bg-slate-900/90 border border-pink-500/50 p-2 rounded-xl text-pink-200 text-xs font-semibold">
-                💖 Vereinbart: ${sieOrgAgreed.join(' + ')}
-              </div>
-            ` : (sieOrgSieWishes.length > 0 || sieOrgErWishes.length > 0) ? `
-              <div class="space-y-1.5">
-                ${sieOrgSieWishes.length > 0 ? `
-                  <div class="bg-slate-900/90 border border-pink-500/40 p-2 rounded-xl text-pink-200 text-xs flex items-center justify-between font-semibold">
-                    <span>💖 Wunsch von ${getRoleName('Sie')}: ${sieOrgSieWishes.map(w => w.label).join(' + ')}</span>
-                    ${isEr ? renderTargetedReactionButton(sieOrgSieWishes[0].reqKey, '🔥 Sehr gerne!', true, sieOrgSieWishes[0].title, false) : ''}
-                  </div>
-                ` : ''}
-                ${sieOrgErWishes.length > 0 ? `
-                  <div class="bg-slate-900/90 border border-purple-500/40 p-2 rounded-xl text-purple-200 text-xs flex items-center justify-between font-semibold">
-                    <span>👑 Vorschlag von ${getRoleName('Er')}: ${sieOrgErWishes.map(w => w.label).join(' + ')}</span>
-                    ${!isEr ? renderTargetedReactionButton(sieOrgErWishes[0].reqKey, '🔥 Ooh ja!', true, sieOrgErWishes[0].title, true) : ''}
-                  </div>
-                ` : ''}
-              </div>
-            ` : `
+            ${(sieOrgMatches.length === 0 && sieOrgAgreed.length === 0 && sieOrgSieWishes.length === 0 && sieOrgErWishes.length === 0) ? `
               <div class="text-[11px] text-slate-400 italic bg-slate-900/50 p-2 rounded-xl">
                 Alle Methoden freigegeben – lasst euch im Moment leiten! ✨
+              </div>
+            ` : `
+              <div class="space-y-2">
+                <!-- 1. BEIDER VOLLTREFFER -->
+                ${sieOrgMatches.length > 0 ? `
+                  <div class="bg-gradient-to-r from-pink-950/90 to-rose-950/90 border border-pink-400 p-2.5 rounded-xl text-pink-100 font-bold text-xs flex items-center justify-between shadow-lg">
+                    <span class="flex items-center gap-1.5"><span>⭐</span> <span>${sieOrgMatches.length > 1 ? 'Mehrfach-Stimulation: ' : ''}${sieOrgMatches.join(' + ')}</span></span>
+                    <span class="text-[9px] bg-pink-400 text-slate-950 px-2 py-0.5 rounded-full font-black uppercase">Volltreffer</span>
+                  </div>
+                ` : ''}
+
+                <!-- 2. BEREITS DURCH REAKTION VEREINBART -->
+                ${sieOrgAgreed.length > 0 ? `
+                  <div class="space-y-1">
+                    ${sieOrgAgreed.map(item => `
+                      <div class="bg-slate-900/90 border border-pink-500/50 p-2 rounded-xl text-pink-200 text-xs font-semibold flex items-center justify-between">
+                        <span>${item}</span>
+                        <span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700/50 px-1.5 py-0.5 rounded font-bold">Vereinbart</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : ''}
+
+                <!-- 3. WEITERE OFFENE WÜNSCHE VON IHR -->
+                ${sieOrgSieWishes.length > 0 ? `
+                  <div class="space-y-1 pt-0.5">
+                    ${sieOrgSieWishes.map(w => `
+                      <div class="bg-slate-900/90 border border-pink-500/30 p-2 rounded-xl text-pink-200 text-xs space-y-1 font-semibold">
+                        <div>💖 Wunsch von ${getRoleName('Sie')}: ${w.label}</div>
+                        ${isEr ? renderTargetedReactionButton(w.reqKey, '🔥 Sehr gerne!', true, w.title, false) : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : ''}
+
+                <!-- 4. WEITERE OFFENE ANGEBOTE VON IHM -->
+                ${sieOrgErWishes.length > 0 ? `
+                  <div class="space-y-1 pt-0.5">
+                    ${sieOrgErWishes.map(w => `
+                      <div class="bg-slate-900/90 border border-purple-500/30 p-2 rounded-xl text-purple-200 text-xs space-y-1 font-semibold">
+                        <div>👑 Vorschlag von ${getRoleName('Er')}: ${w.label}</div>
+                        ${!isEr ? renderTargetedReactionButton(w.reqKey, '🔥 Ooh ja!', true, w.title, true) : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : ''}
               </div>
             `}
           </div>
