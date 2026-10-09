@@ -3632,7 +3632,8 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               title: labelEr,
               label: labelSie || myLabel,
               reqKey: reqKey,
-              from: getRoleName('Er')
+              from: getRoleName('Er'),
+              isHerBonus: false
             });
           }
         } else if (isSieFokus) {
@@ -3645,16 +3646,26 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               title: labelSie,
               label: labelEr || myLabel,
               reqKey: reqKey,
-              from: getRoleName('Sie')
+              from: getRoleName('Sie'),
+              isHerBonus: true
             });
           }
         }
       });
 
+      const hasCumAgreement = (doubleCumMatches.length > 0 || cumAgreed.length > 0);
+      const hasSieOrgAgreement = (sieOrgMatches.length > 0 || sieOrgAgreed.length > 0);
+
+      // Filter: Wenn Einigkeit herrscht, werden nur noch ihre Einladungen/Boni für ihn gezeigt
+      const visibleCumWishes = openCumWishesForMe.filter(w => {
+        if (!hasCumAgreement) return true;
+        return w.isHerBonus && isEr;
+      });
+
       const hasAnyOpenImpulse = (
         openPositionWishesForMe.length > 0 ||
         openSieOrgWishesForMe.length > 0 ||
-        openCumWishesForMe.length > 0 ||
+        visibleCumWishes.length > 0 ||
         openWishesForMe.length > 0 ||
         partnerOffersForMe.length > 0
       );
@@ -3864,13 +3875,17 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               <!-- 4. IHRE HÖHEPUNKT-WÜNSCHE (WIE SIE KOMMT) -->
               ${openSieOrgWishesForMe.length > 0 ? `
                 <div class="space-y-1.5 pt-0.5">
-                  <span class="text-[10px] font-bold text-pink-300 block">Höhepunkt-Wunsch (Wie sie kommt):</span>
+                  <span class="text-[10px] font-bold text-pink-300 block">
+                    ${hasSieOrgAgreement ? '➕ Zusätzlicher Höhepunkt-Wunsch / Ergänzung:' : 'Höhepunkt-Wunsch (Wie sie kommt):'}
+                  </span>
                   <div class="space-y-1.5">
                     ${openSieOrgWishesForMe.map(w => `
                       <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
                         <div class="min-w-0 flex-1">
                           <span class="text-xs text-pink-200 font-semibold block truncate">👑 ${w.label}</span>
-                          <span class="text-[9px] text-slate-400">Vorschlag von ${w.from}</span>
+                          <span class="text-[9px] text-slate-400">
+                            ${hasSieOrgAgreement ? `Zusätzlicher Wunsch von ${w.from}` : `Vorschlag von ${w.from}`}
+                          </span>
                         </div>
                         ${renderTargetedReactionButton(w.reqKey, '🔥 Sehr gerne!', true, w.title, false)}
                       </div>
@@ -3879,18 +3894,22 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                 </div>
               ` : ''}
 
-              <!-- 5. ABSPRITZ-WÜNSCHE (WO ER KOMMT) -->
-              ${openCumWishesForMe.length > 0 ? `
+              <!-- 5. ABSPRITZ-WÜNSCHE (WO ER KOMMT / IHRE EINLADUNGEN) -->
+              ${visibleCumWishes.length > 0 ? `
                 <div class="space-y-1.5 pt-0.5">
-                  <span class="text-[10px] font-bold text-amber-300 block">Abspritz-Wunsch (Wo er kommt):</span>
+                  <span class="text-[10px] font-bold text-amber-300 block">
+                    ${hasCumAgreement ? '🎁 Erotische Einladung / Bonus von ihr:' : 'Abspritz-Wunsch (Wo er kommt):'}
+                  </span>
                   <div class="space-y-1.5">
-                    ${openCumWishesForMe.map(w => `
-                      <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
+                    ${visibleCumWishes.map(w => `
+                      <div class="bg-slate-900/90 border ${w.isHerBonus ? 'border-amber-500/60 glow-amber' : 'border-slate-800'} p-2.5 rounded-xl flex items-center justify-between gap-2">
                         <div class="min-w-0 flex-1">
                           <span class="text-xs text-amber-200 font-semibold block truncate">🎯 ${w.label}</span>
-                          <span class="text-[9px] text-slate-400">Wunsch von ${w.from}</span>
+                          <span class="text-[9px] ${w.isHerBonus ? 'text-amber-400 font-bold' : 'text-slate-400'}">
+                            ${w.isHerBonus ? `🎁 Sie hat sich das zusätzlich gewünscht!` : `Wunsch von ${w.from}`}
+                          </span>
                         </div>
-                        ${renderTargetedReactionButton(w.reqKey, '🔥 Einverstanden!', true, w.title, false)}
+                        ${renderTargetedReactionButton(w.reqKey, w.isHerBonus ? '🔥 Sehr gerne annehmen!' : '🔥 Einverstanden!', true, w.title, false)}
                       </div>
                     `).join('')}
                   </div>
