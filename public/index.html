@@ -3899,22 +3899,6 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             </div>
           ` : ''}
 
-              ${partnerOffersForMe.length > 0 ? `
-                <div class="space-y-1.5 pt-0.5">
-                  <span class="text-[10px] font-bold text-rose-300 block">Verwöhn-Angebot:</span>
-                  <div class="space-y-1.5">
-                    ${partnerOffersForMe.map(o => `
-                      <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
-                        <span class="text-xs text-rose-200 font-semibold truncate flex-1">🎁 ${o.title}</span>
-                        ${renderTargetedReactionButton(o.reqKey, '🔥 Ooh ja!', true, o.label, true)}
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-              ` : ''}
-            </div>
-          ` : ''}
-
           <!-- ============================================================== -->
           <!-- ZONE 3: DISKRET AUSGESCHLOSSEN (TABUS) -->
           <!-- ============================================================== -->
