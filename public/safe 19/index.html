@@ -2395,22 +2395,12 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             state.matchNoticeType = data.isOffer ? 'offer' : 'wish';
             
             const isPosition = data.itemKey && data.itemKey.startsWith('pos_');
-            const isCum = data.itemKey && data.itemKey.startsWith('cum_');
-            const isSieOrg = data.itemKey && data.itemKey.startsWith('sieorg_');
             const cleanTitle = data.practiceTitle ? `„${data.practiceTitle}“` : 'einen Wunsch';
             const sName = getRoleName(data.sender);
 
             if (isPosition) {
               state.lastReactionTitle = '🔥 Stellung zugesagt!';
               state.lastReactionBadge = 'STELLUNG ⭐';
-              state.lastReactionNotice = `${sName} hat zugesagt bei: ${cleanTitle} ✨`;
-            } else if (isCum) {
-              state.lastReactionTitle = '💦 Finale zugesagt!';
-              state.lastReactionBadge = 'FINALE 🎯';
-              state.lastReactionNotice = `${sName} hat zugesagt für: ${cleanTitle} ✨`;
-            } else if (isSieOrg) {
-              state.lastReactionTitle = '👑 Höhepunkt zugesagt!';
-              state.lastReactionBadge = 'HÖHEPUNKT ✨';
               state.lastReactionNotice = `${sName} hat zugesagt bei: ${cleanTitle} ✨`;
             } else {
               state.lastReactionTitle = data.isOffer ? '🎁 Angebot angenommen!' : '💖 Wunsch bestätigt!';
@@ -3437,13 +3427,13 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           if (erGive === 'tabu' || sieRec === 'tabu') {
             blockedTaboos.push(myLabel);
           } else if (erGive === 'fokus' && sieRec === 'fokus') {
-            erVerwoehntSieMatches.push(myLabel);
+            erVerwoehntSieMatches.push(`⭐ <strong>${myLabel}</strong> (Doppelter Volltreffer)`);
             currentMatchHighlightTitles.push(myLabel);
           } else if (sieRec === 'fokus' && erGive !== 'tabu') {
             const key = `wish_sie_${p.id}`;
             currentMatchHighlightTitles.push(myLabel);
             if (reactions[key]) {
-              erVerwoehntSieAgreed.push(myLabel);
+              erVerwoehntSieAgreed.push(`💖 <strong>${myLabel}</strong> (Vereinbart)`);
             } else if (isEr) {
               openWishesForMe.push({
                 title: labelSie,
@@ -3456,7 +3446,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             const key = `offer_er_${p.id}`;
             currentMatchHighlightTitles.push(myLabel);
             if (reactions[key]) {
-              erVerwoehntSieAgreed.push(myLabel);
+              erVerwoehntSieAgreed.push(`🎁 <strong>${myLabel}</strong> (Vereinbart)`);
             } else if (!isEr) {
               partnerOffersForMe.push({
                 title: labelEr,
@@ -3473,13 +3463,13 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           if (sieGive === 'tabu' || erRec === 'tabu') {
             blockedTaboos.push(myLabel);
           } else if (sieGive === 'fokus' && erRec === 'fokus') {
-            sieVerwoehntIhnMatches.push(myLabel);
+            sieVerwoehntIhnMatches.push(`⭐ <strong>${myLabel}</strong> (Doppelter Volltreffer)`);
             currentMatchHighlightTitles.push(myLabel);
           } else if (erRec === 'fokus' && sieGive !== 'tabu') {
             const key = `wish_er_${p.id}`;
             currentMatchHighlightTitles.push(myLabel);
             if (reactions[key]) {
-              sieVerwoehntIhnAgreed.push(myLabel);
+              sieVerwoehntIhnAgreed.push(`💖 <strong>${myLabel}</strong> (Vereinbart)`);
             } else if (!isEr) {
               openWishesForMe.push({
                 title: labelEr,
@@ -3492,7 +3482,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             const key = `offer_sie_${p.id}`;
             currentMatchHighlightTitles.push(myLabel);
             if (reactions[key]) {
-              sieVerwoehntIhnAgreed.push(myLabel);
+              sieVerwoehntIhnAgreed.push(`🎁 <strong>${myLabel}</strong> (Vereinbart)`);
             } else if (isEr) {
               partnerOffersForMe.push({
                 title: labelSie,
@@ -3524,7 +3514,6 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           const reqKey = `pos_wish_er_${pos.id}`;
           if (reactions[reqKey]) {
             agreedPositions.push(pos);
-            currentMatchHighlightTitles.push('Vereinbarte Stellung');
           } else if (!isEr) {
             openPositionWishesForMe.push({
               pos: pos,
@@ -3536,7 +3525,6 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           const reqKey = `pos_wish_sie_${pos.id}`;
           if (reactions[reqKey]) {
             agreedPositions.push(pos);
-            currentMatchHighlightTitles.push('Vereinbarte Stellung');
           } else if (isEr) {
             openPositionWishesForMe.push({
               pos: pos,
@@ -3552,7 +3540,8 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       // 3. IHR HÖHEPUNKT AUSWERTEN
       let sieOrgMatches = [];
       let sieOrgAgreed = [];
-      let openSieOrgWishesForMe = [];
+      let sieOrgErWishes = [];
+      let sieOrgSieWishes = [];
 
       sieOrgList.forEach(o => {
         const erStatus = (erP[`sieorg_${o.id}`] || {}).status || 'erlaubt';
@@ -3569,36 +3558,25 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         } else if (erStatus === 'fokus') {
           const reqKey = `sieorg_wish_er_${o.id}`;
           if (reactions[reqKey]) {
-            sieOrgAgreed.push(myLabel);
-            currentMatchHighlightTitles.push(myLabel);
+            sieOrgAgreed.push(`🎁 ${myLabel}`);
           } else if (!isEr) {
-            openSieOrgWishesForMe.push({
-              title: labelEr,
-              label: labelSie || myLabel,
-              reqKey: reqKey,
-              from: getRoleName('Er')
-            });
+            sieOrgErWishes.push({ label: labelSie, title: o.title, reqKey, from: getRoleName('Er') });
           }
         } else if (sieStatus === 'fokus') {
           const reqKey = `sieorg_wish_sie_${o.id}`;
           if (reactions[reqKey]) {
-            sieOrgAgreed.push(myLabel);
-            currentMatchHighlightTitles.push(myLabel);
+            sieOrgAgreed.push(`💖 ${myLabel}`);
           } else if (isEr) {
-            openSieOrgWishesForMe.push({
-              title: labelSie,
-              label: labelEr || myLabel,
-              reqKey: reqKey,
-              from: getRoleName('Sie')
-            });
+            sieOrgSieWishes.push({ label: labelEr, title: o.title, reqKey, from: getRoleName('Sie') });
           }
         }
       });
 
       // 4. SEIN FINALE / ABSPRITZ-ZONEN AUSWERTEN
       let doubleCumMatches = [];
-      let cumAgreed = [];
-      let openCumWishesForMe = [];
+      let erCumWishes = [];
+      let sieCumWishes = [];
+      let cumAllowedZonen = [];
 
       cumList.forEach(c => {
         const erC = (erP[`cum_${c.id}`] || {}).status || 'erlaubt';
@@ -3616,50 +3594,28 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         const isSieFokus = sieC === 'fokus';
 
         if (isErFokus && isSieFokus) {
-          doubleCumMatches.push(myLabel);
+          doubleCumMatches.push({ key: `cum_${c.id}`, title: myLabel, isDouble: true });
           currentMatchHighlightTitles.push(myLabel);
         } else if (isErFokus) {
-          const reqKey = `cum_wish_er_${c.id}`;
-          if (reactions[reqKey]) {
-            cumAgreed.push(myLabel);
-            currentMatchHighlightTitles.push(myLabel);
-          } else if (!isEr) {
-            openCumWishesForMe.push({
-              title: labelEr,
-              label: labelSie || myLabel,
-              reqKey: reqKey,
-              from: getRoleName('Er')
-            });
-          }
-        } else if (sieFokus) {
-          const reqKey = `cum_wish_sie_${c.id}`;
-          if (reactions[reqKey]) {
-            cumAgreed.push(myLabel);
-            currentMatchHighlightTitles.push(myLabel);
-          } else if (isEr) {
-            openCumWishesForMe.push({
-              title: labelSie,
-              label: labelEr || myLabel,
-              reqKey: reqKey,
-              from: getRoleName('Sie')
-            });
-          }
+          erCumWishes.push({ key: `cum_${c.id}`, title: myLabel, isErFav: true });
+        } else if (isSieFokus) {
+          sieCumWishes.push({ key: `cum_${c.id}`, title: myLabel, isSieFav: true });
+        } else {
+          cumAllowedZonen.push({ key: `cum_${c.id}`, title: myLabel, isNeutral: true });
         }
       });
 
-      const hasAnyOpenImpulse = (
-        openPositionWishesForMe.length > 0 ||
-        openSieOrgWishesForMe.length > 0 ||
-        openCumWishesForMe.length > 0 ||
-        openWishesForMe.length > 0 ||
-        partnerOffersForMe.length > 0
-      );
+      cumAllowedZonen = [...doubleCumMatches, ...erCumWishes, ...sieCumWishes, ...cumAllowedZonen];
+
+      const allErVerwoehntSie = [...erVerwoehntSieMatches, ...erVerwoehntSieAgreed];
+      const allSieVerwoehntIhn = [...sieVerwoehntIhnMatches, ...sieVerwoehntIhnAgreed];
+      const hasAnyOpenImpulse = (openPositionWishesForMe.length > 0 || sieOrgSieWishes.length > 0 || sieOrgErWishes.length > 0 || openWishesForMe.length > 0 || partnerOffersForMe.length > 0);
 
       content.innerHTML = `
         <div class="space-y-4 text-xs pb-1">
 
           <!-- ============================================================== -->
-          <!-- ZONE 1: EUER FAHRPLAN FÜR HEUTE (100% FEST VEREINBART) -->
+          <!-- ZONE 1: EUER FAHRPLAN FÜR HEUTE (FEST VEREINBART) -->
           <!-- ============================================================== -->
           <div class="space-y-3">
             <div class="flex items-center gap-2 pb-1 border-b border-purple-500/30">
@@ -3668,44 +3624,22 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             </div>
 
             <!-- CHRONOLOGIE 1: AUFTAKT & VERWÖHNEN -->
-            ${(erVerwoehntSieMatches.length > 0 || erVerwoehntSieAgreed.length > 0 || sieVerwoehntIhnMatches.length > 0 || sieVerwoehntIhnAgreed.length > 0) ? `
+            ${(allErVerwoehntSie.length > 0 || allSieVerwoehntIhn.length > 0) ? `
               <div class="space-y-2">
-                ${(erVerwoehntSieMatches.length > 0 || erVerwoehntSieAgreed.length > 0) ? `
+                ${allErVerwoehntSie.length > 0 ? `
                   <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-1.5">
                     <span class="text-[10px] font-bold text-rose-300 uppercase tracking-wider block">👑 ${getRoleName('Er')} verwöhnt ${getRoleName('Sie')}:</span>
-                    <div class="space-y-1.5">
-                      ${erVerwoehntSieMatches.map(m => `
-                        <div class="bg-gradient-to-r from-amber-950/70 to-slate-900 border border-amber-400/80 p-2 rounded-xl text-amber-100 font-bold text-xs flex items-center justify-between shadow-md">
-                          <span>${m}</span>
-                          <span class="text-[9px] bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded font-black uppercase">⭐ Beide</span>
-                        </div>
-                      `).join('')}
-                      ${erVerwoehntSieAgreed.map(a => `
-                        <div class="bg-slate-900/90 border border-purple-500/50 p-2 rounded-xl text-purple-200 text-xs font-semibold flex items-center justify-between">
-                          <span>${a}</span>
-                          <span class="text-[9px] bg-purple-950 text-purple-300 border border-purple-700/50 px-1.5 py-0.5 rounded font-bold">💖 Vereinbart</span>
-                        </div>
-                      `).join('')}
+                    <div class="text-[11px] text-slate-100 space-y-1">
+                      ${allErVerwoehntSie.map(item => `<div class="bg-slate-900/90 p-2 rounded-xl border border-slate-855">${item}</div>`).join('')}
                     </div>
                   </div>
                 ` : ''}
 
-                ${(sieVerwoehntIhnMatches.length > 0 || sieVerwoehntIhnAgreed.length > 0) ? `
+                ${allSieVerwoehntIhn.length > 0 ? `
                   <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-1.5">
                     <span class="text-[10px] font-bold text-purple-300 uppercase tracking-wider block">👑 ${getRoleName('Sie')} verwöhnt ${getRoleName('Er')}:</span>
-                    <div class="space-y-1.5">
-                      ${sieVerwoehntIhnMatches.map(m => `
-                        <div class="bg-gradient-to-r from-amber-950/70 to-slate-900 border border-amber-400/80 p-2 rounded-xl text-amber-100 font-bold text-xs flex items-center justify-between shadow-md">
-                          <span>${m}</span>
-                          <span class="text-[9px] bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded font-black uppercase">⭐ Beide</span>
-                        </div>
-                      `).join('')}
-                      ${sieVerwoehntIhnAgreed.map(a => `
-                        <div class="bg-slate-900/90 border border-purple-500/50 p-2 rounded-xl text-purple-200 text-xs font-semibold flex items-center justify-between">
-                          <span>${a}</span>
-                          <span class="text-[9px] bg-purple-950 text-purple-300 border border-purple-700/50 px-1.5 py-0.5 rounded font-bold">💖 Vereinbart</span>
-                        </div>
-                      `).join('')}
+                    <div class="text-[11px] text-slate-100 space-y-1">
+                      ${allSieVerwoehntIhn.map(item => `<div class="bg-slate-900/90 p-2 rounded-xl border border-slate-855">${item}</div>`).join('')}
                     </div>
                   </div>
                 ` : ''}
@@ -3718,23 +3652,18 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
             <!-- CHRONOLOGIE 2: EURE STELLUNGEN -->
             ${allActivePositions.length > 0 ? `
-              <div class="bg-slate-950/80 border ${matchedPositions.length > 0 ? 'border-amber-500/60 glow-amber' : 'border-slate-800'} rounded-2xl p-3 space-y-2">
+              <div class="bg-slate-950/80 border ${matchedPositions.length > 0 ? 'border-amber-500/50 glow-amber' : 'border-slate-800'} rounded-2xl p-3 space-y-2">
                 <span class="text-[10px] font-bold text-amber-300 uppercase tracking-wider block">🖼️ Eure Stellungen für heute:</span>
                 <div class="space-y-2">
                   ${allActivePositions.map(pos => {
                     const isBoth = matchedPositions.some(p => p.id === pos.id);
                     return `
-                      <div onclick="openPositionDetailModal('${pos.image}')" class="bg-slate-900/90 hover:bg-slate-850 border ${isBoth ? 'border-amber-400/70' : 'border-slate-800'} p-2 rounded-xl flex items-center gap-3 cursor-pointer active:scale-[0.99] transition-all">
+                      <div onclick="openPositionDetailModal('${pos.image}')" class="bg-slate-900/90 hover:bg-slate-850 border border-slate-800 p-2 rounded-xl flex items-center gap-3 cursor-pointer active:scale-[0.99] transition-all">
                         <img src="${pos.image}" alt="Stellung" class="w-14 h-14 object-contain bg-slate-950 rounded-lg p-1 shrink-0 border border-slate-800">
                         <div class="min-w-0 flex-1">
-                          <span class="text-xs ${isBoth ? 'text-amber-200 font-bold' : 'text-purple-200 font-semibold'} block truncate">
-                            ${isBoth ? '⭐ Match-Stellung' : '💖 Vereinbarte Stellung'}
-                          </span>
-                          <span class="text-[9px] text-slate-400 mt-0.5 block">Tippen für Großansicht 🔍</span>
+                          <span class="text-xs text-amber-200 font-bold block">${isBoth ? '⭐ Match-Stellung (Beide)' : '💖 Vereinbarte Stellung'}</span>
+                          <span class="text-[10px] text-slate-400 mt-0.5 block">Tippen für Großansicht 🔍</span>
                         </div>
-                        <span class="text-[9px] ${isBoth ? 'bg-amber-400 text-slate-950 font-black' : 'bg-purple-950 text-purple-300 border border-purple-700/50 font-bold'} px-1.5 py-0.5 rounded uppercase shrink-0">
-                          ${isBoth ? '⭐ Beide' : '💖 Vereinbart'}
-                        </span>
                       </div>
                     `;
                   }).join('')}
@@ -3744,54 +3673,79 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
             <!-- CHRONOLOGIE 3: DAS FINALE (IHR HÖHEPUNKT & SEIN ABSPRITZ-ORT) -->
             <div class="space-y-2">
-              <!-- IHR ORGASMUS (NUR VEREINBARTES / VOLLTREFFER) -->
+              <!-- IHR ORGASMUS (FEST VEREINBART) -->
               <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-1.5">
                 <span class="text-[10px] font-bold text-pink-300 uppercase tracking-wider block">👑 Ihr Höhepunkt (Wie sie kommt):</span>
                 ${(sieOrgMatches.length > 0 || sieOrgAgreed.length > 0) ? `
-                  <div class="space-y-1.5">
+                  <div class="space-y-1">
                     ${sieOrgMatches.map(item => `
-                      <div class="bg-gradient-to-r from-amber-950/70 to-slate-900 border border-amber-400/80 p-2 rounded-xl text-amber-100 font-bold text-xs flex items-center justify-between shadow-md">
-                        <span>⭐ ${item}</span>
-                        <span class="text-[9px] bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded font-black uppercase">⭐ Beide</span>
+                      <div class="bg-gradient-to-r from-pink-950/80 to-rose-950/80 border border-pink-400/80 p-2 rounded-xl text-pink-100 font-bold text-xs flex items-center justify-between">
+                        <span>⭐ Volltreffer: ${item}</span>
+                        <span class="text-[9px] bg-pink-400 text-slate-950 px-1.5 py-0.5 rounded font-black">Beide</span>
                       </div>
                     `).join('')}
                     ${sieOrgAgreed.map(item => `
-                      <div class="bg-slate-900/90 border border-pink-500/50 p-2 rounded-xl text-pink-200 text-xs font-semibold flex items-center justify-between">
-                        <span>💖 ${item}</span>
-                        <span class="text-[9px] bg-pink-950 text-pink-300 border border-pink-700/50 px-1.5 py-0.5 rounded font-bold">Vereinbart</span>
+                      <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl text-pink-200 text-xs font-semibold flex items-center justify-between">
+                        <span>${item}</span>
+                        <span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700/50 px-1.5 py-0.5 rounded font-bold">Vereinbart</span>
                       </div>
                     `).join('')}
                   </div>
                 ` : `
                   <div class="text-[11px] text-slate-400 italic bg-slate-900/50 p-2 rounded-xl">
-                    Noch kein fester Plan – lasst euch im Moment leiten! ✨
+                    Alle Methoden freigegeben – lasst euch im Moment leiten! ✨
                   </div>
                 `}
               </div>
 
-              <!-- SEIN FINALE / ABSPRITZ-ORT (NUR VEREINBARTES / VOLLTREFFER) -->
-              <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-1.5">
-                <span class="text-[10px] font-bold text-amber-300 uppercase tracking-wider block">💦 Sein Finale (Wo er abspritzt):</span>
-                ${(doubleCumMatches.length > 0 || cumAgreed.length > 0) ? `
-                  <div class="space-y-1.5">
-                    ${doubleCumMatches.map(item => `
-                      <div class="bg-gradient-to-r from-amber-950/70 to-slate-900 border border-amber-400/80 p-2 rounded-xl text-amber-100 font-bold text-xs flex items-center justify-between shadow-md">
-                        <span>⭐ ${item}</span>
-                        <span class="text-[9px] bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded font-black uppercase">⭐ Beide</span>
-                      </div>
-                    `).join('')}
-                    ${cumAgreed.map(item => `
-                      <div class="bg-slate-900/90 border border-amber-500/50 p-2 rounded-xl text-amber-200 text-xs font-semibold flex items-center justify-between">
-                        <span>💖 ${item}</span>
-                        <span class="text-[9px] bg-amber-950 text-amber-300 border border-amber-700/50 px-1.5 py-0.5 rounded font-bold">Vereinbart</span>
-                      </div>
-                    `).join('')}
+              <!-- SEIN FINALE / ABSPRITZ-ZONEN -->
+              <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-[10px] font-bold text-amber-300 uppercase tracking-wider block">💦 Sein Finale (Abspritz-Zonen):</span>
+                  ${isEr ? `<span class="text-[9px] text-amber-400/80 italic">Tippen zum Wechseln</span>` : ''}
+                </div>
+
+                <!-- MINI-LEGENDE -->
+                <div class="flex items-center gap-2 text-[10px] text-slate-400 pb-1 border-b border-slate-855 font-medium">
+                  <span class="flex items-center gap-1 text-amber-300 font-bold"><span>⭐</span> <span>Beide</span></span>
+                  <span>·</span>
+                  <span class="flex items-center gap-1 text-amber-400 font-bold"><span>🎯</span> <span>${getRoleName('Er')}</span></span>
+                  <span>·</span>
+                  <span class="flex items-center gap-1 text-pink-400 font-bold"><span>💖</span> <span>${getRoleName('Sie')}</span></span>
+                </div>
+
+                <!-- ZONEN-BUTTONS MIT EINDEUTIGEN BADGES -->
+                ${cumAllowedZonen.length > 0 ? `
+                  <div class="flex flex-wrap gap-1.5 pt-0.5">
+                    ${cumAllowedZonen.map(z => {
+                      let borderClass = '';
+                      let badgeHtml = '';
+
+                      if (z.isDouble) {
+                        borderClass = 'bg-amber-400 border-amber-300 text-slate-950 font-black shadow glow-amber';
+                        badgeHtml = `<span class="text-[9px] bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded-md font-black">⭐ Beide</span>`;
+                      } else if (z.isErFav) {
+                        borderClass = 'bg-amber-950/80 border-amber-500 text-amber-200 font-bold shadow';
+                        badgeHtml = `<span class="text-[9px] bg-amber-900 text-amber-300 border border-amber-600/50 px-1.5 py-0.5 rounded-md font-bold">🎯 ${getRoleName('Er')}</span>`;
+                      } else if (z.isSieFav) {
+                        borderClass = 'bg-pink-950/80 border-pink-500 text-pink-200 font-bold shadow';
+                        badgeHtml = `<span class="text-[9px] bg-pink-900 text-pink-300 border border-pink-600/50 px-1.5 py-0.5 rounded-md font-bold">💖 ${getRoleName('Sie')}</span>`;
+                      } else {
+                        borderClass = isEr 
+                          ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-amber-500 cursor-pointer' 
+                          : 'bg-slate-900 border-slate-800 text-slate-300 cursor-default';
+                      }
+
+                      return `
+                        <button type="button" ${isEr ? `onclick="changeErCumFocusDirectly('${z.key}', '${z.title}')"` : ''} 
+                          class="px-2.5 py-1.5 rounded-xl text-[10px] border transition-all flex items-center gap-1.5 ${borderClass}">
+                          <span>${z.title}</span>
+                          ${badgeHtml}
+                        </button>
+                      `;
+                    }).join('')}
                   </div>
-                ` : `
-                  <div class="text-[11px] text-slate-400 italic bg-slate-900/50 p-2 rounded-xl">
-                    Noch kein fester Ort gewählt – spontan entscheiden! ✨
-                  </div>
-                `}
+                ` : ''}
               </div>
             </div>
           </div>
@@ -3828,35 +3782,20 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               ` : ''}
 
               <!-- OFFENE ORGASMUS-WÜNSCHE -->
-              ${openSieOrgWishesForMe.length > 0 ? `
+              ${(sieOrgSieWishes.length > 0 || sieOrgErWishes.length > 0) ? `
                 <div class="space-y-1.5 pt-0.5">
-                  <span class="text-[10px] font-bold text-pink-300 block">Höhepunkt-Wunsch (Wie sie kommt):</span>
+                  <span class="text-[10px] font-bold text-pink-300 block">Höhepunkt-Impuls:</span>
                   <div class="space-y-1.5">
-                    ${openSieOrgWishesForMe.map(w => `
+                    ${sieOrgSieWishes.map(w => `
                       <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
-                        <div class="min-w-0 flex-1">
-                          <span class="text-xs text-pink-200 font-semibold block truncate">👑 ${w.label}</span>
-                          <span class="text-[9px] text-slate-400">Vorschlag von ${w.from}</span>
-                        </div>
+                        <span class="text-xs text-pink-200 font-semibold truncate flex-1">💖 Wunsch: ${w.label}</span>
                         ${renderTargetedReactionButton(w.reqKey, '🔥 Sehr gerne!', true, w.title, false)}
                       </div>
                     `).join('')}
-                  </div>
-                </div>
-              ` : ''}
-
-              <!-- OFFENE ABSPRITZ-WÜNSCHE -->
-              ${openCumWishesForMe.length > 0 ? `
-                <div class="space-y-1.5 pt-0.5">
-                  <span class="text-[10px] font-bold text-amber-300 block">Abspritz-Wunsch (Wo er kommt):</span>
-                  <div class="space-y-1.5">
-                    ${openCumWishesForMe.map(w => `
+                    ${sieOrgErWishes.map(w => `
                       <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
-                        <div class="min-w-0 flex-1">
-                          <span class="text-xs text-amber-200 font-semibold block truncate">🎯 ${w.label}</span>
-                          <span class="text-[9px] text-slate-400">Wunsch von ${w.from}</span>
-                        </div>
-                        ${renderTargetedReactionButton(w.reqKey, '🔥 Einverstanden!', true, w.title, false)}
+                        <span class="text-xs text-purple-200 font-semibold truncate flex-1">👑 Angebot: ${w.label}</span>
+                        ${renderTargetedReactionButton(w.reqKey, '🔥 Ooh ja!', true, w.title, true)}
                       </div>
                     `).join('')}
                   </div>
