@@ -3631,7 +3631,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               from: getRoleName('Er')
             });
           }
-        } else if (sieFokus) {
+        } else if (isSieFokus) {
           const reqKey = `cum_wish_sie_${c.id}`;
           if (reactions[reqKey]) {
             cumAgreed.push(myLabel);
@@ -3644,8 +3644,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
               from: getRoleName('Sie')
             });
           }
-        }
-      });
+        });
 
       const hasAnyOpenImpulse = (
         openPositionWishesForMe.length > 0 ||
