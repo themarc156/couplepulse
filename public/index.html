@@ -3133,8 +3133,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         modalSubtitle.innerText = "Tippe einen Bereich an oder stöbere durch die Bilder:";
 
         const pos = getCurrentWizardPosition();
-        const posKey = pos ? `pos_${pos.id}` : null;
-        const currentStatus = posKey ? ((currentDraftPreferences[posKey] || {}).status || 'erlaubt') : 'erlaubt';
+        const cleanPosId = pos ? pos.id.replace(/^(pos_)+/, '') : '';
+        const posKey = pos ? `pos_${cleanPosId}` : null;
+        const currentStatus = posKey ? ((currentDraftPreferences[posKey] || currentDraftPreferences[pos.id] || currentDraftPreferences[`pos_${pos.id}`] || {}).status || 'erlaubt') : 'erlaubt';
         const isFokus = currentStatus === 'fokus';
         const isTabu = currentStatus === 'tabu';
         const isFav = pos ? (state.favoritePositionIds || []).includes(pos.id) : false;
@@ -3505,15 +3506,20 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         }
       });
 
-      // 2. STELLUNGEN AUSWERTEN
+      // 2. STELLUNGEN AUSWERTEN (ROBUSTER KEY-ABGLEICH)
       let matchedPositions = [];
       let agreedPositions = [];
       let openPositionWishesForMe = [];
 
       posList.forEach(pos => {
-        const posKey = pos.id.startsWith('pos_') ? pos.id : `pos_${pos.id}`;
-        const erStatus = (erP[posKey] || {}).status || 'erlaubt';
-        const sieStatus = (sieP[posKey] || {}).status || 'erlaubt';
+        const cleanId = pos.id.replace(/^(pos_)+/, '');
+        const erStatus = (erP[pos.id] || erP[`pos_${pos.id}`] || erP[`pos_${cleanId}`] || erP[`pos_pos_${cleanId}`] || {}).status || 'erlaubt';
+        const sieStatus = (sieP[pos.id] || sieP[`pos_${pos.id}`] || sieP[`pos_${cleanId}`] || sieP[`pos_pos_${cleanId}`] || {}).status || 'erlaubt';
+
+        const reqKeyEr = `pos_wish_er_${cleanId}`;
+        const reqKeySie = `pos_wish_sie_${cleanId}`;
+        const hasReactionEr = Boolean(reactions[reqKeyEr] || reactions[`pos_wish_er_${pos.id}`]);
+        const hasReactionSie = Boolean(reactions[reqKeySie] || reactions[`pos_wish_sie_${pos.id}`]);
 
         if (erStatus === 'tabu' || sieStatus === 'tabu') {
           blockedTaboos.push(`Stellung: ${pos.title || 'Gewählte Position'}`);
@@ -3521,27 +3527,25 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           matchedPositions.push(pos);
           currentMatchHighlightTitles.push('Match-Stellung');
         } else if (erStatus === 'fokus' && sieStatus !== 'tabu') {
-          const reqKey = `pos_wish_er_${pos.id}`;
-          if (reactions[reqKey]) {
+          if (hasReactionEr) {
             agreedPositions.push(pos);
             currentMatchHighlightTitles.push('Vereinbarte Stellung');
           } else if (!isEr) {
             openPositionWishesForMe.push({
               pos: pos,
               from: getRoleName('Er'),
-              reqKey: reqKey
+              reqKey: reqKeyEr
             });
           }
         } else if (sieStatus === 'fokus' && erStatus !== 'tabu') {
-          const reqKey = `pos_wish_sie_${pos.id}`;
-          if (reactions[reqKey]) {
+          if (hasReactionSie) {
             agreedPositions.push(pos);
             currentMatchHighlightTitles.push('Vereinbarte Stellung');
           } else if (isEr) {
             openPositionWishesForMe.push({
               pos: pos,
               from: getRoleName('Sie'),
-              reqKey: reqKey
+              reqKey: reqKeySie
             });
           }
         }
@@ -3797,7 +3801,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           </div>
 
           <!-- ============================================================== -->
-          <!-- ZONE 2: OFFENE IMPULSE DEINES PARTNERS (TIPPEN ZUR BESTÄTIGUNG) -->
+          <!-- ZONE 2: OFFENE IMPULSE DEINES PARTNERS (REIHENFOLGE ANGEPASST) -->
           <!-- ============================================================== -->
           ${hasAnyOpenImpulse ? `
             <div class="bg-slate-950/90 border border-purple-500/40 rounded-2xl p-3.5 space-y-3">
@@ -3806,9 +3810,39 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                 <span class="text-xs font-black uppercase tracking-wider text-purple-200">Noch offene Wünsche deines Partners:</span>
               </div>
 
-              <!-- OFFENE STELLUNGS-WÜNSCHE -->
-              ${openPositionWishesForMe.length > 0 ? `
+              <!-- 1. VERWÖHN-ANGEBOTE -->
+              ${partnerOffersForMe.length > 0 ? `
                 <div class="space-y-1.5">
+                  <span class="text-[10px] font-bold text-rose-300 block">Verwöhn-Angebot:</span>
+                  <div class="space-y-1.5">
+                    ${partnerOffersForMe.map(o => `
+                      <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
+                        <span class="text-xs text-rose-200 font-semibold truncate flex-1">🎁 ${o.title}</span>
+                        ${renderTargetedReactionButton(o.reqKey, '🔥 Ooh ja!', true, o.label, true)}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- 2. PRAKTIK-WÜNSCHE -->
+              ${openWishesForMe.length > 0 ? `
+                <div class="space-y-1.5 pt-0.5">
+                  <span class="text-[10px] font-bold text-purple-300 block">Praktik-Wunsch:</span>
+                  <div class="space-y-1.5">
+                    ${openWishesForMe.map(w => `
+                      <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
+                        <span class="text-xs text-slate-200 font-semibold truncate flex-1">🧘 ${w.title}</span>
+                        ${renderTargetedReactionButton(w.reqKey, '✨ Sehr gerne!', true, w.label, false)}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- 3. STELLUNGS-WÜNSCHE -->
+              ${openPositionWishesForMe.length > 0 ? `
+                <div class="space-y-1.5 pt-0.5">
                   <span class="text-[10px] font-bold text-amber-300 block">Stellungs-Wunsch:</span>
                   <div class="space-y-1.5">
                     ${openPositionWishesForMe.map(item => `
@@ -3827,7 +3861,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                 </div>
               ` : ''}
 
-              <!-- OFFENE ORGASMUS-WÜNSCHE -->
+              <!-- 4. IHRE HÖHEPUNKT-WÜNSCHE (WIE SIE KOMMT) -->
               ${openSieOrgWishesForMe.length > 0 ? `
                 <div class="space-y-1.5 pt-0.5">
                   <span class="text-[10px] font-bold text-pink-300 block">Höhepunkt-Wunsch (Wie sie kommt):</span>
@@ -3845,7 +3879,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                 </div>
               ` : ''}
 
-              <!-- OFFENE ABSPRITZ-WÜNSCHE -->
+              <!-- 5. ABSPRITZ-WÜNSCHE (WO ER KOMMT) -->
               ${openCumWishesForMe.length > 0 ? `
                 <div class="space-y-1.5 pt-0.5">
                   <span class="text-[10px] font-bold text-amber-300 block">Abspritz-Wunsch (Wo er kommt):</span>
@@ -3862,21 +3896,8 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                   </div>
                 </div>
               ` : ''}
-
-              <!-- OFFENE PRAKTIK-WÜNSCHE & ANGEBOTE -->
-              ${openWishesForMe.length > 0 ? `
-                <div class="space-y-1.5 pt-0.5">
-                  <span class="text-[10px] font-bold text-purple-300 block">Praktik-Wunsch:</span>
-                  <div class="space-y-1.5">
-                    ${openWishesForMe.map(w => `
-                      <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
-                        <span class="text-xs text-slate-200 font-semibold truncate flex-1">🧘 ${w.title}</span>
-                        ${renderTargetedReactionButton(w.reqKey, '✨ Sehr gerne!', true, w.label, false)}
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-              ` : ''}
+            </div>
+          ` : ''}
 
               ${partnerOffersForMe.length > 0 ? `
                 <div class="space-y-1.5 pt-0.5">
