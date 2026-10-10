@@ -92,7 +92,7 @@ app.post('/api/notify', async (req, res) => {
     }
 
     // Absolut diskreter Text auf dem Sperrbildschirm (nur ein Emoji)
-    const discreetMessage = "☕"; 
+    const discreetMessage = "❤️";
 
     try {
         const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
