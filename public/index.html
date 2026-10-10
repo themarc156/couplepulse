@@ -849,6 +849,28 @@
       </div>
     </div>
 
+    <!-- MODAL: SICHERHEITSABFRAGE CHAT LEEREN -->
+    <div id="clear-chat-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-rose-500/50 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl text-center glow-rose">
+        <div class="space-y-1.5">
+          <span class="text-3xl block animate-bounce">🗑️</span>
+          <h3 class="font-bold text-sm text-rose-300 uppercase tracking-wider">Chatverlauf leeren</h3>
+          <p class="text-xs text-slate-300 leading-relaxed px-2">
+            Möchtest du den gesamten Chatverlauf der Flüsterbox für heute unwiderruflich löschen?
+          </p>
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button onclick="executeClearShoutbox()" class="flex-1 py-3 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg active:scale-95 transition-all">
+            Ja, leeren ✨
+          </button>
+          <button onclick="closeClearChatModal()" class="py-3 px-4 bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-semibold rounded-xl active:scale-95 transition-all">
+            Abbrechen
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL: KARTEN-VERWALTUNG (OHNE STRAFEN) -->
     <div id="card-manager-modal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-purple-500/40 w-full max-w-sm rounded-3xl p-5 space-y-3 shadow-2xl max-h-[88vh] flex flex-col justify-between">
@@ -2799,13 +2821,23 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     }
 
     function clearShoutboxHistory() {
-      if (confirm("Möchtest du den gesamten Chatverlauf der Flüsterbox für heute leeren?")) {
-        state.shoutboxMessages = [];
-        saveState();
-        LiveStream.sendData({ type: 'shoutbox_clear' });
-        renderAllShoutboxes();
-        showToast("🗑️ Chat geleert", "Der Verlauf wurde bereinigt.", "💬");
-      }
+      const modal = document.getElementById('clear-chat-modal');
+      if (modal) modal.classList.remove('hidden');
+      playSensualSound('alarm');
+    }
+
+    function closeClearChatModal() {
+      const modal = document.getElementById('clear-chat-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function executeClearShoutbox() {
+      closeClearChatModal();
+      state.shoutboxMessages = [];
+      saveState();
+      LiveStream.sendData({ type: 'shoutbox_clear' });
+      renderAllShoutboxes();
+      showToast("🗑️ Chat geleert", "Der Verlauf wurde bereinigt.", "💬");
     }
 
     // =========================================================================
