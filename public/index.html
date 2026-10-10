@@ -77,6 +77,17 @@
     .animate-border-pulse {
       animation: borderPulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
+
+    /* Verhindert jegliches Aufblitzen der App beim Start / Tab-Wechsel */
+    body:not(.app-unlocked) #view-pulse,
+    body:not(.app-unlocked) #view-match,
+    body:not(.app-unlocked) #view-game,
+    body:not(.app-unlocked) #view-wishes,
+    body:not(.app-unlocked) header,
+    body:not(.app-unlocked) nav {
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
   </style>
 </head>
 <body class="bg-slate-900 md:bg-black text-slate-100 h-[100dvh] overflow-hidden font-sans select-none antialiased flex justify-center items-start">
@@ -885,30 +896,34 @@
     // GLOBAL APP DATA & MASTER DECKS
     // =========================================================================
     const defaultPracticesCatalog = [
-      { id: 'er_fesseln', type: 'er_gives', labelEr: 'Sie fesseln & verwöhnen', labelSie: 'Mich fesseln & verwöhnen' },
-      { id: 'er_spank', type: 'er_gives', labelEr: 'Klapse auf den Po', labelSie: 'Mir ordentliche Klapse auf den Hintern geben' },
       { id: 'er_oral', type: 'er_gives', labelEr: 'Ihren Kitzler & ihre Fotze lecken', labelSie: 'Mich mit seiner Zunge verwöhnen' },
       { id: 'er_finger', type: 'er_gives', labelEr: 'Sie fingern & ihren G-Punkt massieren', labelSie: 'Mich fingern & meinen G-Punkt massieren' },
       { id: 'er_toys', type: 'er_gives', labelEr: 'Sie mit Spielzeugen verwöhnen', labelSie: 'Mich mit Spielzeugen verwöhnen' },
-      { id: 'er_dirty', type: 'er_gives', labelEr: 'Dominanter Dirty Talk', labelSie: 'Dominanter Dirty Talk' },
+      { id: 'er_rimming', type: 'er_gives', labelEr: 'Ihr geiles Arschloch lecken', labelSie: 'Mein Arschloch mit seiner Zunge verwöhnen' },
       { id: 'er_doggy', type: 'er_gives', labelEr: 'Sie von hinten nehmen (Doggy)', labelSie: 'Mich fest & tief von hinten nehmen' },
-      { id: 'er_anal', type: 'er_gives', labelEr: 'Ihr geiles, enges Arschloch ficken', labelSie: 'Mein Arschloch ficken' },
-      { id: 'er_rimming', type: 'er_gives', labelEr: 'Ihr Arschloch lecken', labelSie: 'Mein Arschloch mit seiner Zunge verwöhnen' },
+      { id: 'er_spank', type: 'er_gives', labelEr: 'Klapse auf den Po', labelSie: 'Mir ordentliche Klapse auf den Hintern geben' },
+      { id: 'er_dirty', type: 'er_gives', labelEr: 'Dominanter Dirty Talk', labelSie: 'Dominanter Dirty Talk' },
+      { id: 'er_fesseln', type: 'er_gives', labelEr: 'Sie fesseln & verwöhnen', labelSie: 'Mich fesseln & verwöhnen' },
+      { id: 'er_anal', type: 'er_gives', labelEr: 'Ihr Arschloch ficken', labelSie: 'Mein Arschloch ficken' },
+      { id: 'er_rollenspiel', type: 'er_gives', labelEr: 'Rollenspiel: Ich bestimme, sie dient & gehorcht', labelSie: 'Rollenspiel: Er bestimmt über mich, ich diene & gehorche' },
       { id: 'er_edging', type: 'er_gives', labelEr: 'Ihren Orgasmus bis zum Äußersten hinauszögern', labelSie: 'Mich kurz vor dem Höhepunkt hinhalten' },
       { id: 'er_massage', type: 'er_gives', labelEr: 'Ihren nackten Körper mit Öl massieren', labelSie: 'Sinnliche Ganzkörper-Ölmassage' },
       { id: 'er_standard_sex', type: 'er_gives', labelEr: 'Meinen Schwanz in ihr Fickloch stoßen (Standard-Sex)', labelSie: 'Er soll mich einfach ficken (Standard-Sex)' },
       { id: 'sie_oral', type: 'sie_gives', labelEr: 'Meinen Schwanz lutschen & mit dem Mund verwöhnen', labelSie: 'Ihn mit Mund & Zunge verwöhnen' },
-      { id: 'sie_prostate', type: 'sie_gives', labelEr: 'Meine Prostata massieren', labelSie: 'Seine Prostata massieren' },
       { id: 'sie_balls', type: 'sie_gives', labelEr: 'Meine Eier lecken / zärtlich kraulen', labelSie: 'Seine Hoden mit dem Mund verwöhnen / sanft kraulen' },
-      { id: 'sie_titjob', type: 'sie_gives', labelEr: 'Meinen Schwanz mit ihren Brüsten verwöhnen', labelSie: 'Ihn mit meinen nackten Brüsten verwöhnen' },
+      { id: 'sie_titjob', type: 'sie_gives', labelEr: 'Meinen Schwanz mit ihren Brüsten verwöhnen (Titjob)', labelSie: 'Ihn mit meinen nackten Brüsten verwöhnen (Titjob)' },
+      { id: 'sie_handjob', type: 'sie_gives', labelEr: 'Meinen Schwanz wichsen & massieren', labelSie: 'Ihn mit den Händen verwöhnen' },
       { id: 'sie_ride', type: 'sie_gives', labelEr: 'Mich hemmungslos reiten & die Führung übernehmen', labelSie: 'Oben sitzen, ihn reiten & bestimmen' },
-      { id: 'sie_spank', type: 'sie_gives', labelEr: 'Klapse auf den Po', labelSie: 'Klapse auf den Po' },
-      { id: 'sie_fesseln', type: 'sie_gives', labelEr: 'Mich fesseln & dominieren', labelSie: 'Ihn fesseln & wehrlos machen' },
-      { id: 'sie_dirty', type: 'sie_gives', labelEr: 'Dominanter Dirty Talk', labelSie: 'Dominanter Dirty Talk' },
-      { id: 'sie_rimming', type: 'sie_gives', labelEr: 'Mein Arschloch mit ihrer Zunge verwöhnen', labelSie: 'Sein Arschloch mit der Zunge verwöhnen' },
       { id: 'sie_edging', type: 'sie_gives', labelEr: 'Mich quälen und meinen Orgasmus rauszögern', labelSie: 'Ihn quälen & am Rande des Abspritzens halten' },
+      { id: 'sie_prostate', type: 'sie_gives', labelEr: 'Meine Prostata massieren', labelSie: 'Seine Prostata massieren' },
+      { id: 'sie_watch_solo', type: 'sie_gives', labelEr: 'Mich zuschauen lassen während sie an sich spielt', labelSie: 'Ihn zuschauen lassen' },
+      { id: 'sie_fesseln', type: 'sie_gives', labelEr: 'Mich fesseln & dominieren', labelSie: 'Ihn fesseln & wehrlos machen' },
+      { id: 'sie_rollenspiel', type: 'sie_gives', labelEr: 'Rollenspiel: Sie bestimmt, ich diene & gehorche', labelSie: 'Rollenspiel: Ich bestimme, er dient & gehorcht' },
+      { id: 'sie_spank', type: 'sie_gives', labelEr: 'Klapse auf den Po', labelSie: 'Klapse auf den Po' },
+      { id: 'sie_dirty', type: 'sie_gives', labelEr: 'Dominanter Dirty Talk', labelSie: 'Dominanter Dirty Talk' },
       { id: 'sie_massage', type: 'sie_gives', labelEr: 'Mich mit Öl verwöhnen und berühren', labelSie: 'Ihn sinnlich mit Massageöl verwöhnen' },
-      { id: 'sie_watch_solo', type: 'sie_gives', labelEr: 'Mich zuschauen lassen während sie an sich spielt', labelSie: 'Ihn zuschauen lassen' }
+      { id: 'sie_toys', type: 'sie_gives', labelEr: 'Mich mit Spielzeugen verwöhnen', labelSie: 'Ihn mit Spielzeugen verwöhnen' },
+      { id: 'sie_rimming', type: 'sie_gives', labelEr: 'Mein Arschloch mit ihrer Zunge verwöhnen', labelSie: 'Sein Arschloch mit der Zunge verwöhnen' }
     ];
 
     const defaultCumLocations = [
@@ -1299,6 +1314,7 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
 
       lock() {
         this.isLocked = true;
+        document.body.classList.remove("app-unlocked");
         const screen = document.getElementById("app-lockscreen");
         if (screen) {
           screen.style.display = "flex";
@@ -1308,6 +1324,7 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
 
       unlock() {
         this.isLocked = false;
+        document.body.classList.add("app-unlocked");
         const screen = document.getElementById("app-lockscreen");
         if (screen) {
           screen.style.display = "none";
