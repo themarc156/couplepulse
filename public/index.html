@@ -2685,6 +2685,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           `;
         }
 
+        const isRead = Boolean(m.read);
+        const readReceipt = isMe ? `<span class="text-[10px] ${isRead ? 'text-emerald-400 font-bold' : 'text-slate-400'} ml-1 select-none" title="${isRead ? 'Gelesen' : 'Gesendet'}">${isRead ? '✓✓' : '✓'}</span>` : '';
+
         return `
           <div class="flex ${isMe ? 'justify-end' : 'justify-start'} my-0.5">
             <div class="max-w-[85%] rounded-2xl px-3 py-1.5 text-xs transition-all backdrop-blur-xs ${
@@ -2694,7 +2697,10 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             }">
               <div class="flex items-center justify-between gap-3 mb-0.5">
                 <span class="text-[9px] ${isMe ? 'text-purple-300' : 'text-rose-300'} font-bold">${displayName}</span>
-                ${timeStr ? `<span class="text-[9px] text-slate-400/75 font-normal tracking-tight bg-transparent select-none">${timeStr}</span>` : ''}
+                <div class="flex items-center gap-0.5">
+                  ${timeStr ? `<span class="text-[9px] text-slate-400/75 font-normal tracking-tight bg-transparent select-none">${timeStr}</span>` : ''}
+                  ${readReceipt}
+                </div>
               </div>
               <span class="leading-relaxed whitespace-pre-wrap">${m.text}</span>
             </div>
