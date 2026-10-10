@@ -19,9 +19,11 @@
   <!-- Zarter Glow-Effekt -->
   <path d="M256 425.5l-29.35-26.7C121.5 301.5 50 236.5 50 156.5 50 91.5 101.5 40 166.5 40c37.2 0 73 17.5 96.5 45 23.5-27.5 59.3-45 96.5-45C410.5 40 462 91.5 462 156.5c0 80-71.5 145-176.6 242.3L256 425.5z" fill="url(#rose)" opacity="0.25" filter="url(#glow)" />
 
-  <!-- Haupt-Herz & Puls-Symbol -->
-  <path d="M256 448l-30.1-27.4C118.5 321.4 48 255.7 48 172.8 48 104.5 102.5 50 170.8 50c39.3 0 77.1 18.5 102.2 47.5C298.1 68.5 335.9 50 375.2 50 443.5 50 498 104.5 498 172.8c0 82.9-70.5 148.6-177.9 247.8L256 448z" fill="url(#rose)" />
-  
-  <!-- Pulslinie / Herzschlag in der Mitte -->
-  <path d="M130 220h75l35-55 50 110 35-55h57" fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Haupt-Herz skaliert & zentriert, damit nichts abgeschnitten wird -->
+  <g transform="translate(256, 256) scale(0.82) translate(-256, -256)">
+    <path d="M256 448l-30.1-27.4C118.5 321.4 48 255.7 48 172.8 48 104.5 102.5 50 170.8 50c39.3 0 77.1 18.5 102.2 47.5C298.1 68.5 335.9 50 375.2 50 443.5 50 498 104.5 498 172.8c0 82.9-70.5 148.6-177.9 247.8L256 448z" fill="url(#rose)" />
+    
+    <!-- Pulslinie / Herzschlag in der Mitte -->
+    <path d="M130 220h75l35-55 50 110 35-55h57" fill="none" stroke="#ffffff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
 </svg>

@@ -82,9 +82,9 @@
 <body class="bg-slate-900 md:bg-black text-slate-100 h-[100dvh] overflow-hidden font-sans select-none antialiased flex justify-center items-start">
 
   <!-- ================================================================= -->
-  <!-- BIOMETRISCHER APP-LOCKSCREEN (FINGERABDRUCK / FACE-ID / PIN) -->
+  <!-- BIOMETRISCHER APP-LOCKSCREEN (STANDARDMÄßIG AKTIV BEIM START) -->
   <!-- ================================================================= -->
-  <div id="app-lockscreen" class="hidden fixed inset-0 bg-slate-950/98 backdrop-blur-xl z-50 flex items-center justify-center p-6 select-none">
+  <div id="app-lockscreen" class="fixed inset-0 bg-slate-950/98 backdrop-blur-xl z-50 flex items-center justify-center p-6 select-none">
     <div class="bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 border-rose-500/60 w-full max-w-sm rounded-3xl p-6 space-y-5 shadow-2xl glow-rose text-center">
       <div class="space-y-2">
         <span class="text-4xl block animate-pulse">🔒</span>
@@ -1295,24 +1295,30 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
       lock() {
         this.isLocked = true;
         const screen = document.getElementById("app-lockscreen");
-        if (screen) screen.classList.remove("hidden");
+        if (screen) {
+          screen.style.display = "flex";
+          screen.classList.remove("hidden");
+        }
       },
 
       unlock() {
         this.isLocked = false;
         const screen = document.getElementById("app-lockscreen");
-        if (screen) screen.classList.add("hidden");
+        if (screen) {
+          screen.style.display = "none";
+          screen.classList.add("hidden");
+        }
         playSensualSound("chime");
       },
 
       init() {
-        // App sperren, sobald sie konfiguriert ist
         if (state.isConfigured) {
           this.lock();
-          // Automatisch Biometrie-Dialog aufrufen
           setTimeout(() => {
             this.authenticateBiometric();
-          }, 300);
+          }, 200);
+        } else {
+          this.unlock();
         }
 
         // Wenn die App in den Hintergrund wechselt und wiederkehrt -> sofort neu sperren
