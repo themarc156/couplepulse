@@ -237,9 +237,11 @@
       <!-- DYNAMISCHE FLÜSTERBOX (FÜLLT DEN GESAMTEN FREIEN PLATZ ELASTISCH AUS) -->
       <section class="bg-gradient-to-b from-slate-950/95 via-purple-950/20 to-slate-950/95 border border-purple-500/35 rounded-2xl p-3 flex-1 min-h-0 flex flex-col justify-between overflow-hidden glow-purple relative shadow-inner">
         <div class="flex justify-between items-center border-b border-purple-900/40 pb-1.5 shrink-0 gap-1.5 min-h-[30px]">
-          <!-- Titel (wird während des Streams kompakt gehalten) -->
-          <span id="shoutbox-header-title" class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1 shrink-0">
+          <!-- Titel mit Live-Online Status des Partners -->
+          <span id="shoutbox-header-title" class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5 shrink-0">
             <span>💬</span> <span id="shoutbox-header-text">Flüsterbox</span>
+            <span id="partner-online-dot" class="hidden w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Partner ist online"></span>
+            <span id="partner-typing-indicator" class="hidden text-[10px] text-purple-400 font-normal italic lowercase">schreibt...</span>
           </span>
           <div class="flex items-center gap-1 justify-end flex-1 min-w-0">
             <button id="btn-stream-incoming" onclick="LiveStream.acceptIncomingCall()" class="hidden px-2.5 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-[10px] rounded-lg shadow animate-pulse shrink-0">
@@ -301,10 +303,13 @@
         <!-- SCROLLBARE NACHRICHTEN-LISTE (WIRD WÄHREND DES STREAMS DURCH DAS VIDEO ERSETZT) -->
         <div id="home-shoutbox-messages" class="space-y-2 flex-1 min-h-0 overflow-y-auto text-xs my-2 no-scrollbar"></div>
 
-        <!-- EINGABEZEILE (BLEIBT VOLL ERHALTEN) -->
+        <!-- EINGABEZEILE MIT TYPING-EVENT -->
         <div class="pt-1.5 border-t border-slate-800/80 shrink-0">
           <div class="flex gap-1.5 items-center">
-            <input id="home-shout-input" onkeydown="if(event.key==='Enter'){event.preventDefault();sendShoutboxMessage('home-shout-input');}" type="text" placeholder="Flüsternachricht, Emojis oder Gedanke..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+            <input id="home-shout-input" 
+                   oninput="handleMyTyping()"
+                   onkeydown="if(event.key==='Enter'){event.preventDefault();sendShoutboxMessage('home-shout-input');}" 
+                   type="text" placeholder="Flüsternachricht, Emojis oder Gedanke..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
             <button onclick="sendShoutboxMessage('home-shout-input')" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-[0.98]">Senden</button>
           </div>
         </div>
@@ -1903,12 +1908,16 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             conn.on('open', () => { 
               if (!this.dataConn || !this.dataConn.open) {
                 this.dataConn = conn; 
-                setTimeout(() => requestAllSyncsFromPartner(), 600);
+                setTimeout(() => {
+                  requestAllSyncsFromPartner();
+                  updatePartnerOnlineStatusUI(true);
+                }, 600);
               }
             });
             conn.on('data', (data) => this.handleIncomingData(data));
             conn.on('close', () => {
               this.dataConn = null;
+              updatePartnerOnlineStatusUI(false);
               setTimeout(() => this.connectData(), 4000);
             });
           }
@@ -2592,15 +2601,27 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             renderKopfkinoTab();
           }
         } else if (data.type === 'shoutbox_message') {
-  if (!state.shoutboxMessages) state.shoutboxMessages = [];
-  state.shoutboxMessages.push(data.message);
-  saveState();
-  playSensualSound('heartbeat');
-  renderAllShoutboxes();
-  if (this.isStreaming) {
-    this.showStreamFloatingWhisper(data.message);
-  }
-} else if (data.type === 'deck_full_sync') {
+          if (!state.shoutboxMessages) state.shoutboxMessages = [];
+          state.shoutboxMessages.push(data.message);
+          saveState();
+          playSensualSound('heartbeat');
+          renderAllShoutboxes();
+          if (this.isStreaming) {
+            this.showStreamFloatingWhisper(data.message);
+          }
+          // Gelesen-Bestätigung an Absender zurückschicken
+          LiveStream.sendData({ type: 'message_read', id: data.message.id });
+        } else if (data.type === 'typing_start') {
+          showPartnerTyping(true);
+        } else if (data.type === 'typing_stop') {
+          showPartnerTyping(false);
+        } else if (data.type === 'craving_opened') {
+          showToast("👁️ Signal geöffnet", `${getPartnerName()} hat deinen spontanen Impuls aufgedeckt!`, "🔥");
+          playSensualSound('chime');
+        } else if (data.type === 'message_read') {
+          // Optionaler Haken-Status in der UI aktualisierbar
+          updateMessageReadStatus(data.id);
+        } else if (data.type === 'deck_full_sync') {
   applyIncomingDeckSync(data);
 } else if (data.type === 'deck_sync_request') {
   // Partner fragt nach aktuellem Stand → wir senden unseren
@@ -5669,6 +5690,59 @@ function requestAllSyncsFromPartner() {
 
     // Biometrischen Lockscreen initialisieren
     AppLock.init();
+
+    // =========================================================================
+    // LIVE-FEEDBACK & TYPING ENGINE
+    // =========================================================================
+    let typingTimer = null;
+
+    function handleMyTyping() {
+      LiveStream.sendData({ type: 'typing_start' });
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => {
+        LiveStream.sendData({ type: 'typing_stop' });
+      }, 1500);
+    }
+
+    function showPartnerTyping(isTyping) {
+      const indicator = document.getElementById('partner-typing-indicator');
+      const textSpan = document.getElementById('shoutbox-header-text');
+      if (indicator && textSpan) {
+        indicator.classList.toggle('hidden', !isTyping);
+        textSpan.classList.toggle('hidden', isTyping);
+      }
+    }
+
+    function updatePartnerOnlineStatusUI(isOnline) {
+      const dot = document.getElementById('partner-online-dot');
+      if (dot) {
+        dot.classList.toggle('hidden', !isOnline);
+      }
+    }
+
+    function updateMessageReadStatus(msgId) {
+      // Markiert die Nachricht intern als gelesen (kann für Häkchen genutzt werden)
+      const msg = (state.shoutboxMessages || []).find(m => m.id === msgId);
+      if (msg) {
+        msg.read = true;
+        renderAllShoutboxes();
+      }
+    }
+
+    // Spontan-Signal Öffnungs-Erkennung erweitern
+    function toggleCravingReveal() {
+      const locked = document.getElementById('craving-locked-view');
+      const hidden = document.getElementById('craving-hidden-view');
+      if (locked && hidden) {
+        locked.classList.toggle('hidden');
+        hidden.classList.toggle('hidden');
+        
+        // Wenn ich das Signal vom Partner aufdecke, benachrichtige ihn live!
+        if (state.activeCraving && state.activeCraving.from !== state.currentUser) {
+          LiveStream.sendData({ type: 'craving_opened' });
+        }
+      }
+    }
 
     // Beim allerersten Start automatisch das Profil-Setup öffnen
     if (!state.isConfigured) {
