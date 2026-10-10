@@ -8,6 +8,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>CouplePulse</title>
+  <link rel="manifest" href="/manifest.json">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- PeerJS für P2P WebRTC Streaming & Live-Datensync -->
@@ -76,9 +77,46 @@
     .animate-border-pulse {
       animation: borderPulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
+
+    /* Verhindert jegliches Aufblitzen der App beim Start / Tab-Wechsel */
+    body:not(.app-unlocked) #view-pulse,
+    body:not(.app-unlocked) #view-match,
+    body:not(.app-unlocked) #view-game,
+    body:not(.app-unlocked) #view-wishes,
+    body:not(.app-unlocked) header,
+    body:not(.app-unlocked) nav {
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
   </style>
 </head>
 <body class="bg-slate-900 md:bg-black text-slate-100 h-[100dvh] overflow-hidden font-sans select-none antialiased flex justify-center items-start">
+
+  <!-- ================================================================= -->
+  <!-- BIOMETRISCHER APP-LOCKSCREEN (100% BLICKDICHT BEIM LADEN) -->
+  <!-- ================================================================= -->
+  <div id="app-lockscreen" style="background-color: #020617 !important;" class="fixed inset-0 bg-slate-950 z-[9999] flex items-center justify-center p-6 select-none">
+    <div class="bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 border-rose-500/60 w-full max-w-sm rounded-3xl p-6 space-y-5 shadow-2xl glow-rose text-center">
+      <div class="space-y-2">
+        <span class="text-4xl block animate-pulse">🔒</span>
+        <h2 class="text-lg font-black uppercase tracking-wider text-purple-200">CouplePulse gesperrt</h2>
+        <p class="text-xs text-slate-400 leading-snug">Zur Entsperrung bitte Fingerabdruck oder PIN verwenden.</p>
+      </div>
+
+      <div class="space-y-2.5">
+        <button id="btn-biometric-unlock" onclick="AppLock.authenticateBiometric()" class="w-full py-3.5 bg-gradient-to-r from-rose-600 via-purple-600 to-pink-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg glow-rose active:scale-95 transition-all flex items-center justify-center gap-2">
+          <span class="text-lg">👆</span> <span>Mit Fingerabdruck entsperren</span>
+        </button>
+
+        <div class="pt-2 border-t border-slate-800 space-y-2">
+          <input id="lock-pin-input" type="password" placeholder="Paar-PIN eingeben..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-center text-xs text-slate-200 tracking-widest font-mono focus:outline-none focus:border-purple-500">
+          <button onclick="AppLock.unlockWithPin()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs rounded-xl active:scale-95 transition-all">
+            Mit PIN entsperren
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ================================================================= -->
   <!-- SINGLE PAGE APP CONTAINER -->
@@ -210,9 +248,11 @@
       <!-- DYNAMISCHE FLÜSTERBOX (FÜLLT DEN GESAMTEN FREIEN PLATZ ELASTISCH AUS) -->
       <section class="bg-gradient-to-b from-slate-950/95 via-purple-950/20 to-slate-950/95 border border-purple-500/35 rounded-2xl p-3 flex-1 min-h-0 flex flex-col justify-between overflow-hidden glow-purple relative shadow-inner">
         <div class="flex justify-between items-center border-b border-purple-900/40 pb-1.5 shrink-0 gap-1.5 min-h-[30px]">
-          <!-- Titel (wird während des Streams kompakt gehalten) -->
-          <span id="shoutbox-header-title" class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1 shrink-0">
+          <!-- Titel mit Live-Online Status des Partners -->
+          <span id="shoutbox-header-title" class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5 shrink-0">
             <span>💬</span> <span id="shoutbox-header-text">Flüsterbox</span>
+            <span id="partner-online-dot" class="hidden w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Partner ist online"></span>
+            <span id="partner-typing-indicator" class="hidden text-[10px] text-purple-400 font-normal italic lowercase">schreibt...</span>
           </span>
           <div class="flex items-center gap-1 justify-end flex-1 min-w-0">
             <button id="btn-stream-incoming" onclick="LiveStream.acceptIncomingCall()" class="hidden px-2.5 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-[10px] rounded-lg shadow animate-pulse shrink-0">
@@ -274,10 +314,13 @@
         <!-- SCROLLBARE NACHRICHTEN-LISTE (WIRD WÄHREND DES STREAMS DURCH DAS VIDEO ERSETZT) -->
         <div id="home-shoutbox-messages" class="space-y-2 flex-1 min-h-0 overflow-y-auto text-xs my-2 no-scrollbar"></div>
 
-        <!-- EINGABEZEILE (BLEIBT VOLL ERHALTEN) -->
+        <!-- EINGABEZEILE MIT TYPING-EVENT -->
         <div class="pt-1.5 border-t border-slate-800/80 shrink-0">
           <div class="flex gap-1.5 items-center">
-            <input id="home-shout-input" onkeydown="if(event.key==='Enter'){event.preventDefault();sendShoutboxMessage('home-shout-input');}" type="text" placeholder="Flüsternachricht, Emojis oder Gedanke..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+            <input id="home-shout-input" 
+                   oninput="handleMyTyping()"
+                   onkeydown="if(event.key==='Enter'){event.preventDefault();sendShoutboxMessage('home-shout-input');}" 
+                   type="text" placeholder="Flüsternachricht, Emojis oder Gedanke..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
             <button onclick="sendShoutboxMessage('home-shout-input')" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-[0.98]">Senden</button>
           </div>
         </div>
@@ -853,30 +896,34 @@
     // GLOBAL APP DATA & MASTER DECKS
     // =========================================================================
     const defaultPracticesCatalog = [
-      { id: 'er_fesseln', type: 'er_gives', labelEr: 'Sie fesseln & verwöhnen', labelSie: 'Mich fesseln & verwöhnen' },
-      { id: 'er_spank', type: 'er_gives', labelEr: 'Klapse auf den Po', labelSie: 'Mir ordentliche Klapse auf den Hintern geben' },
       { id: 'er_oral', type: 'er_gives', labelEr: 'Ihren Kitzler & ihre Fotze lecken', labelSie: 'Mich mit seiner Zunge verwöhnen' },
       { id: 'er_finger', type: 'er_gives', labelEr: 'Sie fingern & ihren G-Punkt massieren', labelSie: 'Mich fingern & meinen G-Punkt massieren' },
       { id: 'er_toys', type: 'er_gives', labelEr: 'Sie mit Spielzeugen verwöhnen', labelSie: 'Mich mit Spielzeugen verwöhnen' },
-      { id: 'er_dirty', type: 'er_gives', labelEr: 'Dominanter Dirty Talk', labelSie: 'Dominanter Dirty Talk' },
+      { id: 'er_rimming', type: 'er_gives', labelEr: 'Ihr geiles Arschloch lecken', labelSie: 'Mein Arschloch mit seiner Zunge verwöhnen' },
       { id: 'er_doggy', type: 'er_gives', labelEr: 'Sie von hinten nehmen (Doggy)', labelSie: 'Mich fest & tief von hinten nehmen' },
-      { id: 'er_anal', type: 'er_gives', labelEr: 'Ihr geiles, enges Arschloch ficken', labelSie: 'Mein Arschloch ficken' },
-      { id: 'er_rimming', type: 'er_gives', labelEr: 'Ihr Arschloch lecken', labelSie: 'Mein Arschloch mit seiner Zunge verwöhnen' },
+      { id: 'er_spank', type: 'er_gives', labelEr: 'Klapse auf den Po', labelSie: 'Mir ordentliche Klapse auf den Hintern geben' },
+      { id: 'er_dirty', type: 'er_gives', labelEr: 'Dominanter Dirty Talk', labelSie: 'Dominanter Dirty Talk' },
+      { id: 'er_fesseln', type: 'er_gives', labelEr: 'Sie fesseln & verwöhnen', labelSie: 'Mich fesseln & verwöhnen' },
+      { id: 'er_anal', type: 'er_gives', labelEr: 'Ihr Arschloch ficken', labelSie: 'Mein Arschloch ficken' },
+      { id: 'er_rollenspiel', type: 'er_gives', labelEr: 'Rollenspiel: Ich bestimme, sie dient & gehorcht', labelSie: 'Rollenspiel: Er bestimmt über mich, ich diene & gehorche' },
       { id: 'er_edging', type: 'er_gives', labelEr: 'Ihren Orgasmus bis zum Äußersten hinauszögern', labelSie: 'Mich kurz vor dem Höhepunkt hinhalten' },
       { id: 'er_massage', type: 'er_gives', labelEr: 'Ihren nackten Körper mit Öl massieren', labelSie: 'Sinnliche Ganzkörper-Ölmassage' },
       { id: 'er_standard_sex', type: 'er_gives', labelEr: 'Meinen Schwanz in ihr Fickloch stoßen (Standard-Sex)', labelSie: 'Er soll mich einfach ficken (Standard-Sex)' },
       { id: 'sie_oral', type: 'sie_gives', labelEr: 'Meinen Schwanz lutschen & mit dem Mund verwöhnen', labelSie: 'Ihn mit Mund & Zunge verwöhnen' },
-      { id: 'sie_prostate', type: 'sie_gives', labelEr: 'Meine Prostata massieren', labelSie: 'Seine Prostata massieren' },
       { id: 'sie_balls', type: 'sie_gives', labelEr: 'Meine Eier lecken / zärtlich kraulen', labelSie: 'Seine Hoden mit dem Mund verwöhnen / sanft kraulen' },
-      { id: 'sie_titjob', type: 'sie_gives', labelEr: 'Meinen Schwanz mit ihren Brüsten verwöhnen', labelSie: 'Ihn mit meinen nackten Brüsten verwöhnen' },
+      { id: 'sie_titjob', type: 'sie_gives', labelEr: 'Meinen Schwanz mit ihren Brüsten verwöhnen (Titjob)', labelSie: 'Ihn mit meinen nackten Brüsten verwöhnen (Titjob)' },
+      { id: 'sie_handjob', type: 'sie_gives', labelEr: 'Meinen Schwanz wichsen & massieren', labelSie: 'Ihn mit den Händen verwöhnen' },
       { id: 'sie_ride', type: 'sie_gives', labelEr: 'Mich hemmungslos reiten & die Führung übernehmen', labelSie: 'Oben sitzen, ihn reiten & bestimmen' },
-      { id: 'sie_spank', type: 'sie_gives', labelEr: 'Klapse auf den Po', labelSie: 'Klapse auf den Po' },
-      { id: 'sie_fesseln', type: 'sie_gives', labelEr: 'Mich fesseln & dominieren', labelSie: 'Ihn fesseln & wehrlos machen' },
-      { id: 'sie_dirty', type: 'sie_gives', labelEr: 'Dominanter Dirty Talk', labelSie: 'Dominanter Dirty Talk' },
-      { id: 'sie_rimming', type: 'sie_gives', labelEr: 'Mein Arschloch mit ihrer Zunge verwöhnen', labelSie: 'Sein Arschloch mit der Zunge verwöhnen' },
       { id: 'sie_edging', type: 'sie_gives', labelEr: 'Mich quälen und meinen Orgasmus rauszögern', labelSie: 'Ihn quälen & am Rande des Abspritzens halten' },
+      { id: 'sie_prostate', type: 'sie_gives', labelEr: 'Meine Prostata massieren', labelSie: 'Seine Prostata massieren' },
+      { id: 'sie_watch_solo', type: 'sie_gives', labelEr: 'Mich zuschauen lassen während sie an sich spielt', labelSie: 'Ihn zuschauen lassen' },
+      { id: 'sie_fesseln', type: 'sie_gives', labelEr: 'Mich fesseln & dominieren', labelSie: 'Ihn fesseln & wehrlos machen' },
+      { id: 'sie_rollenspiel', type: 'sie_gives', labelEr: 'Rollenspiel: Sie bestimmt, ich diene & gehorche', labelSie: 'Rollenspiel: Ich bestimme, er dient & gehorcht' },
+      { id: 'sie_spank', type: 'sie_gives', labelEr: 'Klapse auf den Po', labelSie: 'Klapse auf den Po' },
+      { id: 'sie_dirty', type: 'sie_gives', labelEr: 'Dominanter Dirty Talk', labelSie: 'Dominanter Dirty Talk' },
       { id: 'sie_massage', type: 'sie_gives', labelEr: 'Mich mit Öl verwöhnen und berühren', labelSie: 'Ihn sinnlich mit Massageöl verwöhnen' },
-      { id: 'sie_watch_solo', type: 'sie_gives', labelEr: 'Mich zuschauen lassen während sie an sich spielt', labelSie: 'Ihn zuschauen lassen' }
+      { id: 'sie_toys', type: 'sie_gives', labelEr: 'Mich mit Spielzeugen verwöhnen', labelSie: 'Ihn mit Spielzeugen verwöhnen' },
+      { id: 'sie_rimming', type: 'sie_gives', labelEr: 'Mein Arschloch mit ihrer Zunge verwöhnen', labelSie: 'Sein Arschloch mit der Zunge verwöhnen' }
     ];
 
     const defaultCumLocations = [
@@ -1165,6 +1212,145 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
     // (toggleAudioMute entfernt)
 
     function triggerHaptic(pattern = 100) { if (navigator.vibrate) navigator.vibrate(pattern); }
+
+    // =========================================================================
+    // BIOMETRISCHE APP-SPERRE (WEBAUTHN FINGERABDRUCK / FACE-ID)
+    // =========================================================================
+    const AppLock = {
+      isLocked: true,
+
+      async isBiometricAvailable() {
+        return window.PublicKeyCredential && 
+               await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      },
+
+      async enableBiometrics() {
+        if (!await this.isBiometricAvailable()) {
+          showToast("⚠️ Nicht unterstützt", "Dein Gerät unterstützt keine Web-Biometrie.", "⚙️");
+          return false;
+        }
+
+        try {
+          const challenge = new Uint8Array(32);
+          crypto.getRandomValues(challenge);
+
+          const credential = await navigator.credentials.create({
+            publicKey: {
+              challenge: challenge,
+              rp: { name: "CouplePulse", id: window.location.hostname },
+              user: {
+                id: new TextEncoder().encode(state.coupleKey || "user"),
+                name: state.currentUser || "user",
+                displayName: getMyName()
+              },
+              pubKeyCredParams: [
+                { alg: -7, type: "public-key" },  // ES256
+                { alg: -257, type: "public-key" } // RS256
+              ],
+              authenticatorSelection: {
+                authenticatorAttachment: "platform",
+                userVerification: "required"
+              },
+              timeout: 60000
+            }
+          });
+
+          if (credential) {
+            localStorage.setItem("cp_bio_id", btoa(String.fromCharCode(...new Uint8Array(credential.rawId))));
+            localStorage.setItem("cp_bio_enabled", "true");
+            showToast("✨ Fingerabdruck aktiviert", "App ist jetzt biometrisch geschützt.", "🔒");
+            return true;
+          }
+        } catch (e) {
+          showToast("⚠️ Abgebrochen", "Biometrie-Einrichtung fehlgeschlagen: " + e.message, "🔒");
+        }
+        return false;
+      },
+
+      async authenticateBiometric() {
+        const rawIdBase64 = localStorage.getItem("cp_bio_id");
+        if (!rawIdBase64) {
+          // Falls noch nicht eingerichtet, jetzt initialisieren
+          const ok = await this.enableBiometrics();
+          if (ok) this.unlock();
+          return;
+        }
+
+        try {
+          const rawId = Uint8Array.from(atob(rawIdBase64), c => c.charCodeAt(0));
+          const challenge = new Uint8Array(32);
+          crypto.getRandomValues(challenge);
+
+          const assertion = await navigator.credentials.get({
+            publicKey: {
+              challenge: challenge,
+              rpId: window.location.hostname,
+              allowCredentials: [{ id: rawId, type: "public-key" }],
+              userVerification: "required",
+              timeout: 60000
+            }
+          });
+
+          if (assertion) {
+            this.unlock();
+          }
+        } catch (e) {
+          showToast("⚠️ Fehler", "Fingerabdruck nicht erkannt.", "🔒");
+        }
+      },
+
+      unlockWithPin() {
+        const input = document.getElementById("lock-pin-input");
+        const entered = input ? input.value.trim().toLowerCase() : "";
+        const expected = (state.coupleKey || "unser-paar-code").trim().toLowerCase();
+
+        if (entered && entered === expected) {
+          if (input) input.value = "";
+          this.unlock();
+        } else {
+          showToast("❌ Falscher PIN", "Der Paar-PIN stimmt nicht überein.", "🔒");
+        }
+      },
+
+      lock() {
+        this.isLocked = true;
+        document.body.classList.remove("app-unlocked");
+        const screen = document.getElementById("app-lockscreen");
+        if (screen) {
+          screen.style.display = "flex";
+          screen.classList.remove("hidden");
+        }
+      },
+
+      unlock() {
+        this.isLocked = false;
+        document.body.classList.add("app-unlocked");
+        const screen = document.getElementById("app-lockscreen");
+        if (screen) {
+          screen.style.display = "none";
+          screen.classList.add("hidden");
+        }
+        playSensualSound("chime");
+      },
+
+      init() {
+        if (state.isConfigured) {
+          this.lock();
+          setTimeout(() => {
+            this.authenticateBiometric();
+          }, 200);
+        } else {
+          this.unlock();
+        }
+
+        // Wenn die App in den Hintergrund wechselt und wiederkehrt -> sofort neu sperren
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden && state.isConfigured) {
+            this.lock();
+          }
+        });
+      }
+    };
 
     // =========================================================================
     // STORAGE & PERSISTENZ
@@ -1739,12 +1925,16 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             conn.on('open', () => { 
               if (!this.dataConn || !this.dataConn.open) {
                 this.dataConn = conn; 
-                setTimeout(() => requestAllSyncsFromPartner(), 600);
+                setTimeout(() => {
+                  requestAllSyncsFromPartner();
+                  updatePartnerOnlineStatusUI(true);
+                }, 600);
               }
             });
             conn.on('data', (data) => this.handleIncomingData(data));
             conn.on('close', () => {
               this.dataConn = null;
+              updatePartnerOnlineStatusUI(false);
               setTimeout(() => this.connectData(), 4000);
             });
           }
@@ -2395,12 +2585,22 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             state.matchNoticeType = data.isOffer ? 'offer' : 'wish';
             
             const isPosition = data.itemKey && data.itemKey.startsWith('pos_');
+            const isCum = data.itemKey && data.itemKey.startsWith('cum_');
+            const isSieOrg = data.itemKey && data.itemKey.startsWith('sieorg_');
             const cleanTitle = data.practiceTitle ? `„${data.practiceTitle}“` : 'einen Wunsch';
             const sName = getRoleName(data.sender);
 
             if (isPosition) {
               state.lastReactionTitle = '🔥 Stellung zugesagt!';
               state.lastReactionBadge = 'STELLUNG ⭐';
+              state.lastReactionNotice = `${sName} hat zugesagt bei: ${cleanTitle} ✨`;
+            } else if (isCum) {
+              state.lastReactionTitle = '💦 Finale zugesagt!';
+              state.lastReactionBadge = 'FINALE 🎯';
+              state.lastReactionNotice = `${sName} hat zugesagt für: ${cleanTitle} ✨`;
+            } else if (isSieOrg) {
+              state.lastReactionTitle = '👑 Höhepunkt zugesagt!';
+              state.lastReactionBadge = 'HÖHEPUNKT ✨';
               state.lastReactionNotice = `${sName} hat zugesagt bei: ${cleanTitle} ✨`;
             } else {
               state.lastReactionTitle = data.isOffer ? '🎁 Angebot angenommen!' : '💖 Wunsch bestätigt!';
@@ -2418,15 +2618,27 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             renderKopfkinoTab();
           }
         } else if (data.type === 'shoutbox_message') {
-  if (!state.shoutboxMessages) state.shoutboxMessages = [];
-  state.shoutboxMessages.push(data.message);
-  saveState();
-  playSensualSound('heartbeat');
-  renderAllShoutboxes();
-  if (this.isStreaming) {
-    this.showStreamFloatingWhisper(data.message);
-  }
-} else if (data.type === 'deck_full_sync') {
+          if (!state.shoutboxMessages) state.shoutboxMessages = [];
+          state.shoutboxMessages.push(data.message);
+          saveState();
+          playSensualSound('heartbeat');
+          renderAllShoutboxes();
+          if (this.isStreaming) {
+            this.showStreamFloatingWhisper(data.message);
+          }
+          // Gelesen-Bestätigung an Absender zurückschicken
+          LiveStream.sendData({ type: 'message_read', id: data.message.id });
+        } else if (data.type === 'typing_start') {
+          showPartnerTyping(true);
+        } else if (data.type === 'typing_stop') {
+          showPartnerTyping(false);
+        } else if (data.type === 'craving_opened') {
+          showToast("👁️ Signal geöffnet", `${getPartnerName()} hat deinen spontanen Impuls aufgedeckt!`, "🔥");
+          playSensualSound('chime');
+        } else if (data.type === 'message_read') {
+          // Optionaler Haken-Status in der UI aktualisierbar
+          updateMessageReadStatus(data.id);
+        } else if (data.type === 'deck_full_sync') {
   applyIncomingDeckSync(data);
 } else if (data.type === 'deck_sync_request') {
   // Partner fragt nach aktuellem Stand → wir senden unseren
@@ -2490,6 +2702,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           `;
         }
 
+        const isRead = Boolean(m.read);
+        const readReceipt = isMe ? `<span class="text-[10px] ${isRead ? 'text-emerald-400 font-bold' : 'text-slate-400'} ml-1 select-none" title="${isRead ? 'Gelesen' : 'Gesendet'}">${isRead ? '✓✓' : '✓'}</span>` : '';
+
         return `
           <div class="flex ${isMe ? 'justify-end' : 'justify-start'} my-0.5">
             <div class="max-w-[85%] rounded-2xl px-3 py-1.5 text-xs transition-all backdrop-blur-xs ${
@@ -2499,7 +2714,10 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             }">
               <div class="flex items-center justify-between gap-3 mb-0.5">
                 <span class="text-[9px] ${isMe ? 'text-purple-300' : 'text-rose-300'} font-bold">${displayName}</span>
-                ${timeStr ? `<span class="text-[9px] text-slate-400/75 font-normal tracking-tight bg-transparent select-none">${timeStr}</span>` : ''}
+                <div class="flex items-center gap-0.5">
+                  ${timeStr ? `<span class="text-[9px] text-slate-400/75 font-normal tracking-tight bg-transparent select-none">${timeStr}</span>` : ''}
+                  ${readReceipt}
+                </div>
               </div>
               <span class="leading-relaxed whitespace-pre-wrap">${m.text}</span>
             </div>
@@ -3123,8 +3341,9 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         modalSubtitle.innerText = "Tippe einen Bereich an oder stöbere durch die Bilder:";
 
         const pos = getCurrentWizardPosition();
-        const posKey = pos ? `pos_${pos.id}` : null;
-        const currentStatus = posKey ? ((currentDraftPreferences[posKey] || {}).status || 'erlaubt') : 'erlaubt';
+        const cleanPosId = pos ? pos.id.replace(/^(pos_)+/, '') : '';
+        const posKey = pos ? `pos_${cleanPosId}` : null;
+        const currentStatus = posKey ? ((currentDraftPreferences[posKey] || currentDraftPreferences[pos.id] || currentDraftPreferences[`pos_${pos.id}`] || {}).status || 'erlaubt') : 'erlaubt';
         const isFokus = currentStatus === 'fokus';
         const isTabu = currentStatus === 'tabu';
         const isFav = pos ? (state.favoritePositionIds || []).includes(pos.id) : false;
@@ -3427,13 +3646,13 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           if (erGive === 'tabu' || sieRec === 'tabu') {
             blockedTaboos.push(myLabel);
           } else if (erGive === 'fokus' && sieRec === 'fokus') {
-            erVerwoehntSieMatches.push(`⭐ <strong>${myLabel}</strong> (Doppelter Volltreffer)`);
+            erVerwoehntSieMatches.push(myLabel);
             currentMatchHighlightTitles.push(myLabel);
           } else if (sieRec === 'fokus' && erGive !== 'tabu') {
             const key = `wish_sie_${p.id}`;
             currentMatchHighlightTitles.push(myLabel);
             if (reactions[key]) {
-              erVerwoehntSieAgreed.push(`💖 <strong>${myLabel}</strong> (Vereinbart)`);
+              erVerwoehntSieAgreed.push(myLabel);
             } else if (isEr) {
               openWishesForMe.push({
                 title: labelSie,
@@ -3446,7 +3665,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             const key = `offer_er_${p.id}`;
             currentMatchHighlightTitles.push(myLabel);
             if (reactions[key]) {
-              erVerwoehntSieAgreed.push(`🎁 <strong>${myLabel}</strong> (Vereinbart)`);
+              erVerwoehntSieAgreed.push(myLabel);
             } else if (!isEr) {
               partnerOffersForMe.push({
                 title: labelEr,
@@ -3463,13 +3682,13 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           if (sieGive === 'tabu' || erRec === 'tabu') {
             blockedTaboos.push(myLabel);
           } else if (sieGive === 'fokus' && erRec === 'fokus') {
-            sieVerwoehntIhnMatches.push(`⭐ <strong>${myLabel}</strong> (Doppelter Volltreffer)`);
+            sieVerwoehntIhnMatches.push(myLabel);
             currentMatchHighlightTitles.push(myLabel);
           } else if (erRec === 'fokus' && sieGive !== 'tabu') {
             const key = `wish_er_${p.id}`;
             currentMatchHighlightTitles.push(myLabel);
             if (reactions[key]) {
-              sieVerwoehntIhnAgreed.push(`💖 <strong>${myLabel}</strong> (Vereinbart)`);
+              sieVerwoehntIhnAgreed.push(myLabel);
             } else if (!isEr) {
               openWishesForMe.push({
                 title: labelEr,
@@ -3482,7 +3701,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
             const key = `offer_sie_${p.id}`;
             currentMatchHighlightTitles.push(myLabel);
             if (reactions[key]) {
-              sieVerwoehntIhnAgreed.push(`🎁 <strong>${myLabel}</strong> (Vereinbart)`);
+              sieVerwoehntIhnAgreed.push(myLabel);
             } else if (isEr) {
               partnerOffersForMe.push({
                 title: labelSie,
@@ -3495,15 +3714,20 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         }
       });
 
-      // 2. STELLUNGEN AUSWERTEN
+      // 2. STELLUNGEN AUSWERTEN (ROBUSTER KEY-ABGLEICH)
       let matchedPositions = [];
       let agreedPositions = [];
       let openPositionWishesForMe = [];
 
       posList.forEach(pos => {
-        const posKey = pos.id.startsWith('pos_') ? pos.id : `pos_${pos.id}`;
-        const erStatus = (erP[posKey] || {}).status || 'erlaubt';
-        const sieStatus = (sieP[posKey] || {}).status || 'erlaubt';
+        const cleanId = pos.id.replace(/^(pos_)+/, '');
+        const erStatus = (erP[pos.id] || erP[`pos_${pos.id}`] || erP[`pos_${cleanId}`] || erP[`pos_pos_${cleanId}`] || {}).status || 'erlaubt';
+        const sieStatus = (sieP[pos.id] || sieP[`pos_${pos.id}`] || sieP[`pos_${cleanId}`] || sieP[`pos_pos_${cleanId}`] || {}).status || 'erlaubt';
+
+        const reqKeyEr = `pos_wish_er_${cleanId}`;
+        const reqKeySie = `pos_wish_sie_${cleanId}`;
+        const hasReactionEr = Boolean(reactions[reqKeyEr] || reactions[`pos_wish_er_${pos.id}`]);
+        const hasReactionSie = Boolean(reactions[reqKeySie] || reactions[`pos_wish_sie_${pos.id}`]);
 
         if (erStatus === 'tabu' || sieStatus === 'tabu') {
           blockedTaboos.push(`Stellung: ${pos.title || 'Gewählte Position'}`);
@@ -3511,25 +3735,25 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           matchedPositions.push(pos);
           currentMatchHighlightTitles.push('Match-Stellung');
         } else if (erStatus === 'fokus' && sieStatus !== 'tabu') {
-          const reqKey = `pos_wish_er_${pos.id}`;
-          if (reactions[reqKey]) {
+          if (hasReactionEr) {
             agreedPositions.push(pos);
+            currentMatchHighlightTitles.push('Vereinbarte Stellung');
           } else if (!isEr) {
             openPositionWishesForMe.push({
               pos: pos,
               from: getRoleName('Er'),
-              reqKey: reqKey
+              reqKey: reqKeyEr
             });
           }
         } else if (sieStatus === 'fokus' && erStatus !== 'tabu') {
-          const reqKey = `pos_wish_sie_${pos.id}`;
-          if (reactions[reqKey]) {
+          if (hasReactionSie) {
             agreedPositions.push(pos);
+            currentMatchHighlightTitles.push('Vereinbarte Stellung');
           } else if (isEr) {
             openPositionWishesForMe.push({
               pos: pos,
               from: getRoleName('Sie'),
-              reqKey: reqKey
+              reqKey: reqKeySie
             });
           }
         }
@@ -3540,8 +3764,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       // 3. IHR HÖHEPUNKT AUSWERTEN
       let sieOrgMatches = [];
       let sieOrgAgreed = [];
-      let sieOrgErWishes = [];
-      let sieOrgSieWishes = [];
+      let openSieOrgWishesForMe = [];
 
       sieOrgList.forEach(o => {
         const erStatus = (erP[`sieorg_${o.id}`] || {}).status || 'erlaubt';
@@ -3558,25 +3781,36 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         } else if (erStatus === 'fokus') {
           const reqKey = `sieorg_wish_er_${o.id}`;
           if (reactions[reqKey]) {
-            sieOrgAgreed.push(`🎁 ${myLabel}`);
+            sieOrgAgreed.push(myLabel);
+            currentMatchHighlightTitles.push(myLabel);
           } else if (!isEr) {
-            sieOrgErWishes.push({ label: labelSie, title: o.title, reqKey, from: getRoleName('Er') });
+            openSieOrgWishesForMe.push({
+              title: labelEr,
+              label: labelSie || myLabel,
+              reqKey: reqKey,
+              from: getRoleName('Er')
+            });
           }
         } else if (sieStatus === 'fokus') {
           const reqKey = `sieorg_wish_sie_${o.id}`;
           if (reactions[reqKey]) {
-            sieOrgAgreed.push(`💖 ${myLabel}`);
+            sieOrgAgreed.push(myLabel);
+            currentMatchHighlightTitles.push(myLabel);
           } else if (isEr) {
-            sieOrgSieWishes.push({ label: labelEr, title: o.title, reqKey, from: getRoleName('Sie') });
+            openSieOrgWishesForMe.push({
+              title: labelSie,
+              label: labelEr || myLabel,
+              reqKey: reqKey,
+              from: getRoleName('Sie')
+            });
           }
         }
       });
 
       // 4. SEIN FINALE / ABSPRITZ-ZONEN AUSWERTEN
       let doubleCumMatches = [];
-      let erCumWishes = [];
-      let sieCumWishes = [];
-      let cumAllowedZonen = [];
+      let cumAgreed = [];
+      let openCumWishesForMe = [];
 
       cumList.forEach(c => {
         const erC = (erP[`cum_${c.id}`] || {}).status || 'erlaubt';
@@ -3594,52 +3828,107 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
         const isSieFokus = sieC === 'fokus';
 
         if (isErFokus && isSieFokus) {
-          doubleCumMatches.push({ key: `cum_${c.id}`, title: myLabel, isDouble: true });
+          doubleCumMatches.push(myLabel);
           currentMatchHighlightTitles.push(myLabel);
         } else if (isErFokus) {
-          erCumWishes.push({ key: `cum_${c.id}`, title: myLabel, isErFav: true });
+          const reqKey = `cum_wish_er_${c.id}`;
+          if (reactions[reqKey]) {
+            cumAgreed.push(myLabel);
+            currentMatchHighlightTitles.push(myLabel);
+          } else if (!isEr) {
+            openCumWishesForMe.push({
+              title: labelEr,
+              label: labelSie || myLabel,
+              reqKey: reqKey,
+              from: getRoleName('Er'),
+              isHerBonus: false
+            });
+          }
         } else if (isSieFokus) {
-          sieCumWishes.push({ key: `cum_${c.id}`, title: myLabel, isSieFav: true });
-        } else {
-          cumAllowedZonen.push({ key: `cum_${c.id}`, title: myLabel, isNeutral: true });
+          const reqKey = `cum_wish_sie_${c.id}`;
+          if (reactions[reqKey]) {
+            cumAgreed.push(myLabel);
+            currentMatchHighlightTitles.push(myLabel);
+          } else if (isEr) {
+            openCumWishesForMe.push({
+              title: labelSie,
+              label: labelEr || myLabel,
+              reqKey: reqKey,
+              from: getRoleName('Sie'),
+              isHerBonus: true
+            });
+          }
         }
       });
 
-      cumAllowedZonen = [...doubleCumMatches, ...erCumWishes, ...sieCumWishes, ...cumAllowedZonen];
+      const hasCumAgreement = (doubleCumMatches.length > 0 || cumAgreed.length > 0);
+      const hasSieOrgAgreement = (sieOrgMatches.length > 0 || sieOrgAgreed.length > 0);
 
-      const allErVerwoehntSie = [...erVerwoehntSieMatches, ...erVerwoehntSieAgreed];
-      const allSieVerwoehntIhn = [...sieVerwoehntIhnMatches, ...sieVerwoehntIhnAgreed];
-      const hasAnyOpenImpulse = (openPositionWishesForMe.length > 0 || sieOrgSieWishes.length > 0 || sieOrgErWishes.length > 0 || openWishesForMe.length > 0 || partnerOffersForMe.length > 0);
+      // Filter: Wenn Einigkeit herrscht, werden nur noch ihre Einladungen/Boni für ihn gezeigt
+      const visibleCumWishes = openCumWishesForMe.filter(w => {
+        if (!hasCumAgreement) return true;
+        return w.isHerBonus && isEr;
+      });
+
+      const hasAnyOpenImpulse = (
+        openPositionWishesForMe.length > 0 ||
+        openSieOrgWishesForMe.length > 0 ||
+        visibleCumWishes.length > 0 ||
+        openWishesForMe.length > 0 ||
+        partnerOffersForMe.length > 0
+      );
 
       content.innerHTML = `
         <div class="space-y-4 text-xs pb-1">
 
           <!-- ============================================================== -->
-          <!-- ZONE 1: EUER FAHRPLAN FÜR HEUTE (FEST VEREINBART) -->
+          <!-- ZONE 1: EUER FAHRPLAN FÜR HEUTE (100% FEST VEREINBART) -->
           <!-- ============================================================== -->
           <div class="space-y-3">
             <div class="flex items-center gap-2 pb-1 border-b border-purple-500/30">
               <span class="text-sm">📋</span>
-              <span class="text-xs font-black uppercase tracking-wider text-purple-200">Euer Abend-Fahrplan:</span>
+              <span class="text-xs font-black uppercase tracking-wider text-purple-200">Fest vereinbart:</span>
             </div>
 
             <!-- CHRONOLOGIE 1: AUFTAKT & VERWÖHNEN -->
-            ${(allErVerwoehntSie.length > 0 || allSieVerwoehntIhn.length > 0) ? `
+            ${(erVerwoehntSieMatches.length > 0 || erVerwoehntSieAgreed.length > 0 || sieVerwoehntIhnMatches.length > 0 || sieVerwoehntIhnAgreed.length > 0) ? `
               <div class="space-y-2">
-                ${allErVerwoehntSie.length > 0 ? `
+                ${(erVerwoehntSieMatches.length > 0 || erVerwoehntSieAgreed.length > 0) ? `
                   <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-1.5">
                     <span class="text-[10px] font-bold text-rose-300 uppercase tracking-wider block">👑 ${getRoleName('Er')} verwöhnt ${getRoleName('Sie')}:</span>
-                    <div class="text-[11px] text-slate-100 space-y-1">
-                      ${allErVerwoehntSie.map(item => `<div class="bg-slate-900/90 p-2 rounded-xl border border-slate-855">${item}</div>`).join('')}
+                    <div class="space-y-1.5">
+                      ${erVerwoehntSieMatches.map(m => `
+                        <div class="bg-gradient-to-r from-amber-950/70 to-slate-900 border border-amber-400/80 p-2 rounded-xl text-amber-100 font-bold text-xs flex items-center justify-between shadow-md">
+                          <span>${m}</span>
+                          <span class="text-[9px] bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded font-black uppercase">⭐ Beide</span>
+                        </div>
+                      `).join('')}
+                      ${erVerwoehntSieAgreed.map(a => `
+                        <div class="bg-slate-900/90 border border-purple-500/50 p-2 rounded-xl text-purple-200 text-xs font-semibold flex items-center justify-between">
+                          <span>${a}</span>
+                          <span class="text-[9px] bg-purple-950 text-purple-300 border border-purple-700/50 px-1.5 py-0.5 rounded font-bold">💖 Vereinbart</span>
+                        </div>
+                      `).join('')}
                     </div>
                   </div>
                 ` : ''}
 
-                ${allSieVerwoehntIhn.length > 0 ? `
+                ${(sieVerwoehntIhnMatches.length > 0 || sieVerwoehntIhnAgreed.length > 0) ? `
                   <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-1.5">
                     <span class="text-[10px] font-bold text-purple-300 uppercase tracking-wider block">👑 ${getRoleName('Sie')} verwöhnt ${getRoleName('Er')}:</span>
-                    <div class="text-[11px] text-slate-100 space-y-1">
-                      ${allSieVerwoehntIhn.map(item => `<div class="bg-slate-900/90 p-2 rounded-xl border border-slate-855">${item}</div>`).join('')}
+                    <div class="space-y-1.5">
+                      ${sieVerwoehntIhnMatches.map(m => `
+                        <div class="bg-gradient-to-r from-amber-950/70 to-slate-900 border border-amber-400/80 p-2 rounded-xl text-amber-100 font-bold text-xs flex items-center justify-between shadow-md">
+                          <span>${m}</span>
+                          <span class="text-[9px] bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded font-black uppercase">⭐ Beide</span>
+                        </div>
+                      `).join('')}
+                      ${sieVerwoehntIhnAgreed.map(a => `
+                        <div class="bg-slate-900/90 border border-purple-500/50 p-2 rounded-xl text-purple-200 text-xs font-semibold flex items-center justify-between">
+                          <span>${a}</span>
+                          <span class="text-[9px] bg-purple-950 text-purple-300 border border-purple-700/50 px-1.5 py-0.5 rounded font-bold">💖 Vereinbart</span>
+                        </div>
+                      `).join('')}
                     </div>
                   </div>
                 ` : ''}
@@ -3652,18 +3941,23 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
             <!-- CHRONOLOGIE 2: EURE STELLUNGEN -->
             ${allActivePositions.length > 0 ? `
-              <div class="bg-slate-950/80 border ${matchedPositions.length > 0 ? 'border-amber-500/50 glow-amber' : 'border-slate-800'} rounded-2xl p-3 space-y-2">
+              <div class="bg-slate-950/80 border ${matchedPositions.length > 0 ? 'border-amber-500/60 glow-amber' : 'border-slate-800'} rounded-2xl p-3 space-y-2">
                 <span class="text-[10px] font-bold text-amber-300 uppercase tracking-wider block">🖼️ Eure Stellungen für heute:</span>
                 <div class="space-y-2">
                   ${allActivePositions.map(pos => {
                     const isBoth = matchedPositions.some(p => p.id === pos.id);
                     return `
-                      <div onclick="openPositionDetailModal('${pos.image}')" class="bg-slate-900/90 hover:bg-slate-850 border border-slate-800 p-2 rounded-xl flex items-center gap-3 cursor-pointer active:scale-[0.99] transition-all">
+                      <div onclick="openPositionDetailModal('${pos.image}')" class="bg-slate-900/90 hover:bg-slate-850 border ${isBoth ? 'border-amber-400/70' : 'border-slate-800'} p-2 rounded-xl flex items-center gap-3 cursor-pointer active:scale-[0.99] transition-all">
                         <img src="${pos.image}" alt="Stellung" class="w-14 h-14 object-contain bg-slate-950 rounded-lg p-1 shrink-0 border border-slate-800">
                         <div class="min-w-0 flex-1">
-                          <span class="text-xs text-amber-200 font-bold block">${isBoth ? '⭐ Match-Stellung (Beide)' : '💖 Vereinbarte Stellung'}</span>
-                          <span class="text-[10px] text-slate-400 mt-0.5 block">Tippen für Großansicht 🔍</span>
+                          <span class="text-xs ${isBoth ? 'text-amber-200 font-bold' : 'text-purple-200 font-semibold'} block truncate">
+                            ${isBoth ? '⭐ Match-Stellung' : '💖 Vereinbarte Stellung'}
+                          </span>
+                          <span class="text-[9px] text-slate-400 mt-0.5 block">Tippen für Großansicht 🔍</span>
                         </div>
+                        <span class="text-[9px] ${isBoth ? 'bg-amber-400 text-slate-950 font-black' : 'bg-purple-950 text-purple-300 border border-purple-700/50 font-bold'} px-1.5 py-0.5 rounded uppercase shrink-0">
+                          ${isBoth ? '⭐ Beide' : '💖 Vereinbart'}
+                        </span>
                       </div>
                     `;
                   }).join('')}
@@ -3673,85 +3967,60 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
             <!-- CHRONOLOGIE 3: DAS FINALE (IHR HÖHEPUNKT & SEIN ABSPRITZ-ORT) -->
             <div class="space-y-2">
-              <!-- IHR ORGASMUS (FEST VEREINBART) -->
+              <!-- IHR ORGASMUS (NUR VEREINBARTES / VOLLTREFFER) -->
               <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-1.5">
                 <span class="text-[10px] font-bold text-pink-300 uppercase tracking-wider block">👑 Ihr Höhepunkt (Wie sie kommt):</span>
                 ${(sieOrgMatches.length > 0 || sieOrgAgreed.length > 0) ? `
-                  <div class="space-y-1">
+                  <div class="space-y-1.5">
                     ${sieOrgMatches.map(item => `
-                      <div class="bg-gradient-to-r from-pink-950/80 to-rose-950/80 border border-pink-400/80 p-2 rounded-xl text-pink-100 font-bold text-xs flex items-center justify-between">
-                        <span>⭐ Volltreffer: ${item}</span>
-                        <span class="text-[9px] bg-pink-400 text-slate-950 px-1.5 py-0.5 rounded font-black">Beide</span>
+                      <div class="bg-gradient-to-r from-amber-950/70 to-slate-900 border border-amber-400/80 p-2 rounded-xl text-amber-100 font-bold text-xs flex items-center justify-between shadow-md">
+                        <span>⭐ ${item}</span>
+                        <span class="text-[9px] bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded font-black uppercase">⭐ Beide</span>
                       </div>
                     `).join('')}
                     ${sieOrgAgreed.map(item => `
-                      <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl text-pink-200 text-xs font-semibold flex items-center justify-between">
-                        <span>${item}</span>
-                        <span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700/50 px-1.5 py-0.5 rounded font-bold">Vereinbart</span>
+                      <div class="bg-slate-900/90 border border-pink-500/50 p-2 rounded-xl text-pink-200 text-xs font-semibold flex items-center justify-between">
+                        <span>💖 ${item}</span>
+                        <span class="text-[9px] bg-pink-950 text-pink-300 border border-pink-700/50 px-1.5 py-0.5 rounded font-bold">Vereinbart</span>
                       </div>
                     `).join('')}
                   </div>
                 ` : `
                   <div class="text-[11px] text-slate-400 italic bg-slate-900/50 p-2 rounded-xl">
-                    Alle Methoden freigegeben – lasst euch im Moment leiten! ✨
+                    Noch kein fester Plan – lasst euch im Moment leiten! ✨
                   </div>
                 `}
               </div>
 
-              <!-- SEIN FINALE / ABSPRITZ-ZONEN -->
-              <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-2">
-                <div class="flex justify-between items-center">
-                  <span class="text-[10px] font-bold text-amber-300 uppercase tracking-wider block">💦 Sein Finale (Abspritz-Zonen):</span>
-                  ${isEr ? `<span class="text-[9px] text-amber-400/80 italic">Tippen zum Wechseln</span>` : ''}
-                </div>
-
-                <!-- MINI-LEGENDE -->
-                <div class="flex items-center gap-2 text-[10px] text-slate-400 pb-1 border-b border-slate-855 font-medium">
-                  <span class="flex items-center gap-1 text-amber-300 font-bold"><span>⭐</span> <span>Beide</span></span>
-                  <span>·</span>
-                  <span class="flex items-center gap-1 text-amber-400 font-bold"><span>🎯</span> <span>${getRoleName('Er')}</span></span>
-                  <span>·</span>
-                  <span class="flex items-center gap-1 text-pink-400 font-bold"><span>💖</span> <span>${getRoleName('Sie')}</span></span>
-                </div>
-
-                <!-- ZONEN-BUTTONS MIT EINDEUTIGEN BADGES -->
-                ${cumAllowedZonen.length > 0 ? `
-                  <div class="flex flex-wrap gap-1.5 pt-0.5">
-                    ${cumAllowedZonen.map(z => {
-                      let borderClass = '';
-                      let badgeHtml = '';
-
-                      if (z.isDouble) {
-                        borderClass = 'bg-amber-400 border-amber-300 text-slate-950 font-black shadow glow-amber';
-                        badgeHtml = `<span class="text-[9px] bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded-md font-black">⭐ Beide</span>`;
-                      } else if (z.isErFav) {
-                        borderClass = 'bg-amber-950/80 border-amber-500 text-amber-200 font-bold shadow';
-                        badgeHtml = `<span class="text-[9px] bg-amber-900 text-amber-300 border border-amber-600/50 px-1.5 py-0.5 rounded-md font-bold">🎯 ${getRoleName('Er')}</span>`;
-                      } else if (z.isSieFav) {
-                        borderClass = 'bg-pink-950/80 border-pink-500 text-pink-200 font-bold shadow';
-                        badgeHtml = `<span class="text-[9px] bg-pink-900 text-pink-300 border border-pink-600/50 px-1.5 py-0.5 rounded-md font-bold">💖 ${getRoleName('Sie')}</span>`;
-                      } else {
-                        borderClass = isEr 
-                          ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-amber-500 cursor-pointer' 
-                          : 'bg-slate-900 border-slate-800 text-slate-300 cursor-default';
-                      }
-
-                      return `
-                        <button type="button" ${isEr ? `onclick="changeErCumFocusDirectly('${z.key}', '${z.title}')"` : ''} 
-                          class="px-2.5 py-1.5 rounded-xl text-[10px] border transition-all flex items-center gap-1.5 ${borderClass}">
-                          <span>${z.title}</span>
-                          ${badgeHtml}
-                        </button>
-                      `;
-                    }).join('')}
+              <!-- SEIN FINALE / ABSPRITZ-ORT (NUR VEREINBARTES / VOLLTREFFER) -->
+              <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-1.5">
+                <span class="text-[10px] font-bold text-amber-300 uppercase tracking-wider block">💦 Sein Finale (Wo er abspritzt):</span>
+                ${(doubleCumMatches.length > 0 || cumAgreed.length > 0) ? `
+                  <div class="space-y-1.5">
+                    ${doubleCumMatches.map(item => `
+                      <div class="bg-gradient-to-r from-amber-950/70 to-slate-900 border border-amber-400/80 p-2 rounded-xl text-amber-100 font-bold text-xs flex items-center justify-between shadow-md">
+                        <span>⭐ ${item}</span>
+                        <span class="text-[9px] bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded font-black uppercase">⭐ Beide</span>
+                      </div>
+                    `).join('')}
+                    ${cumAgreed.map(item => `
+                      <div class="bg-slate-900/90 border border-amber-500/50 p-2 rounded-xl text-amber-200 text-xs font-semibold flex items-center justify-between">
+                        <span>💖 ${item}</span>
+                        <span class="text-[9px] bg-amber-950 text-amber-300 border border-amber-700/50 px-1.5 py-0.5 rounded font-bold">Vereinbart</span>
+                      </div>
+                    `).join('')}
                   </div>
-                ` : ''}
+                ` : `
+                  <div class="text-[11px] text-slate-400 italic bg-slate-900/50 p-2 rounded-xl">
+                    Noch kein fester Ort gewählt – spontan entscheiden! ✨
+                  </div>
+                `}
               </div>
             </div>
           </div>
 
           <!-- ============================================================== -->
-          <!-- ZONE 2: OFFENE IMPULSE DEINES PARTNERS (TIPPEN ZUR BESTÄTIGUNG) -->
+          <!-- ZONE 2: OFFENE IMPULSE DEINES PARTNERS (REIHENFOLGE ANGEPASST) -->
           <!-- ============================================================== -->
           ${hasAnyOpenImpulse ? `
             <div class="bg-slate-950/90 border border-purple-500/40 rounded-2xl p-3.5 space-y-3">
@@ -3760,9 +4029,39 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                 <span class="text-xs font-black uppercase tracking-wider text-purple-200">Noch offene Wünsche deines Partners:</span>
               </div>
 
-              <!-- OFFENE STELLUNGS-WÜNSCHE -->
-              ${openPositionWishesForMe.length > 0 ? `
+              <!-- 1. VERWÖHN-ANGEBOTE -->
+              ${partnerOffersForMe.length > 0 ? `
                 <div class="space-y-1.5">
+                  <span class="text-[10px] font-bold text-rose-300 block">Verwöhn-Angebot:</span>
+                  <div class="space-y-1.5">
+                    ${partnerOffersForMe.map(o => `
+                      <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
+                        <span class="text-xs text-rose-200 font-semibold truncate flex-1">🎁 ${o.title}</span>
+                        ${renderTargetedReactionButton(o.reqKey, '🔥 Ooh ja!', true, o.label, true)}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- 2. PRAKTIK-WÜNSCHE -->
+              ${openWishesForMe.length > 0 ? `
+                <div class="space-y-1.5 pt-0.5">
+                  <span class="text-[10px] font-bold text-purple-300 block">Praktik-Wunsch:</span>
+                  <div class="space-y-1.5">
+                    ${openWishesForMe.map(w => `
+                      <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
+                        <span class="text-xs text-slate-200 font-semibold truncate flex-1">🧘 ${w.title}</span>
+                        ${renderTargetedReactionButton(w.reqKey, '✨ Sehr gerne!', true, w.label, false)}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- 3. STELLUNGS-WÜNSCHE -->
+              ${openPositionWishesForMe.length > 0 ? `
+                <div class="space-y-1.5 pt-0.5">
                   <span class="text-[10px] font-bold text-amber-300 block">Stellungs-Wunsch:</span>
                   <div class="space-y-1.5">
                     ${openPositionWishesForMe.map(item => `
@@ -3781,50 +4080,44 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
                 </div>
               ` : ''}
 
-              <!-- OFFENE ORGASMUS-WÜNSCHE -->
-              ${(sieOrgSieWishes.length > 0 || sieOrgErWishes.length > 0) ? `
+              <!-- 4. IHRE HÖHEPUNKT-WÜNSCHE (WIE SIE KOMMT) -->
+              ${openSieOrgWishesForMe.length > 0 ? `
                 <div class="space-y-1.5 pt-0.5">
-                  <span class="text-[10px] font-bold text-pink-300 block">Höhepunkt-Impuls:</span>
+                  <span class="text-[10px] font-bold text-pink-300 block">
+                    ${hasSieOrgAgreement ? '➕ Zusätzlicher Höhepunkt-Wunsch / Ergänzung:' : 'Höhepunkt-Wunsch (Wie sie kommt):'}
+                  </span>
                   <div class="space-y-1.5">
-                    ${sieOrgSieWishes.map(w => `
+                    ${openSieOrgWishesForMe.map(w => `
                       <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
-                        <span class="text-xs text-pink-200 font-semibold truncate flex-1">💖 Wunsch: ${w.label}</span>
+                        <div class="min-w-0 flex-1">
+                          <span class="text-xs text-pink-200 font-semibold block truncate">👑 ${w.label}</span>
+                          <span class="text-[9px] text-slate-400">
+                            ${hasSieOrgAgreement ? `Zusätzlicher Wunsch von ${w.from}` : `Vorschlag von ${w.from}`}
+                          </span>
+                        </div>
                         ${renderTargetedReactionButton(w.reqKey, '🔥 Sehr gerne!', true, w.title, false)}
                       </div>
                     `).join('')}
-                    ${sieOrgErWishes.map(w => `
-                      <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
-                        <span class="text-xs text-purple-200 font-semibold truncate flex-1">👑 Angebot: ${w.label}</span>
-                        ${renderTargetedReactionButton(w.reqKey, '🔥 Ooh ja!', true, w.title, true)}
-                      </div>
-                    `).join('')}
                   </div>
                 </div>
               ` : ''}
 
-              <!-- OFFENE PRAKTIK-WÜNSCHE & ANGEBOTE -->
-              ${openWishesForMe.length > 0 ? `
+              <!-- 5. ABSPRITZ-WÜNSCHE (WO ER KOMMT / IHRE EINLADUNGEN) -->
+              ${visibleCumWishes.length > 0 ? `
                 <div class="space-y-1.5 pt-0.5">
-                  <span class="text-[10px] font-bold text-purple-300 block">Praktik-Wunsch:</span>
+                  <span class="text-[10px] font-bold text-amber-300 block">
+                    ${hasCumAgreement ? '🎁 Erotische Einladung / Bonus von ihr:' : 'Abspritz-Wunsch (Wo er kommt):'}
+                  </span>
                   <div class="space-y-1.5">
-                    ${openWishesForMe.map(w => `
-                      <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
-                        <span class="text-xs text-slate-200 font-semibold truncate flex-1">🧘 ${w.title}</span>
-                        ${renderTargetedReactionButton(w.reqKey, '✨ Sehr gerne!', true, w.label, false)}
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-              ` : ''}
-
-              ${partnerOffersForMe.length > 0 ? `
-                <div class="space-y-1.5 pt-0.5">
-                  <span class="text-[10px] font-bold text-rose-300 block">Verwöhn-Angebot:</span>
-                  <div class="space-y-1.5">
-                    ${partnerOffersForMe.map(o => `
-                      <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex items-center justify-between gap-2">
-                        <span class="text-xs text-rose-200 font-semibold truncate flex-1">🎁 ${o.title}</span>
-                        ${renderTargetedReactionButton(o.reqKey, '🔥 Ooh ja!', true, o.label, true)}
+                    ${visibleCumWishes.map(w => `
+                      <div class="bg-slate-900/90 border ${w.isHerBonus ? 'border-amber-500/60 glow-amber' : 'border-slate-800'} p-2.5 rounded-xl flex items-center justify-between gap-2">
+                        <div class="min-w-0 flex-1">
+                          <span class="text-xs text-amber-200 font-semibold block truncate">🎯 ${w.label}</span>
+                          <span class="text-[9px] ${w.isHerBonus ? 'text-amber-400 font-bold' : 'text-slate-400'}">
+                            ${w.isHerBonus ? `🎁 Sie hat sich das zusätzlich gewünscht!` : `Wunsch von ${w.from}`}
+                          </span>
+                        </div>
+                        ${renderTargetedReactionButton(w.reqKey, w.isHerBonus ? '🔥 Sehr gerne annehmen!' : '🔥 Einverstanden!', true, w.title, false)}
                       </div>
                     `).join('')}
                   </div>
@@ -5416,6 +5709,62 @@ function requestAllSyncsFromPartner() {
       drawCurrentTurnCard();
     } else {
       updateRoleVisuals(state.game.currentTurn, state.game.isCriticalHit);
+    }
+
+    // Biometrischen Lockscreen initialisieren
+    AppLock.init();
+
+    // =========================================================================
+    // LIVE-FEEDBACK & TYPING ENGINE
+    // =========================================================================
+    let typingTimer = null;
+
+    function handleMyTyping() {
+      LiveStream.sendData({ type: 'typing_start' });
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => {
+        LiveStream.sendData({ type: 'typing_stop' });
+      }, 1500);
+    }
+
+    function showPartnerTyping(isTyping) {
+      const indicator = document.getElementById('partner-typing-indicator');
+      const textSpan = document.getElementById('shoutbox-header-text');
+      if (indicator && textSpan) {
+        indicator.classList.toggle('hidden', !isTyping);
+        textSpan.classList.toggle('hidden', isTyping);
+      }
+    }
+
+    function updatePartnerOnlineStatusUI(isOnline) {
+      const dot = document.getElementById('partner-online-dot');
+      if (dot) {
+        dot.classList.toggle('hidden', !isOnline);
+      }
+    }
+
+    function updateMessageReadStatus(msgId) {
+      // Markiert die Nachricht intern als gelesen (kann für Häkchen genutzt werden)
+      const msg = (state.shoutboxMessages || []).find(m => m.id === msgId);
+      if (msg) {
+        msg.read = true;
+        renderAllShoutboxes();
+      }
+    }
+
+    // Spontan-Signal Öffnungs-Erkennung erweitern
+    function toggleCravingReveal() {
+      const locked = document.getElementById('craving-locked-view');
+      const hidden = document.getElementById('craving-hidden-view');
+      if (locked && hidden) {
+        locked.classList.toggle('hidden');
+        hidden.classList.toggle('hidden');
+        
+        // Wenn ich das Signal vom Partner aufdecke, benachrichtige ihn live!
+        if (state.activeCraving && state.activeCraving.from !== state.currentUser) {
+          LiveStream.sendData({ type: 'craving_opened' });
+        }
+      }
     }
 
     // Beim allerersten Start automatisch das Profil-Setup öffnen
