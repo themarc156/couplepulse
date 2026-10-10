@@ -8,6 +8,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>CouplePulse</title>
+  <link rel="manifest" href="/manifest.json">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- PeerJS für P2P WebRTC Streaming & Live-Datensync -->
@@ -79,6 +80,32 @@
   </style>
 </head>
 <body class="bg-slate-900 md:bg-black text-slate-100 h-[100dvh] overflow-hidden font-sans select-none antialiased flex justify-center items-start">
+
+  <!-- ================================================================= -->
+  <!-- BIOMETRISCHER APP-LOCKSCREEN (FINGERABDRUCK / FACE-ID / PIN) -->
+  <!-- ================================================================= -->
+  <div id="app-lockscreen" class="hidden fixed inset-0 bg-slate-950/98 backdrop-blur-xl z-50 flex items-center justify-center p-6 select-none">
+    <div class="bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 border-rose-500/60 w-full max-w-sm rounded-3xl p-6 space-y-5 shadow-2xl glow-rose text-center">
+      <div class="space-y-2">
+        <span class="text-4xl block animate-pulse">🔒</span>
+        <h2 class="text-lg font-black uppercase tracking-wider text-purple-200">CouplePulse gesperrt</h2>
+        <p class="text-xs text-slate-400 leading-snug">Zur Entsperrung bitte Fingerabdruck oder PIN verwenden.</p>
+      </div>
+
+      <div class="space-y-2.5">
+        <button id="btn-biometric-unlock" onclick="AppLock.authenticateBiometric()" class="w-full py-3.5 bg-gradient-to-r from-rose-600 via-purple-600 to-pink-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg glow-rose active:scale-95 transition-all flex items-center justify-center gap-2">
+          <span class="text-lg">👆</span> <span>Mit Fingerabdruck entsperren</span>
+        </button>
+
+        <div class="pt-2 border-t border-slate-800 space-y-2">
+          <input id="lock-pin-input" type="password" placeholder="Paar-PIN eingeben..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-center text-xs text-slate-200 tracking-widest font-mono focus:outline-none focus:border-purple-500">
+          <button onclick="AppLock.unlockWithPin()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs rounded-xl active:scale-95 transition-all">
+            Mit PIN entsperren
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ================================================================= -->
   <!-- SINGLE PAGE APP CONTAINER -->
@@ -1165,6 +1192,137 @@ wishesUpdatedAt: 0,   // NEU: Zeitstempel für Wünsche
     // (toggleAudioMute entfernt)
 
     function triggerHaptic(pattern = 100) { if (navigator.vibrate) navigator.vibrate(pattern); }
+
+    // =========================================================================
+    // BIOMETRISCHE APP-SPERRE (WEBAUTHN FINGERABDRUCK / FACE-ID)
+    // =========================================================================
+    const AppLock = {
+      isLocked: true,
+
+      async isBiometricAvailable() {
+        return window.PublicKeyCredential && 
+               await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      },
+
+      async enableBiometrics() {
+        if (!await this.isBiometricAvailable()) {
+          showToast("⚠️ Nicht unterstützt", "Dein Gerät unterstützt keine Web-Biometrie.", "⚙️");
+          return false;
+        }
+
+        try {
+          const challenge = new Uint8Array(32);
+          crypto.getRandomValues(challenge);
+
+          const credential = await navigator.credentials.create({
+            publicKey: {
+              challenge: challenge,
+              rp: { name: "CouplePulse", id: window.location.hostname },
+              user: {
+                id: new TextEncoder().encode(state.coupleKey || "user"),
+                name: state.currentUser || "user",
+                displayName: getMyName()
+              },
+              pubKeyCredParams: [
+                { alg: -7, type: "public-key" },  // ES256
+                { alg: -257, type: "public-key" } // RS256
+              ],
+              authenticatorSelection: {
+                authenticatorAttachment: "platform",
+                userVerification: "required"
+              },
+              timeout: 60000
+            }
+          });
+
+          if (credential) {
+            localStorage.setItem("cp_bio_id", btoa(String.fromCharCode(...new Uint8Array(credential.rawId))));
+            localStorage.setItem("cp_bio_enabled", "true");
+            showToast("✨ Fingerabdruck aktiviert", "App ist jetzt biometrisch geschützt.", "🔒");
+            return true;
+          }
+        } catch (e) {
+          showToast("⚠️ Abgebrochen", "Biometrie-Einrichtung fehlgeschlagen: " + e.message, "🔒");
+        }
+        return false;
+      },
+
+      async authenticateBiometric() {
+        const rawIdBase64 = localStorage.getItem("cp_bio_id");
+        if (!rawIdBase64) {
+          // Falls noch nicht eingerichtet, jetzt initialisieren
+          const ok = await this.enableBiometrics();
+          if (ok) this.unlock();
+          return;
+        }
+
+        try {
+          const rawId = Uint8Array.from(atob(rawIdBase64), c => c.charCodeAt(0));
+          const challenge = new Uint8Array(32);
+          crypto.getRandomValues(challenge);
+
+          const assertion = await navigator.credentials.get({
+            publicKey: {
+              challenge: challenge,
+              rpId: window.location.hostname,
+              allowCredentials: [{ id: rawId, type: "public-key" }],
+              userVerification: "required",
+              timeout: 60000
+            }
+          });
+
+          if (assertion) {
+            this.unlock();
+          }
+        } catch (e) {
+          showToast("⚠️ Fehler", "Fingerabdruck nicht erkannt.", "🔒");
+        }
+      },
+
+      unlockWithPin() {
+        const input = document.getElementById("lock-pin-input");
+        const entered = input ? input.value.trim().toLowerCase() : "";
+        const expected = (state.coupleKey || "unser-paar-code").trim().toLowerCase();
+
+        if (entered && entered === expected) {
+          if (input) input.value = "";
+          this.unlock();
+        } else {
+          showToast("❌ Falscher PIN", "Der Paar-PIN stimmt nicht überein.", "🔒");
+        }
+      },
+
+      lock() {
+        this.isLocked = true;
+        const screen = document.getElementById("app-lockscreen");
+        if (screen) screen.classList.remove("hidden");
+      },
+
+      unlock() {
+        this.isLocked = false;
+        const screen = document.getElementById("app-lockscreen");
+        if (screen) screen.classList.add("hidden");
+        playSensualSound("chime");
+      },
+
+      init() {
+        // App sperren, sobald sie konfiguriert ist
+        if (state.isConfigured) {
+          this.lock();
+          // Automatisch Biometrie-Dialog aufrufen
+          setTimeout(() => {
+            this.authenticateBiometric();
+          }, 300);
+        }
+
+        // Wenn die App in den Hintergrund wechselt und wiederkehrt -> sofort neu sperren
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden && state.isConfigured) {
+            this.lock();
+          }
+        });
+      }
+    };
 
     // =========================================================================
     // STORAGE & PERSISTENZ
@@ -5502,6 +5660,9 @@ function requestAllSyncsFromPartner() {
     } else {
       updateRoleVisuals(state.game.currentTurn, state.game.isCriticalHit);
     }
+
+    // Biometrischen Lockscreen initialisieren
+    AppLock.init();
 
     // Beim allerersten Start automatisch das Profil-Setup öffnen
     if (!state.isConfigured) {

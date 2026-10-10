@@ -10,7 +10,10 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+    maxAge: '30d',
+    etag: true
+}));
 
 // API-Route für den Status
 app.get('/api/status', (req, res) => {
