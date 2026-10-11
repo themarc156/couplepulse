@@ -70,10 +70,13 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* PWA App-Modus Optimierungen für bessere Lesbarkeit */
+    /* PWA App-Modus & generelle Lesbarkeits-Optimierung */
+    body {
+      font-size: 108%; /* Erhöht die generelle Lesbarkeit in allen Bereichen */
+    }
     @media all and (display-mode: standalone) {
       body {
-        font-size: 105%; /* Sanfter globaler Zoom für den Vollbild-App-Modus */
+        font-size: 112%; 
       }
     }
 
@@ -331,13 +334,13 @@
         <div id="home-shoutbox-messages" class="space-y-2 flex-1 min-h-0 overflow-y-auto text-xs my-2 no-scrollbar"></div>
 
         <!-- EINGABEZEILE MIT TYPING-EVENT -->
-        <div class="pt-1.5 border-t border-slate-800/80 shrink-0">
-          <div class="flex gap-1.5 items-center">
+        <div class="pt-2 border-t border-slate-800/80 shrink-0">
+          <div class="flex gap-2 items-center">
             <input id="home-shout-input" 
                    oninput="handleMyTyping()"
                    onkeydown="if(event.key==='Enter'){event.preventDefault();sendShoutboxMessage('home-shout-input');}" 
-                   type="text" placeholder="Flüsternachricht, Emojis oder Gedanke..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
-            <button onclick="sendShoutboxMessage('home-shout-input')" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-[0.98]">Senden</button>
+                   type="text" placeholder="Flüsternachricht, Emojis oder Gedanke..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-purple-500">
+            <button onclick="sendShoutboxMessage('home-shout-input')" class="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs rounded-xl shadow active:scale-[0.98]">Senden</button>
           </div>
         </div>
       </section>
@@ -399,8 +402,8 @@
       </div>
 
       <!-- KARTEN-CONTAINER -->
-      <div class="my-auto flex-1 min-h-0 flex items-center justify-center w-full">
-        <div id="active-card-face" class="w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/70 rounded-3xl p-4 space-y-2.5 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[240px] transition-all">
+          <div class="my-auto flex-1 min-h-0 flex items-center justify-center w-full">
+            <div id="active-card-face" class="w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/70 rounded-3xl p-5 space-y-3 shadow-2xl glow-amber text-center flex flex-col justify-between min-h-[260px] transition-all">
           
           <!-- DYNAMISCHE SCOREBOARD-ANZEIGETAFEL -->
           <div id="card-direction-bar" onclick="toggleActiveTurnManual()" class="bg-slate-950/95 border border-amber-500/40 rounded-2xl p-2 flex items-center justify-between gap-2 text-xs font-black tracking-wide cursor-pointer hover:scale-[1.01] active:scale-95 transition-all shrink-0 select-none shadow-lg" title="Tippen um Rollen zu tauschen">
@@ -464,21 +467,21 @@
               <div id="post-draw-prompt" class="text-[10px] font-bold text-center text-slate-300 uppercase tracking-wider">
                 Wie intensiv war es für <span id="post-draw-receiver-name" class="text-rose-400 font-black">Sie</span>?
               </div>
-              <div class="grid grid-cols-3 gap-1.5">
-                <button onclick="rateAndCompleteCard(1)" class="py-2.5 px-1 bg-slate-900 hover:bg-slate-850 border border-indigo-500/50 rounded-xl text-indigo-200 font-bold text-xs flex flex-col items-center gap-0.5 active:scale-95 transition-all shadow">
+              <div class="grid grid-cols-3 gap-2">
+                <button onclick="rateAndCompleteCard(1)" class="py-3 px-1 bg-slate-900 hover:bg-slate-850 border border-indigo-500/50 rounded-xl text-indigo-200 font-bold text-sm flex flex-col items-center gap-0.5 active:scale-95 transition-all shadow">
                   <span>✨ Nett</span>
-                  <span id="rate-score-1" class="text-[10px] text-indigo-400 font-mono">+1 ⚡</span>
+                  <span id="rate-score-1" class="text-xs text-indigo-400 font-mono">+1 ⚡</span>
                 </button>
-                <button onclick="rateAndCompleteCard(2)" class="py-2.5 px-1 bg-amber-950/60 hover:bg-amber-900/70 border border-amber-500/60 rounded-xl text-amber-200 font-bold text-xs flex flex-col items-center gap-0.5 active:scale-95 transition-all shadow-lg glow-amber">
+                <button onclick="rateAndCompleteCard(2)" class="py-3 px-1 bg-amber-950/60 hover:bg-amber-900/70 border border-amber-500/60 rounded-xl text-amber-200 font-bold text-sm flex flex-col items-center gap-0.5 active:scale-95 transition-all shadow-lg glow-amber">
                   <span>🔥 Heiß</span>
-                  <span id="rate-score-2" class="text-[10px] text-amber-400 font-mono">+2 ⚡</span>
+                  <span id="rate-score-2" class="text-xs text-amber-400 font-mono">+2 ⚡</span>
                 </button>
-                <button onclick="rateAndCompleteCard(3)" class="py-2.5 px-1 bg-rose-950/60 hover:bg-rose-900/70 border border-rose-500/60 rounded-xl text-rose-200 font-bold text-xs flex flex-col items-center gap-0.5 active:scale-95 transition-all shadow-lg glow-rose">
+                <button onclick="rateAndCompleteCard(3)" class="py-3 px-1 bg-rose-950/60 hover:bg-rose-900/70 border border-rose-500/60 rounded-xl text-rose-200 font-bold text-sm flex flex-col items-center gap-0.5 active:scale-95 transition-all shadow-lg glow-rose">
                   <span>🌋 Ekstase</span>
-                  <span id="rate-score-3" class="text-[10px] text-rose-400 font-mono">+3 ⚡</span>
+                  <span id="rate-score-3" class="text-xs text-rose-400 font-mono">+3 ⚡</span>
                 </button>
               </div>
-              <button onclick="skipCurrentCard()" class="w-full py-2.5 bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95">
+              <button onclick="skipCurrentCard()" class="w-full py-3 bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95">
                 <span>⏭️</span> <span>Aufgabe überspringen (0 Punkte)</span>
               </button>
             </div>
