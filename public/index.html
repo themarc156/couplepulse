@@ -19,6 +19,11 @@
       darkMode: 'class',
       theme: {
         extend: {
+          fontSize: {
+            'xs': ['0.8rem', { lineHeight: '1.1rem' }],    // von 0.75rem auf 0.8rem (ca. 13px)
+            'sm': ['0.92rem', { lineHeight: '1.25rem' }],  // von 0.875rem auf 0.92rem (ca. 15px)
+            'base': ['1rem', { lineHeight: '1.5rem' }],
+          },
           colors: {
             brand: { 500: '#f43f5e', 600: '#e11d48', 900: '#881337' },
             slate: { 850: '#151f32', 855: '#111a2c' }
@@ -70,13 +75,14 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* PWA App-Modus & generelle Lesbarkeits-Optimierung */
+    /* PWA App-Modus & generelle Lesbarkeits-Optimierung (Perfekt skaliert) */
     body {
-      font-size: 108%; /* Erhöht die generelle Lesbarkeit in allen Bereichen */
+      font-size: 110%; 
+      -webkit-text-size-adjust: 100%;
     }
     @media all and (display-mode: standalone) {
       body {
-        font-size: 112%; 
+        font-size: 114%; 
       }
     }
 
