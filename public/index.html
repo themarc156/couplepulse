@@ -2728,12 +2728,7 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
       if (!homeBox) return;
 
       if (messages.length === 0) {
-        homeBox.innerHTML = `
-          <div class="text-slate-500 italic text-center py-6 text-xs flex flex-col items-center justify-center gap-1.5 h-full opacity-60">
-            <span class="text-2xl animate-pulse">✨</span>
-            <span>Eure private Flüsterbox ist bereit.<br>Hinterlasst euch Gedanken, Küsse & Signale!</span>
-          </div>
-        `;
+        homeBox.innerHTML = '';
         return;
       }
 
