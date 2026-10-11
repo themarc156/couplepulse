@@ -2,7 +2,7 @@
 <html lang="de" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content, shrink-to-fit=no">
   <meta name="theme-color" content="#020617">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -68,6 +68,13 @@
     /* Scrollbars unsichtbar halten bei voller Scroll-Funktion */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* PWA App-Modus Optimierungen für bessere Lesbarkeit */
+    @media all and (display-mode: standalone) {
+      body {
+        font-size: 105%; /* Sanfter globaler Zoom für den Vollbild-App-Modus */
+      }
+    }
 
     /* Nur der äußere Rahmen & Glow pulsiert (Inhalt bleibt stabil lesbar) */
     @keyframes borderPulse {
@@ -250,16 +257,16 @@
 
       <!-- DYNAMISCHE FLÜSTERBOX (FÜLLT DEN GESAMTEN FREIEN PLATZ ELASTISCH AUS) -->
       <section class="bg-gradient-to-b from-slate-950/95 via-purple-950/20 to-slate-950/95 border border-purple-500/35 rounded-2xl p-3 flex-1 min-h-0 flex flex-col justify-between overflow-hidden glow-purple relative shadow-inner">
-        <div class="flex justify-between items-center border-b border-purple-900/40 pb-1.5 shrink-0 gap-1.5 min-h-[30px]">
-          <!-- Titel mit Live-Online Status des Partners -->
+        <div class="flex justify-between items-center border-b border-purple-900/40 pb-1.5 shrink-0 gap-1 min-h-[30px]">
+          <!-- Titel mit Live-Online Status des Partners (immer an erster Stelle gesichert) -->
           <div class="flex items-center gap-1.5 shrink-0 min-w-0">
             <span id="shoutbox-header-title" class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5 shrink-0">
-              <span>💬</span> <span id="shoutbox-header-text">Flüsterbox</span>
-              <span id="partner-online-dot" class="hidden w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Partner ist online"></span>
-              <span id="partner-typing-indicator" class="hidden text-[10px] text-purple-400 font-normal italic lowercase">schreibt...</span>
+              <span id="partner-online-dot" class="hidden w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" title="Partner ist online"></span>
+              <span>💬</span> <span id="shoutbox-header-text" class="truncate">Flüsterbox</span>
+              <span id="partner-typing-indicator" class="hidden text-[10px] text-purple-400 font-normal italic lowercase shrink-0">schreibt...</span>
             </span>
-            <button onclick="clearShoutboxHistory()" class="text-[10px] text-slate-400 hover:text-rose-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg transition-all active:scale-95" title="Chatverlauf leeren">
-              🗑️ Leeren
+            <button onclick="clearShoutboxHistory()" class="text-[10px] text-slate-400 hover:text-rose-400 bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded-lg transition-all active:scale-95 shrink-0" title="Chatverlauf leeren">
+              🗑️
             </button>
           </div>
           <div class="flex items-center gap-1 justify-end flex-1 min-w-0">
@@ -2531,9 +2538,22 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
           updateUI();
         } else if (data.type === 'craving_response') {
           state.activeCraving = null;
-          showToast("🎉 Partner-Signal", data.message, "💬");
+          
+          // Antwort als echte Nachricht in die Flüsterbox schreiben
+          const partnerName = getRoleName(data.sender || getPartnerRole());
+          const chatMsg = {
+            id: Date.now(),
+            from: data.sender || getPartnerRole(),
+            text: `⚡ Antwort auf dein Signal: ${data.message}`,
+            timestamp: Date.now()
+          };
+          if (!state.shoutboxMessages) state.shoutboxMessages = [];
+          state.shoutboxMessages.push(chatMsg);
+
+          showToast("🎉 Partner-Antwort", `${partnerName}: ${data.message}`, "💬");
           playSensualSound('chime');
           saveState();
+          renderAllShoutboxes();
         } else if (data.type === 'catalog_full_sync') {
   applyIncomingCatalogSync(data);
 } else if (data.type === 'catalog_sync_request') {
@@ -2725,16 +2745,23 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
 
         if (onlyEmojis) {
           return `
-            <div class="flex ${isMe ? 'justify-end' : 'justify-start'} my-0.5">
-              <div class="max-w-[85%] rounded-2xl px-2.5 py-1 ${isMe ? 'bg-purple-950/40 border border-purple-400/30 rounded-br-none' : 'bg-slate-900/80 border border-rose-500/30 rounded-bl-none'} backdrop-blur-xs shadow-md">
-                <div class="flex items-center justify-between gap-2 mb-0.5">
-                  <span class="text-[8px] ${isMe ? 'text-purple-300' : 'text-rose-300'} font-bold">${displayName}</span>
-                  ${timeStr ? `<span class="text-[9px] text-slate-400/75 font-normal tracking-tight bg-transparent select-none">${timeStr}</span>` : ''}
+          <div class="flex ${isMe ? 'justify-end' : 'justify-start'} my-1">
+            <div class="max-w-[88%] rounded-2xl px-3 py-2 text-sm transition-all backdrop-blur-xs ${
+              isMe 
+                ? 'bg-purple-950/70 border border-purple-400/40 text-purple-50 rounded-br-none shadow-md shadow-purple-950/20' 
+                : 'bg-slate-900/95 border border-rose-500/40 text-slate-100 rounded-bl-none shadow-md shadow-rose-950/20'
+            }">
+              <div class="flex items-center justify-between gap-3 mb-1">
+                <span class="text-[10px] ${isMe ? 'text-purple-300' : 'text-rose-300'} font-bold">${displayName}</span>
+                <div class="flex items-center gap-1">
+                  ${timeStr ? `<span class="text-[10px] text-slate-400/80 font-normal tracking-tight bg-transparent select-none">${timeStr}</span>` : ''}
+                  ${readReceipt}
                 </div>
-                <div class="text-2xl leading-tight text-center py-0.5 filter drop-shadow">${m.text}</div>
               </div>
+              <span class="leading-relaxed whitespace-pre-wrap font-medium">${m.text}</span>
             </div>
-          `;
+          </div>
+        `;
         }
 
         const isRead = Boolean(m.read);
@@ -4541,31 +4568,44 @@ if (!state.game.deckVersion || state.game.deckVersion < CURRENT_DECK_VERSION) {
     }
 
     function respondCraving(action) {
+      let msgText = '';
       if (action === 'accepted') {
-        const cravingObj = state.activeCraving;
-        state.activeCraving = null;
-        playSensualSound('chime');
+        msgText = 'Kommt sofort! ❤️';
         showToast("❤️ Angenommen!", "Viel Spaß beim Verwöhnen!", "🔥");
-        
-        if (cravingObj) {
-          LiveStream.sendData({ type: 'craving_response', action: 'accepted', message: 'Kommt sofort! ❤️', craving: cravingObj });
-        }
       } else if (action === 'later') {
+        msgText = 'Braucht noch 10 Minuten ⏳';
         showToast("⏳ Aufgeschoben", "Dein Partner wartet 10 Minuten.", "⏳");
-        state.activeCraving = null;
-        LiveStream.sendData({ type: 'craving_response', action: 'later', message: 'Braucht noch 10 Minuten ⏳' });
       } else if (action === 'evening') {
+        msgText = 'Für heute Abend reserviert 🌙';
         state.eveningReservation = { 
           from: state.activeCraving.from, 
           title: state.activeCraving.title, 
           emoji: state.activeCraving.emoji, 
           note: state.activeCraving.note 
         };
-        state.activeCraving = null;
         showToast("🌙 Reserviert!", "Für heute Abend vorgemerkt.", "🌙");
-        LiveStream.sendData({ type: 'craving_response', action: 'evening', message: 'Für heute Abend reserviert 🌙' });
       }
+
+      state.activeCraving = null;
       saveState();
+
+      // Antwort abschicken und direkt in den eigenen Chat schreiben
+      const localMsg = {
+        id: Date.now(),
+        from: state.currentUser,
+        text: `⚡ Meine Antwort: ${msgText}`,
+        timestamp: Date.now()
+      };
+      if (!state.shoutboxMessages) state.shoutboxMessages = [];
+      state.shoutboxMessages.push(localMsg);
+      renderAllShoutboxes();
+
+      LiveStream.sendData({ 
+        type: 'craving_response', 
+        action: action, 
+        message: msgText, 
+        sender: state.currentUser 
+      });
     }
 
     function clearEveningReservation() { state.eveningReservation = null; saveState(); }
